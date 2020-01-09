@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>pyracmon.graph.template &#8212; pyracmon  documentation</title>
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wide.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pyracmon.graph.template</h1><div class="highlight"><pre>
+<div class="viewcode-block" id="GraphTemplate"><a class="viewcode-back" href="../../../pyracmon.graph.template.html#pyracmon.graph.GraphTemplate">[docs]</a><span></span><span class="k">class</span> <span class="nc">GraphTemplate</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class specifies the structure of a graph.</span>
+
+<span class="sd">    Use `GraphSpec.new_template()` to construct the instance of this class.</span>
+
+<span class="sd">    Each instance is composed of template properties each of which corresponds to a node container of a graph.</span>
+<span class="sd">    Applying shift operator to properties creates the parent-child relationship between them and it corresponds to an edge of a graph.</span>
+
+<span class="sd">    For example, next code creates a template composed of 4 properties in which `d` is a child of `c`, and `b` and `c` are children of `a`.</span>
+
+<span class="sd">    &gt;&gt;&gt; template = spec.new_template(a = int, b = str, c = int, d = float)</span>
+<span class="sd">    &gt;&gt;&gt; template.a &lt;&lt; [template.b, template.c]</span>
+<span class="sd">    &gt;&gt;&gt; template.c &lt;&lt; template.d</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GraphTemplate.Property"><a class="viewcode-back" href="../../../pyracmon.graph.template.html#pyracmon.graph.GraphTemplate.Property">[docs]</a>    <span class="k">class</span> <span class="nc">Property</span><span class="p">:</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">entity_filter</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">=</span> <span class="n">template</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">kind</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="o">=</span> <span class="n">identifier</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">entity_filter</span> <span class="o">=</span> <span class="n">entity_filter</span>
+
+        <span class="k">def</span> <span class="nf">_assert_canbe_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">another</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">another</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Graph template property can not have multiple parents.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="o">!=</span> <span class="n">another</span><span class="o">.</span><span class="n">template</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Properties can make parent-child relationship only when they are declared in the same template.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">another</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recursive relationship is not allowed.&quot;</span><span class="p">)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="k">while</span> <span class="n">p</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">parent</span> <span class="o">==</span> <span class="n">another</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recursive relationship is not allowed.&quot;</span><span class="p">)</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">parent</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">_relations</span><span class="p">),</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">_relations</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span>
+            <span class="k">while</span> <span class="n">p</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="n">other</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">parent</span>
+            <span class="k">return</span> <span class="kc">False</span>
+            
+        <span class="k">def</span> <span class="fm">__lshift__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">children</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Makes this property as a parent of child properties.</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            children: [Graph.Property] | Graph.Property</span>
+<span class="sd">                Properties to be children of this property.</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            [Graph.Property] | Graph.Property</span>
+<span class="sd">                Child properties given in the argument.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">children</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">children</span><span class="p">,</span> <span class="n">GraphTemplate</span><span class="o">.</span><span class="n">Property</span><span class="p">)</span> <span class="k">else</span> <span class="n">children</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_assert_canbe_parent</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">_relations</span> <span class="o">+=</span> <span class="p">[(</span><span class="n">c</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">children</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">children</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">children</span>
+
+        <span class="k">def</span> <span class="fm">__rshift__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Makes this property as a child of another property.</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            parent: Graph.Property</span>
+<span class="sd">                A Property to be a parent of this property.</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            Graph.Property</span>
+<span class="sd">                A parent property given in `parent` argument.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">_assert_canbe_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">_relations</span> <span class="o">+=</span> <span class="p">[(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="n">parent</span></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">definitions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct template with its properties.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        definitions: [(str, type, T -&gt; ID, T -&gt; bool)]</span>
+<span class="sd">            Definitions of template properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="o">=</span> <span class="p">[</span><span class="n">GraphTemplate</span><span class="o">.</span><span class="n">Property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">ident</span><span class="p">,</span> <span class="n">ef</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">ident</span><span class="p">,</span> <span class="n">ef</span> <span class="ow">in</span> <span class="n">definitions</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="P"><a class="viewcode-back" href="../../../pyracmon.graph.template.html#pyracmon.graph.P">[docs]</a><span class="k">class</span> <span class="nc">P</span><span class="p">:</span>
+<div class="viewcode-block" id="P.of"><a class="viewcode-back" href="../../../pyracmon.graph.template.html#pyracmon.graph.P.of">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">of</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">identifier</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">entity_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">P</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">entity_filter</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">entity_filter</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">kind</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="o">=</span> <span class="n">identifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entity_filter</span> <span class="o">=</span> <span class="n">entity_filter</span>
+
+<div class="viewcode-block" id="P.build"><a class="viewcode-back" href="../../../pyracmon.graph.template.html#pyracmon.graph.P.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">template</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">GraphTemplate</span><span class="o">.</span><span class="n">Property</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_filter</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="P.identify"><a class="viewcode-back" href="../../../pyracmon.graph.template.html#pyracmon.graph.P.identify">[docs]</a>    <span class="k">def</span> <span class="nf">identify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="o">=</span> <span class="n">identifier</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="P.accept"><a class="viewcode-back" href="../../../pyracmon.graph.template.html#pyracmon.graph.P.accept">[docs]</a>    <span class="k">def</span> <span class="nf">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity_filter</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entity_filter</span> <span class="o">=</span> <span class="n">entity_filter</span>
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3><a href="../../../index.html">Table of Contents</a></h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pyracmon.html">pyracmon</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.dialect.html">pyracmon.dialect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.mysql.html">pyracmon.dialect.mysql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.postgresql.html">pyracmon.dialect.postgresql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.shared.html">pyracmon.dialect.shared</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.graph.html">pyracmon.graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" >pyracmon</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Author.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

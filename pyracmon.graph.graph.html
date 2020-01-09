@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>pyracmon.graph.graph &#8212; pyracmon  documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/wide.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pyracmon.graph.serialize" href="pyracmon.graph.serialize.html" />
+    <link rel="prev" title="pyracmon.graph" href="pyracmon.graph.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.graph.serialize.html" title="pyracmon.graph.serialize"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.graph.html" title="pyracmon.graph"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="pyracmon.html" >pyracmon</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="pyracmon.graph.html" accesskey="U">pyracmon.graph</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pyracmon.graph.graph">
+<span id="pyracmon-graph-graph"></span><h1>pyracmon.graph.graph<a class="headerlink" href="#module-pyracmon.graph.graph" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pyracmon.graph.graph.new_graph">
+<code class="sig-prename descclassname">pyracmon.graph.graph.</code><code class="sig-name descname">new_graph</code><span class="sig-paren">(</span><em class="sig-param">template</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/graph.html#new_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.graph.new_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a graph from a template.</p>
+<p>Use this function instead of invoking constructor directly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>template</strong> (<a class="reference internal" href="pyracmon.graph.template.html#pyracmon.graph.template.GraphTemplate" title="pyracmon.graph.template.GraphTemplate"><em>GraphTemplate</em></a>) – A template of a graph.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Created graph.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyracmon.graph.graph.Graph" title="pyracmon.graph.graph.Graph">Graph</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pyracmon.graph.graph.Graph">
+<em class="property">class </em><code class="sig-prename descclassname">pyracmon.graph.graph.</code><code class="sig-name descname">Graph</code><span class="sig-paren">(</span><em class="sig-param">template</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/graph.html#Graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.graph.Graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>The instance of this class contains nodes according to the structure defined by the template.</p>
+<p>All entities are appended via <cite>append()</cite> and this method does many things to construct relationships between nodes.</p>
+<ul class="simple">
+<li><p>Applies entity filters if any and discards ones which does not fulfill the condition.</p></li>
+<li><p>Searches the identical entity from existing nodes, then, if exists, drops new entity and takes the found one for edge creation.</p></li>
+<li><p>Identification is not only by the entity value but the identicalness of the parent entity in accordance <cite>IdentifyPolicy</cite>.</p></li>
+<li><p>Creates edges between selected nodes according to the relationships of template properties.</p></li>
+</ul>
+<p>By default, the identification policy is simple, which consider entities are identical only when:</p>
+<ul class="simple">
+<li><p>Identifier for the template property is found.</p></li>
+<li><p>Values returned by the identitier are equal.</p></li>
+<li><p>They have the same parent nodes.</p></li>
+</ul>
+<dl class="method">
+<dt id="pyracmon.graph.graph.Graph.view">
+<em class="property">property </em><code class="sig-name descname">view</code><a class="headerlink" href="#pyracmon.graph.graph.Graph.view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an unmodifiable view of this graph.</p>
+<p>Returning object provides intuitive ways to access graph components:</p>
+<ul class="simple">
+<li><p>Attribute access by the property name returns the view of corresponding node container.</p></li>
+<li><p>Iteration access iterates over views of root containers, that is, containers whose properties have no parent.</p></li>
+</ul>
+<p>See the documentation of <cite>view</cite> property of <cite>NodeContainer</cite>, <cite>Node</cite>, <cite>Node.Children</cite> for further information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The view of this graph.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>GraphView</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyracmon.graph.graph.Graph.append">
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param">**entities</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/graph.html#Graph.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.graph.Graph.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append entity values with associated property names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>entities</strong> (<em>{str: object}</em>) – Dictionary where the key indicates the property name and the value is the entity value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyracmon.graph.graph.NodeContainer">
+<em class="property">class </em><code class="sig-prename descclassname">pyracmon.graph.graph.</code><code class="sig-name descname">NodeContainer</code><span class="sig-paren">(</span><em class="sig-param">prop</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/graph.html#NodeContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.graph.NodeContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class represents a list of nodes for a template property.</p>
+<dl class="method">
+<dt id="pyracmon.graph.graph.NodeContainer.view">
+<em class="property">property </em><code class="sig-name descname">view</code><a class="headerlink" href="#pyracmon.graph.graph.NodeContainer.view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an unmodifiable view of this container.</p>
+<p>Returning object provides intuitive ways to access internal nodes:</p>
+<ul class="simple">
+<li><p>Direct invocation returns the <cite>NodeContainer</cite> instance.</p></li>
+<li><p>Iteration access iterates over internal node views.</p></li>
+<li><p>Index access and <cite>len()</cite> works as if it is a list of node views.</p></li>
+</ul>
+<p>See the documentation of <cite>view</cite> property of <cite>Node</cite>, <cite>Node.Children</cite> for further information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The view of this graph.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>ContainerView</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyracmon.graph.graph.NodeContainer.append">
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param">entity</em>, <em class="sig-param">new_nodes={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/graph.html#NodeContainer.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.graph.NodeContainer.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an entity to nodes if the identical node does not exists yet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>entity</strong> (<em>object</em>) – An entity to be stored in the node.</p></li>
+<li><p><strong>new_nodes</strong> (<em>{str: Node}</em>) – Dictionary which maps property names to nodes appended to ancestor containers.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>[Node]</em> – Appended nodes.</p></li>
+<li><p><em>[(Node, Node)]</em> – Edges.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyracmon.graph.graph.Node">
+<em class="property">class </em><code class="sig-prename descclassname">pyracmon.graph.graph.</code><code class="sig-name descname">Node</code><span class="sig-paren">(</span><em class="sig-param">prop</em>, <em class="sig-param">entity</em>, <em class="sig-param">key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/graph.html#Node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.graph.Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class represents a node which contains an entity value.</p>
+<dl class="method">
+<dt id="pyracmon.graph.graph.Node.view">
+<em class="property">property </em><code class="sig-name descname">view</code><a class="headerlink" href="#pyracmon.graph.graph.Node.view" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an unmodifiable view of this node.</p>
+<p>Returning object provides intuitive ways to access entity and child nodes:</p>
+<ul class="simple">
+<li><p>Direct invocation returns the entity value.</p></li>
+<li><p>Iteration access iterates over views of child nodes.</p></li>
+<li><p>Attribute access by the property name returns the view of corresponding child node.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The view of this node.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>NodeView</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="pyracmon.html">pyracmon</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.dialect.html">pyracmon.dialect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.mysql.html">pyracmon.dialect.mysql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.postgresql.html">pyracmon.dialect.postgresql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.shared.html">pyracmon.dialect.shared</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="pyracmon.graph.html">pyracmon.graph</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pyracmon.graph.graph.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.graph.serialize.html" title="pyracmon.graph.serialize"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.graph.html" title="pyracmon.graph"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="pyracmon.html" >pyracmon</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="pyracmon.graph.html" >pyracmon.graph</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Author.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>pyracmon.model &#8212; pyracmon  documentation</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/wide.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pyracmon.model</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">pyracmon.util</span> <span class="kn">import</span> <span class="n">split_dict</span>
+
+<div class="viewcode-block" id="Column"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.model.Column">[docs]</a><span class="k">class</span> <span class="nc">Column</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ptype</span><span class="p">,</span> <span class="n">type_info</span><span class="p">,</span> <span class="n">pk</span><span class="p">,</span> <span class="n">fk</span><span class="p">,</span> <span class="n">incremental</span><span class="p">,</span> <span class="n">comment</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a column schema.</span>
+
+<span class="sd">        Parametes</span>
+<span class="sd">        ---------</span>
+<span class="sd">        name: str</span>
+<span class="sd">            Column name.</span>
+<span class="sd">        ptype: type</span>
+<span class="sd">            Data type in python.</span>
+<span class="sd">        type_info: str</span>
+<span class="sd">            Type informations obtained from DB.</span>
+<span class="sd">        pk: bool</span>
+<span class="sd">            Is this column a PK?</span>
+<span class="sd">        fk: object</span>
+<span class="sd">            An informative object if this column is a foreign key, otherwise None.</span>
+<span class="sd">        incremental: object</span>
+<span class="sd">            If this column is auto-incremental, this object contains the information of the feature, otherwise, None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ptype</span> <span class="o">=</span> <span class="n">ptype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_info</span> <span class="o">=</span> <span class="n">type_info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pk</span> <span class="o">=</span> <span class="n">pk</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fk</span> <span class="o">=</span> <span class="n">fk</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">incremental</span> <span class="o">=</span> <span class="n">incremental</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="n">comment</span></div>
+
+
+<div class="viewcode-block" id="Table"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.model.Table">[docs]</a><span class="k">class</span> <span class="nc">Table</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="define_model"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.model.define_model">[docs]</a><span class="k">def</span> <span class="nf">define_model</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">mixins</span> <span class="o">=</span> <span class="p">[]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a model type representing the table.</span>
+
+<span class="sd">    When the same attribute is defined in multiple mixin types, the former one has a priority.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    table: Table</span>
+<span class="sd">        Schema of table.</span>
+<span class="sd">    mixins: [type]</span>
+<span class="sd">        Types the created model type inherits.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    type</span>
+<span class="sd">        Created model type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="s2">&quot;ModelBase&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mixins</span><span class="p">),</span> <span class="p">{})):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span>
+
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{k}</span><span class="s2"> is not a column of </span><span class="si">{cls.name}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">)),</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+
+        <span class="nd">@classmethod</span>
+        <span class="k">def</span> <span class="nf">_parse_pks</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pks</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pks</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_check_columns</span><span class="p">(</span><span class="n">pks</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">split_dict</span><span class="p">(</span><span class="n">pks</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">pk</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The number of primary key columns is not 1.&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">([</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">pks</span><span class="p">])</span>
+
+        <span class="nd">@classmethod</span>
+        <span class="k">def</span> <span class="nf">_check_columns</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">col_map</span><span class="p">,</span> <span class="n">condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="n">requires_all</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">condition</span><span class="p">(</span><span class="n">c</span><span class="p">)])</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">col_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">names</span> <span class="o">&gt;=</span> <span class="n">targets</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Columns {targets - names} are not columns of &#39;</span><span class="si">{cls.name}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">requires_all</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">names</span> <span class="o">==</span> <span class="n">targets</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Required columns {names - targets} in &#39;</span><span class="si">{cls.name}</span><span class="s2">&#39; are not found.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">col_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">Model</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3><a href="../../index.html">Table of Contents</a></h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../pyracmon.html">pyracmon</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.dialect.html">pyracmon.dialect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.dialect.mysql.html">pyracmon.dialect.mysql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.dialect.postgresql.html">pyracmon.dialect.postgresql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.dialect.shared.html">pyracmon.dialect.shared</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.graph.html">pyracmon.graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../pyracmon.html" >pyracmon</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Author.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

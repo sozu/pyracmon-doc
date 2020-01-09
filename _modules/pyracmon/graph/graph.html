@@ -1,0 +1,480 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>pyracmon.graph.graph &#8212; pyracmon  documentation</title>
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wide.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pyracmon.graph.graph</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+
+
+<div class="viewcode-block" id="new_graph"><a class="viewcode-back" href="../../../pyracmon.graph.html#pyracmon.new_graph">[docs]</a><span class="k">def</span> <span class="nf">new_graph</span><span class="p">(</span><span class="n">template</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a graph from a template.</span>
+
+<span class="sd">    Use this function instead of invoking constructor directly.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    template: GraphTemplate</span>
+<span class="sd">        A template of a graph.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Graph</span>
+<span class="sd">        Created graph.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Graph</span><span class="p">(</span><span class="n">template</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Graph"><a class="viewcode-back" href="../../../pyracmon.graph.html#pyracmon.Graph">[docs]</a><span class="k">class</span> <span class="nc">Graph</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The instance of this class contains nodes according to the structure defined by the template.</span>
+
+<span class="sd">    All entities are appended via `append()` and this method does many things to construct relationships between nodes.</span>
+
+<span class="sd">    - Applies entity filters if any and discards ones which does not fulfill the condition.</span>
+<span class="sd">    - Searches the identical entity from existing nodes, then, if exists, drops new entity and takes the found one for edge creation.</span>
+<span class="sd">    - Identification is not only by the entity value but the identicalness of the parent entity in accordance `IdentifyPolicy`.</span>
+<span class="sd">    - Creates edges between selected nodes according to the relationships of template properties.</span>
+
+<span class="sd">    By default, the identification policy is simple, which consider entities are identical only when:</span>
+
+<span class="sd">    - Identifier for the template property is found.</span>
+<span class="sd">    - Values returned by the identitier are equal.</span>
+<span class="sd">    - They have the same parent nodes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">containers</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">NodeContainer</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">template</span><span class="o">.</span><span class="n">_properties</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns an unmodifiable view of this graph.</span>
+
+<span class="sd">        Returning object provides intuitive ways to access graph components:</span>
+
+<span class="sd">        - Attribute access by the property name returns the view of corresponding node container.</span>
+<span class="sd">        - Iteration access iterates over views of root containers, that is, containers whose properties have no parent.</span>
+
+<span class="sd">        See the documentation of `view` property of `NodeContainer`, `Node`, `Node.Children` for further information.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GraphView</span>
+<span class="sd">            The view of this graph.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span><span class="p">:</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="k">class</span> <span class="nc">GraphView</span><span class="p">:</span>
+                <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="sd">&quot;&quot;&quot;Iterates views of root containers.&quot;&quot;&quot;</span>
+                    <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">view</span><span class="p">,</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="n">graph</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+                <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+                    <span class="sd">&quot;&quot;&quot;Returns a view of a container of the name.&quot;&quot;&quot;</span>
+                    <span class="k">return</span> <span class="n">graph</span><span class="o">.</span><span class="n">containers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">view</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="n">GraphView</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span>
+
+<div class="viewcode-block" id="Graph.append"><a class="viewcode-back" href="../../../pyracmon.graph.html#pyracmon.Graph.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">entities</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Append entity values with associated property names.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        entities: {str: object}</span>
+<span class="sd">            Dictionary where the key indicates the property name and the value is the entity value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">props</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">containers</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">property</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">entities</span><span class="o">.</span><span class="n">keys</span><span class="p">()],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">filtered</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">props</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">entities</span> <span class="ow">or</span> <span class="n">p</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">filtered</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">entity_filter</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">p</span><span class="o">.</span><span class="n">entity_filter</span><span class="p">(</span><span class="n">entities</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">]):</span>
+                    <span class="n">filtered</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">props</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">filtered</span><span class="p">]</span>
+
+        <span class="n">nodes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">ns</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">containers</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entities</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">nodes</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="n">nodes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">ns</span></div></div>
+
+
+<div class="viewcode-block" id="IdentifyPolicy"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.IdentifyPolicy">[docs]</a><span class="k">class</span> <span class="nc">IdentifyPolicy</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="o">=</span> <span class="n">identifier</span> <span class="ow">or</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy</span> <span class="o">=</span> <span class="n">policy</span>
+
+<div class="viewcode-block" id="IdentifyPolicy.identify"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.IdentifyPolicy.identify">[docs]</a>    <span class="k">def</span> <span class="nf">identify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">new_nodes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find identical nodes for the new entity according to the policy.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        prop: GraphTemplate.Property</span>
+<span class="sd">            Template property for the container.</span>
+<span class="sd">        entity: object</span>
+<span class="sd">            A value to append into the container.</span>
+<span class="sd">        candidates: object -&gt; [Node]</span>
+<span class="sd">            Function returning nodes from a identifying key.</span>
+<span class="sd">        new_nodes: {str: Node}</span>
+<span class="sd">            Ancestor nodes in this appending session.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        object</span>
+<span class="sd">            Key of the entity.</span>
+<span class="sd">        [Node]</span>
+<span class="sd">            Identical nodes.</span>
+<span class="sd">        [Node]</span>
+<span class="sd">            Parent nodes in session where new node should be appended.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># acc: ([Node], set(Node), [(Node, Node)])</span>
+            <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+                <span class="n">is_identical</span><span class="p">,</span> <span class="n">parents</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">new_nodes</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">is_identical</span><span class="p">:</span>
+                    <span class="n">acc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">:</span>
+                        <span class="n">acc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+                        <span class="n">acc</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">acc</span>
+            <span class="n">identicals</span><span class="p">,</span> <span class="n">parents</span><span class="p">,</span> <span class="n">new_edges</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">merge</span><span class="p">,</span> <span class="n">candidates</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="p">([],</span> <span class="nb">set</span><span class="p">(),</span> <span class="p">[]))</span>
+            <span class="k">return</span> <span class="n">key</span><span class="p">,</span> <span class="n">identicals</span><span class="p">,</span> <span class="n">parents</span><span class="p">,</span> <span class="n">new_edges</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="IdentifyPolicy.never"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.IdentifyPolicy.never">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">never</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">IdentifyPolicy</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">,</span> <span class="n">ns</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[]))</span></div>
+
+<div class="viewcode-block" id="IdentifyPolicy.always"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.IdentifyPolicy.always">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">always</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">identifier</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">policy</span><span class="p">(</span><span class="n">candidate</span><span class="p">,</span> <span class="n">new_nodes</span><span class="p">):</span>
+            <span class="n">session_parents</span> <span class="o">=</span> <span class="n">new_nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">candidate</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[(</span><span class="n">candidate</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span> <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">session_parents</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">sp</span><span class="o">.</span><span class="n">has_child</span><span class="p">(</span><span class="n">candidate</span><span class="p">)]</span> 
+        <span class="k">return</span> <span class="n">IdentifyPolicy</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">policy</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IdentifyPolicy.hierarchical"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.IdentifyPolicy.hierarchical">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">hierarchical</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">identifier</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">policy</span><span class="p">(</span><span class="n">candidate</span><span class="p">,</span> <span class="n">new_nodes</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Check a node having the same key as appending node.</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            bool</span>
+<span class="sd">                True if this node should be identical as the appending node in this policy.</span>
+<span class="sd">            [Node]</span>
+<span class="sd">                Nodes which should be parent of appending node but currently doesn&#39;t have.</span>
+<span class="sd">            [(Node, Node)]</span>
+<span class="sd">                Edges contains existing nodes.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">candidate</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">parent</span>
+
+            <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_nodes</span><span class="p">:</span>
+                <span class="c1"># Graph root or session root node is identified just by its key.</span>
+                <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">session_parents</span> <span class="o">=</span> <span class="n">new_nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="c1"># This node is identical if one of its parents exists in session parents.</span>
+                <span class="n">is_identical</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">session_parents</span><span class="p">,</span> <span class="n">candidate</span><span class="o">.</span><span class="n">parents</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">is_identical</span><span class="p">:</span>
+                    <span class="c1"># Select session parents which doesn&#39;t contain this candidate.</span>
+                    <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="n">sp</span> <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">session_parents</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">sp</span><span class="o">.</span><span class="n">has_child</span><span class="p">(</span><span class="n">candidate</span><span class="p">)],</span> <span class="p">[]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># No existing nodes are identical.</span>
+                    <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">IdentifyPolicy</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">policy</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="NodeContainer"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.NodeContainer">[docs]</a><span class="k">class</span> <span class="nc">NodeContainer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class represents a list of nodes for a template property.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">property</span> <span class="o">=</span> <span class="n">prop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns an unmodifiable view of this container.</span>
+
+<span class="sd">        Returning object provides intuitive ways to access internal nodes:</span>
+
+<span class="sd">        - Direct invocation returns the `NodeContainer` instance.</span>
+<span class="sd">        - Iteration access iterates over internal node views.</span>
+<span class="sd">        - Index access and `len()` works as if it is a list of node views.</span>
+
+<span class="sd">        See the documentation of `view` property of `Node`, `Node.Children` for further information.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ContainerView</span>
+<span class="sd">            The view of this graph.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span><span class="p">:</span>
+            <span class="n">container</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="k">class</span> <span class="nc">ContainerView</span><span class="p">:</span>
+                <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="sd">&quot;&quot;&quot;Returns a base container.&quot;&quot;&quot;</span>
+                    <span class="k">return</span> <span class="n">container</span>
+                <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="sd">&quot;&quot;&quot;Returns the number of nodes.&quot;&quot;&quot;</span>
+                    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">container</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+                <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="sd">&quot;&quot;&quot;Iterates views of nodes.&quot;&quot;&quot;</span>
+                    <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">view</span><span class="p">,</span> <span class="n">container</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+                <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                    <span class="sd">&quot;&quot;&quot;Returns a view of a node at the index.&quot;&quot;&quot;</span>
+                    <span class="k">return</span> <span class="n">container</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">view</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="n">ContainerView</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span>
+
+<div class="viewcode-block" id="NodeContainer.append"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.NodeContainer.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">new_nodes</span> <span class="o">=</span> <span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add an entity to nodes if the identical node does not exists yet.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        entity: object</span>
+<span class="sd">            An entity to be stored in the node.</span>
+<span class="sd">        new_nodes: {str: Node}</span>
+<span class="sd">            Dictionary which maps property names to nodes appended to ancestor containers.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        [Node]</span>
+<span class="sd">            Appended nodes.</span>
+<span class="sd">        [(Node, Node)]</span>
+<span class="sd">            Edges.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">cand</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">[])]</span>
+
+        <span class="n">key</span><span class="p">,</span> <span class="n">existings</span><span class="p">,</span> <span class="n">parents</span><span class="p">,</span> <span class="n">new_edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">identifier</span><span class="o">.</span><span class="n">identify</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">,</span>
+            <span class="n">entity</span><span class="p">,</span>
+            <span class="n">cand</span><span class="p">,</span>
+            <span class="n">new_nodes</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="n">c</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">new_edges</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">existings</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">edges</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">([[(</span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">existings</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">new_nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">[])],</span> <span class="p">[])</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">:</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="n">existings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">node</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">existings</span><span class="p">,</span> <span class="n">edges</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">))</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="n">edges</span> <span class="o">+=</span> <span class="p">[(</span><span class="n">node</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">new_nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">[])]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">parent</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">node</span><span class="p">],</span> <span class="n">edges</span></div></div>
+
+
+<div class="viewcode-block" id="Node"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class represents a node which contains an entity value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Node.Children"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.Node.Children">[docs]</a>    <span class="k">class</span> <span class="nc">Children</span><span class="p">:</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span><span class="p">:</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="bp">self</span>
+                <span class="k">class</span> <span class="nc">ChildrenView</span><span class="p">:</span>
+                    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                        <span class="sd">&quot;&quot;&quot;Returns children container.&quot;&quot;&quot;</span>
+                        <span class="k">return</span> <span class="n">base</span>
+                    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                        <span class="sd">&quot;&quot;&quot;Iterates views of child nodes.&quot;&quot;&quot;</span>
+                        <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">view</span><span class="p">,</span> <span class="n">base</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+                    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                        <span class="sd">&quot;&quot;&quot;Returns the number of child nodes.&quot;&quot;&quot;</span>
+                        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+                    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+                        <span class="sd">&quot;&quot;&quot;Returns a view of child node at the index.&quot;&quot;&quot;</span>
+                        <span class="k">return</span> <span class="n">base</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">view</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="n">ChildrenView</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span>
+
+<div class="viewcode-block" id="Node.Children.append"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.Node.Children.append">[docs]</a>        <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">entity</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">property</span> <span class="o">=</span> <span class="n">prop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entity</span> <span class="o">=</span> <span class="n">entity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">Node</span><span class="o">.</span><span class="n">Children</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">prop</span><span class="o">.</span><span class="n">children</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns an unmodifiable view of this node.</span>
+
+<span class="sd">        Returning object provides intuitive ways to access entity and child nodes:</span>
+
+<span class="sd">        - Direct invocation returns the entity value.</span>
+<span class="sd">        - Iteration access iterates over views of child nodes.</span>
+<span class="sd">        - Attribute access by the property name returns the view of corresponding child node.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NodeView</span>
+<span class="sd">            The view of this node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="k">class</span> <span class="nc">NodeView</span><span class="p">:</span>
+                <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="sd">&quot;&quot;&quot;Returns an entity of this node.&quot;&quot;&quot;</span>
+                    <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">entity</span>
+                <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+                    <span class="sd">&quot;&quot;&quot;Returns a view of child nodes by its name.&quot;&quot;&quot;</span>
+                    <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">view</span>
+                <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="sd">&quot;&quot;&quot;Iterate key-value pairs of child nodes.&quot;&quot;&quot;</span>
+                    <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="p">(</span><span class="n">nc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">),</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="n">NodeView</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_view</span>
+
+<div class="viewcode-block" id="Node.add_child"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.Node.add_child">[docs]</a>    <span class="k">def</span> <span class="nf">add_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">Node</span><span class="o">.</span><span class="n">Children</span><span class="p">())</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="n">child</span><span class="o">.</span><span class="n">parents</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Node.has_child"><a class="viewcode-back" href="../../../pyracmon.graph.graph.html#pyracmon.Node.has_child">[docs]</a>    <span class="k">def</span> <span class="nf">has_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">child</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3><a href="../../../index.html">Table of Contents</a></h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pyracmon.html">pyracmon</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.dialect.html">pyracmon.dialect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.mysql.html">pyracmon.dialect.mysql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.postgresql.html">pyracmon.dialect.postgresql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.shared.html">pyracmon.dialect.shared</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.graph.html">pyracmon.graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" >pyracmon</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Author.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

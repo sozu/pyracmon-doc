@@ -1,0 +1,268 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>pyracmon &#8212; pyracmon  documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/wide.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pyracmon</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">pyracmon.connection</span> <span class="kn">import</span> <span class="n">connect</span><span class="p">,</span> <span class="n">Connection</span>
+<span class="kn">from</span> <span class="nn">pyracmon.mixin</span> <span class="kn">import</span> <span class="n">CRUDMixin</span><span class="p">,</span> <span class="n">read_row</span>
+<span class="kn">from</span> <span class="nn">pyracmon.model</span> <span class="kn">import</span> <span class="n">define_model</span>
+<span class="kn">from</span> <span class="nn">pyracmon.graph</span> <span class="kn">import</span> <span class="n">new_graph</span><span class="p">,</span> <span class="n">GraphSpec</span>
+<span class="kn">from</span> <span class="nn">pyracmon.query</span> <span class="kn">import</span> <span class="n">Q</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;connect&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Connection&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;declare_models&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;read_row&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;graph_template&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;graph_dict&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;add_identifier&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;add_serializer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;new_graph&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Q&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="declare_models"><a class="viewcode-back" href="../pyracmon.html#pyracmon.declare_models">[docs]</a><span class="k">def</span> <span class="nf">declare_models</span><span class="p">(</span><span class="n">dialect</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">module</span> <span class="o">=</span> <span class="vm">__name__</span><span class="p">,</span> <span class="n">mixins</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">excludes</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">includes</span> <span class="o">=</span> <span class="p">[]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Declare model types read from database in the specified module.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dialect: module</span>
+<span class="sd">        A module exporting `read_schema` function and `mixins` classes.</span>
+<span class="sd">    db: pyracmon.connection.Connection</span>
+<span class="sd">        Wrapper of DB-API 2.0 Connection.</span>
+<span class="sd">    module: str | module</span>
+<span class="sd">        A module name where the declarations are located.</span>
+<span class="sd">    mixins: [type]</span>
+<span class="sd">        Additional mixin classes for declaring model types.</span>
+<span class="sd">    excludes: [str]</span>
+<span class="sd">        Excluding table names.</span>
+<span class="sd">    includes: [str]</span>
+<span class="sd">        Including table names. All tables excluding `excludes` are declared as models if this argument is omitted.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tables</span> <span class="o">=</span> <span class="n">dialect</span><span class="o">.</span><span class="n">read_schema</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">excludes</span><span class="p">,</span> <span class="n">includes</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tables</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">ModuleType</span><span class="p">):</span>
+            <span class="n">module</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">define_model</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mixins</span> <span class="o">+</span> <span class="n">dialect</span><span class="o">.</span><span class="n">mixins</span> <span class="o">+</span> <span class="p">[</span><span class="n">CRUDMixin</span><span class="p">,</span> <span class="n">GraphEntityMixin</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">module</span><span class="p">]</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">define_model</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mixins</span> <span class="o">+</span> <span class="n">dialect</span><span class="o">.</span><span class="n">mixins</span> <span class="o">+</span> <span class="p">[</span><span class="n">CRUDMixin</span><span class="p">,</span> <span class="n">GraphEntityMixin</span><span class="p">])</span></div>
+
+
+<span class="k">class</span> <span class="nc">GraphEntityMixin</span><span class="p">:</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">identify</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="n">pks</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">pk</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">([</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">pks</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">pks</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_null</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">([</span><span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">_identify</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">identify</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_filter</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">model</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">is_null</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_serialize</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="p">])</span>
+
+
+<span class="n">globalSpec</span> <span class="o">=</span> <span class="n">GraphSpec</span><span class="p">(</span>
+    <span class="n">identifiers</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">GraphEntityMixin</span><span class="p">,</span> <span class="n">_identify</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">entity_filters</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">GraphEntityMixin</span><span class="p">,</span> <span class="n">_filter</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">serializers</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">GraphEntityMixin</span><span class="p">,</span> <span class="n">_serialize</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<div class="viewcode-block" id="graph_template"><a class="viewcode-back" href="../pyracmon.html#pyracmon.graph_template">[docs]</a><span class="k">def</span> <span class="nf">graph_template</span><span class="p">(</span><span class="o">**</span><span class="n">definitions</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a graph template on the default specification predefined to handle model object in appropriate ways.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    definitions: {str: (type, T -&gt; ID, T -&gt; bool) | type | None}</span>
+<span class="sd">        Definitions of template properties. See `GraphSpec.new_template` for the detail.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    GraphTemplate</span>
+<span class="sd">        Created graph template.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">globalSpec</span><span class="o">.</span><span class="n">new_template</span><span class="p">(</span><span class="o">**</span><span class="n">definitions</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="graph_dict"><a class="viewcode-back" href="../pyracmon.html#pyracmon.graph_dict">[docs]</a><span class="k">def</span> <span class="nf">graph_dict</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="o">**</span><span class="n">serializers</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a dictionary representing structured values of a graph on the default specification predefined to handle model object in appropriate ways.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    graph: Graph.View</span>
+<span class="sd">        A view of the graph.</span>
+<span class="sd">    serializers: {str: NodeSerializer | (str | str -&gt; str, [T] -&gt; T | int, T -&gt; U)}</span>
+<span class="sd">        Mapping from property name to `NodeSerializer` s or their equivalents.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    {str: object}</span>
+<span class="sd">        A dictionary representing the graph.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">globalSpec</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="o">**</span><span class="n">serializers</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_identifier"><a class="viewcode-back" href="../pyracmon.html#pyracmon.add_identifier">[docs]</a><span class="k">def</span> <span class="nf">add_identifier</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">identifier</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Register a function which extracts identifying key value from the entity to the default specification.</span>
+
+<span class="sd">    Be sure to call this function before every invocation of `graph_template()`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    c: type</span>
+<span class="sd">        Super type of the entity to apply the function.</span>
+<span class="sd">    identifier: T -&gt; ID</span>
+<span class="sd">        A function which extracts identifying key value from the entity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">globalSpec</span><span class="o">.</span><span class="n">add_identifier</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">identifier</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">add_entity_filter</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">entity_filter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Register a function which determines whether to append the entity into the graph to the default specification.</span>
+
+<span class="sd">    Be sure to call this function before every invocation of `graph_template()`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    c: type</span>
+<span class="sd">        Super type of the entity to apply the function.</span>
+<span class="sd">    entity_filter: T -&gt; bool</span>
+<span class="sd">        A function which determines whether to append the entity into the graph.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">globalSpec</span><span class="o">.</span><span class="n">add_entity_filter</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">entity_filter</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="add_serializer"><a class="viewcode-back" href="../pyracmon.html#pyracmon.add_serializer">[docs]</a><span class="k">def</span> <span class="nf">add_serializer</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">serializer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Register a function which converts the entity into a serializable value to the default specification.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    c: type</span>
+<span class="sd">        Super type of the entity to apply the function.</span>
+<span class="sd">    serializer: T -&gt; U</span>
+<span class="sd">        A function which converts the entity into a serializable value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">globalSpec</span><span class="o">.</span><span class="n">add_serializer</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">serializer</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3><a href="../index.html">Table of Contents</a></h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pyracmon.html">pyracmon</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../pyracmon.dialect.html">pyracmon.dialect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pyracmon.dialect.mysql.html">pyracmon.dialect.mysql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pyracmon.dialect.postgresql.html">pyracmon.dialect.postgresql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pyracmon.dialect.shared.html">pyracmon.dialect.shared</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pyracmon.graph.html">pyracmon.graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Author.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

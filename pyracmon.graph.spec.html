@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>pyracmon.graph.spec &#8212; pyracmon  documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/wide.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pyracmon.graph.template" href="pyracmon.graph.template.html" />
+    <link rel="prev" title="pyracmon.graph.serialize" href="pyracmon.graph.serialize.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.graph.template.html" title="pyracmon.graph.template"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.graph.serialize.html" title="pyracmon.graph.serialize"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="pyracmon.html" >pyracmon</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="pyracmon.graph.html" accesskey="U">pyracmon.graph</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pyracmon.graph.spec">
+<span id="pyracmon-graph-spec"></span><h1>pyracmon.graph.spec<a class="headerlink" href="#module-pyracmon.graph.spec" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pyracmon.graph.spec.GraphSpec">
+<em class="property">class </em><code class="sig-prename descclassname">pyracmon.graph.spec.</code><code class="sig-name descname">GraphSpec</code><span class="sig-paren">(</span><em class="sig-param">identifiers=None</em>, <em class="sig-param">entity_filters=None</em>, <em class="sig-param">serializers=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/spec.html#GraphSpec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.spec.GraphSpec" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class contains the specifications of graph which determine various behaviors in the lifecycle of graphs.</p>
+<p>Behaviors controlled by this specification is:</p>
+<ul class="simple">
+<li><p>Identification of node entity when it is appended to a graph.</p></li>
+<li><p>Filtering of node entity which filters entities to append into a graph.</p></li>
+<li><p>Serialization of node entity.</p></li>
+</ul>
+<p>Every attribute is in the form of a list of pairs composed of a type and a function.
+The type determines whether to apply the function to the entity value by its type, that is,
+the function is applied to the value only when its type is a sub-class of the type.
+If multiple items fulfill the condition, only the latest registered one is used.</p>
+<dl class="attribute">
+<dt id="pyracmon.graph.spec.GraphSpec.identifiers">
+<code class="sig-name descname">identifiers</code><a class="headerlink" href="#pyracmon.graph.spec.GraphSpec.identifiers" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of pairs of type and function which extracts identifying key value from the entity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>[(type, T -&gt; ID)]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyracmon.graph.spec.GraphSpec.entity_filters">
+<code class="sig-name descname">entity_filters</code><a class="headerlink" href="#pyracmon.graph.spec.GraphSpec.entity_filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of pairs of type and function which determines whether to append the entity into the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>[(type, T -&gt; bool)]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyracmon.graph.spec.GraphSpec.serializers">
+<code class="sig-name descname">serializers</code><a class="headerlink" href="#pyracmon.graph.spec.GraphSpec.serializers" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of pairs of type and function which converts the entity into a serializable value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>[(type, T -&gt; U)]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyracmon.graph.spec.GraphSpec.add_identifier">
+<code class="sig-name descname">add_identifier</code><span class="sig-paren">(</span><em class="sig-param">c</em>, <em class="sig-param">f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/spec.html#GraphSpec.add_identifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.spec.GraphSpec.add_identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a function which extracts identifying key value from the entity.</p>
+<p>The identification is based on declared type in the definition of graph template, not on an actual type of the entity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c</strong> (<em>type</em>) – Super type of the entity to apply the function.</p></li>
+<li><p><strong>f</strong> (<em>T -&gt; ID</em>) – A function which extracts identifying key value from the entity.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyracmon.graph.spec.GraphSpec.add_entity_filter">
+<code class="sig-name descname">add_entity_filter</code><span class="sig-paren">(</span><em class="sig-param">c</em>, <em class="sig-param">f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/spec.html#GraphSpec.add_entity_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.spec.GraphSpec.add_entity_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a function which determines whether to append the entity into the graph.</p>
+<p>The filtering is based on declared type in the definition of graph template, not on an actual type of the entity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c</strong> (<em>type</em>) – Super type of the entity to apply the function.</p></li>
+<li><p><strong>f</strong> (<em>T -&gt; bool</em>) – A function which determines whether to append the entity into the graph.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyracmon.graph.spec.GraphSpec.add_serializer">
+<code class="sig-name descname">add_serializer</code><span class="sig-paren">(</span><em class="sig-param">c</em>, <em class="sig-param">f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/spec.html#GraphSpec.add_serializer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.spec.GraphSpec.add_serializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a function which converts the entity into a serializable value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c</strong> (<em>type</em>) – Super type of the entity to apply the function.</p></li>
+<li><p><strong>f</strong> (<em>T -&gt; U</em>) – A function which converts the entity into a serializable value.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyracmon.graph.spec.GraphSpec.new_template">
+<code class="sig-name descname">new_template</code><span class="sig-paren">(</span><em class="sig-param">**template</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/spec.html#GraphSpec.new_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.spec.GraphSpec.new_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a graph template with given definitions for template properties.</p>
+<p>Each template property definition can be given as a tuple contains at most 3 values:</p>
+<ul class="simple">
+<li><p>The type of entity value.</p></li>
+<li><p>A function which extracts an identifying key value from the entity.</p></li>
+<li><p>A function which determines whether to append the entity into the graph.</p></li>
+</ul>
+<p>The first item is used to get identifier and entity filter from the specification,
+and they can be overrided by second and third items respectively.</p>
+<p>Every value can be omitted, thereby minimus definition is <cite>None</cite> or <cite>()</cite>.
+When just an item whose type is <cite>type</cite> is given, it is supposed to be a tuple containing just the first item.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>template</strong> (<em>{str:</em><em> (</em><em>type</em><em>, </em><em>T -&gt; ID</em><em>, </em><em>T -&gt; bool</em><em>) </em><em>| type | None}</em>) – Definitions of template properties.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Created graph template.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.graph.template.html#pyracmon.graph.template.GraphTemplate" title="pyracmon.graph.template.GraphTemplate">GraphTemplate</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyracmon.graph.spec.GraphSpec.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">**serializers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/graph/spec.html#GraphSpec.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.graph.spec.GraphSpec.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a dictionary representing structured values of a graph.</p>
+<p>Only nodes whose names appear in keys of <cite>serializers</cite> are used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>graph</strong> (<em>Graph.View</em>) – A view of the graph.</p></li>
+<li><p><strong>serializers</strong> (<em>{str: NodeSerializer |</em><em> (</em><em>str | str -&gt; str</em><em>, </em><em>[</em><em>T</em><em>] </em><em>-&gt; T | int</em><em>, </em><em>T -&gt; U</em><em>)</em><em>}</em>) – Mapping from property name to <cite>NodeSerializer</cite> s or their equivalents.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dictionary representing the graph.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[str, object]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="pyracmon.html">pyracmon</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.dialect.html">pyracmon.dialect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.mysql.html">pyracmon.dialect.mysql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.postgresql.html">pyracmon.dialect.postgresql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.shared.html">pyracmon.dialect.shared</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="pyracmon.graph.html">pyracmon.graph</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">pyracmon.graph.spec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pyracmon.graph.spec.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.graph.template.html" title="pyracmon.graph.template"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.graph.serialize.html" title="pyracmon.graph.serialize"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="pyracmon.html" >pyracmon</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="pyracmon.graph.html" >pyracmon.graph</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Author.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>
