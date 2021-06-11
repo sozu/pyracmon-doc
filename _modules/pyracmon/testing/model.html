@@ -1,0 +1,317 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyracmon.testing.model &#8212; pyracmon  documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wide.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.testing.model</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pyracmon.testing.model</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="n">Decimal</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">uuid1</span><span class="p">,</span> <span class="n">uuid3</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">Matcher</span><span class="p">,</span> <span class="n">test_config</span>
+
+
+<span class="k">class</span> <span class="nc">TestingState</span><span class="p">:</span>
+    <span class="n">indexes</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">indexes</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">inc</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">indexes</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">indexes</span><span class="p">[</span><span class="n">model</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span> <span class="o">+</span> <span class="n">count</span>
+        <span class="k">return</span> <span class="n">v</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">set_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">indexes</span><span class="p">[</span><span class="n">model</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
+
+
+<div class="viewcode-block" id="TestingMixin"><a class="viewcode-back" href="../../../pyracmon.testing.model.html#pyracmon.testing.TestingMixin">[docs]</a><span class="k">class</span> <span class="nc">TestingMixin</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Mixin class for model types providing methods designed for testing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="TestingMixin.by"><a class="viewcode-back" href="../../../pyracmon.testing.model.html#pyracmon.testing.TestingMixin.by">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">by</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set current fixture index.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        index: int</span>
+<span class="sd">            Fixture index.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        type[TestingMixin]</span>
+<span class="sd">            This type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">TestingState</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span></div>
+
+<div class="viewcode-block" id="TestingMixin.fixture"><a class="viewcode-back" href="../../../pyracmon.testing.model.html#pyracmon.testing.TestingMixin.fixture">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">fixture</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert record with auto-generated column values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        db: Connection</span>
+<span class="sd">            DB connection. If a value evaluated to be `False` in boolean context, generated model is not inserted and just returned.</span>
+<span class="sd">        variable: int | dict | model | [dict] | [model]</span>
+<span class="sd">            When `int`, inserts records as many as the number. All of their column values are generated.</span>
+<span class="sd">            When `dict`, model object or a list of them, inserts record(s) represented by them. Unspecified column values are generated.</span>
+<span class="sd">        index: int</span>
+<span class="sd">            Use this to specify index used to generate column values explicitly. If set, indexing state is not updated.</span>
+<span class="sd">        cfg: PyracmonConfiguration</span>
+<span class="sd">            Configuration used to control the generation of fixuture values.</span>
+<span class="sd">            This argument is prepared only for internal use and can be changed or removed in future version.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        model | [model]</span>
+<span class="sd">            Inserted model(s).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">variable</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">num</span> <span class="o">=</span> <span class="n">variable</span> <span class="ow">or</span> <span class="mi">1</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">TestingState</span><span class="o">.</span><span class="n">inc</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span> <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">index</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="n">_generate_model</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">index</span><span class="o">+</span><span class="n">i</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">db</span><span class="p">:</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">inserts</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">models</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">models</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
+            <span class="n">num</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">TestingState</span><span class="o">.</span><span class="n">inc</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span> <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">index</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">_generate_model</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">db</span><span class="p">:</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">model</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">TestingState</span><span class="o">.</span><span class="n">inc</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span> <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">index</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="n">_generate_model</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">index</span><span class="o">+</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">variable</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">db</span><span class="p">:</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">inserts</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">models</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">models</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Second argument of fixture() must be an int, dict, model or list of dict or model but </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span><span class="si">}</span><span class="s2"> is passed.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestingMixin.match"><a class="viewcode-back" href="../../../pyracmon.testing.model.html#pyracmon.testing.TestingMixin.match">[docs]</a>    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">expected</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tests columns values matches to expected values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        expected: {str: (object | Matcher)}</span>
+<span class="sd">            Expected values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Matches or not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">expected</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">actual</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Matcher</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">actual</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">actual</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_generate_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">model_or_dict</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_or_dict</span><span class="p">,</span> <span class="n">TestingMixin</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model_or_dict</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_or_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="o">**</span><span class="n">model_or_dict</span><span class="p">)</span>
+
+    <span class="n">values</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">:</span><span class="n">_generate_value</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">table</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">values</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">values</span><span class="p">)</span>
+
+
+<span class="n">fixed_uuid</span><span class="o">=</span><span class="n">uuid1</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_generate_value</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a value for the column on an index.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    table: Table</span>
+<span class="sd">        Table.</span>
+<span class="sd">    column: Column</span>
+<span class="sd">        Column.</span>
+<span class="sd">    index: int</span>
+<span class="sd">        Index</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    object</span>
+<span class="sd">        Generated value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span> <span class="ow">or</span> <span class="n">test_config</span><span class="p">()</span>
+
+    <span class="n">mapping</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">fixture_mapping</span>
+    <span class="k">if</span> <span class="n">mapping</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span>
+
+    <span class="n">tz_aware</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">fixture_tz_aware</span>
+
+    <span class="k">if</span> <span class="n">column</span><span class="o">.</span><span class="n">nullable</span> <span class="ow">and</span> <span class="n">cfg</span><span class="o">.</span><span class="n">fixture_ignore_nullable</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">fk</span> <span class="ow">and</span> <span class="n">cfg</span><span class="o">.</span><span class="n">fixture_ignore_fk</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">ptype</span> <span class="ow">is</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">ptype</span> <span class="ow">is</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">ptype</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">index</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">ptype</span> <span class="ow">is</span> <span class="n">Decimal</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Decimal</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">ptype</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">ptype</span> <span class="ow">is</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">ptype</span> <span class="ow">is</span> <span class="n">date</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">ptype</span> <span class="ow">is</span> <span class="n">datetime</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">astimezone</span><span class="p">()</span> <span class="k">if</span> <span class="n">tz_aware</span> <span class="k">else</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">ptype</span> <span class="ow">is</span> <span class="n">time</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">astimezone</span><span class="p">()</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="k">if</span> <span class="n">tz_aware</span> <span class="k">else</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">ptype</span> <span class="ow">is</span> <span class="n">timedelta</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">column</span><span class="o">.</span><span class="n">ptype</span> <span class="ow">is</span> <span class="n">UUID</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid3</span><span class="p">(</span><span class="n">fixed_uuid</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">column</span><span class="o">.</span><span class="n">ptype</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">column</span><span class="o">.</span><span class="n">ptype</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">column</span><span class="o">.</span><span class="n">ptype</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3><a href="../../../index.html">Table of Contents</a></h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pyracmon.html">pyracmon</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.dialect.html">pyracmon.dialect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.mysql.html">pyracmon.dialect.mysql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.postgresql.html">pyracmon.dialect.postgresql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.shared.html">pyracmon.dialect.shared</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.graph.html">pyracmon.graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.util.html">pyracmon.graph.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.testing.html">pyracmon.testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.testing.model.html">pyracmon.testing.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.testing.util.html">pyracmon.testing.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.config.html">pyracmon.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.marker.html">pyracmon.marker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.model_graph.html">pyracmon.model_graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.sql.html">pyracmon.sql</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" >pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.testing.model</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Author.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

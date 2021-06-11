@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pyracmon.model &#8212; pyracmon  documentation</title>
-    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/wide.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
@@ -27,7 +28,8 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.model</a></li> 
       </ul>
     </div>  
 
@@ -38,53 +40,102 @@
             
   <h1>Source code for pyracmon.model</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">pyracmon.util</span> <span class="kn">import</span> <span class="n">split_dict</span>
 
-<div class="viewcode-block" id="Column"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.model.Column">[docs]</a><span class="k">class</span> <span class="nc">Column</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ptype</span><span class="p">,</span> <span class="n">type_info</span><span class="p">,</span> <span class="n">pk</span><span class="p">,</span> <span class="n">fk</span><span class="p">,</span> <span class="n">incremental</span><span class="p">,</span> <span class="n">comment</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create a column schema.</span>
 
-<span class="sd">        Parametes</span>
-<span class="sd">        ---------</span>
-<span class="sd">        name: str</span>
-<span class="sd">            Column name.</span>
-<span class="sd">        ptype: type</span>
-<span class="sd">            Data type in python.</span>
-<span class="sd">        type_info: str</span>
-<span class="sd">            Type informations obtained from DB.</span>
-<span class="sd">        pk: bool</span>
-<span class="sd">            Is this column a PK?</span>
-<span class="sd">        fk: object</span>
-<span class="sd">            An informative object if this column is a foreign key, otherwise None.</span>
-<span class="sd">        incremental: object</span>
-<span class="sd">            If this column is auto-incremental, this object contains the information of the feature, otherwise, None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Column"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.Column">[docs]</a><span class="k">class</span> <span class="nc">Column</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class represents a schema of a column.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name: str</span>
+<span class="sd">        Column name.</span>
+<span class="sd">    ptype: type</span>
+<span class="sd">        Data type in python.</span>
+<span class="sd">    type_info: str</span>
+<span class="sd">        Type informations obtained from DB.</span>
+<span class="sd">    pk: bool</span>
+<span class="sd">        Is this column a PK?</span>
+<span class="sd">    fk: object</span>
+<span class="sd">        An informative object if this column is a foreign key, otherwise a value evaluated as `False` in boolean context.</span>
+<span class="sd">    incremental: object</span>
+<span class="sd">        If this column is auto-incremental, this object contains the information of the feature, otherwise, None.</span>
+<span class="sd">    nullable: bool</span>
+<span class="sd">        Can this column contain null?</span>
+<span class="sd">    comment: str</span>
+<span class="sd">        Comment of the column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ptype</span><span class="p">,</span> <span class="n">type_info</span><span class="p">,</span> <span class="n">pk</span><span class="p">,</span> <span class="n">fk</span><span class="p">,</span> <span class="n">incremental</span><span class="p">,</span> <span class="n">nullable</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ptype</span> <span class="o">=</span> <span class="n">ptype</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type_info</span> <span class="o">=</span> <span class="n">type_info</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pk</span> <span class="o">=</span> <span class="n">pk</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fk</span> <span class="o">=</span> <span class="n">fk</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">incremental</span> <span class="o">=</span> <span class="n">incremental</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nullable</span> <span class="o">=</span> <span class="n">nullable</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="n">comment</span></div>
 
 
-<div class="viewcode-block" id="Table"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.model.Table">[docs]</a><span class="k">class</span> <span class="nc">Table</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+<div class="viewcode-block" id="Table"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.Table">[docs]</a><span class="k">class</span> <span class="nc">Table</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class represents a schema of a table.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name: str</span>
+<span class="sd">        Table name.</span>
+<span class="sd">    columns: [Column]</span>
+<span class="sd">        Columns in the table.</span>
+<span class="sd">    comment: str</span>
+<span class="sd">        Comment of the table.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="define_model"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.model.define_model">[docs]</a><span class="k">def</span> <span class="nf">define_model</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">mixins</span> <span class="o">=</span> <span class="p">[]):</span>
+<div class="viewcode-block" id="define_model"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.define_model">[docs]</a><span class="k">def</span> <span class="nf">define_model</span><span class="p">(</span><span class="n">table_</span><span class="p">,</span> <span class="n">mixins</span><span class="o">=</span><span class="p">[]):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a model type representing the table.</span>
 
-<span class="sd">    When the same attribute is defined in multiple mixin types, the former one has a priority.</span>
+<span class="sd">    Types in `mixins` argument are base types which created type inherits.</span>
+<span class="sd">    When the same attribute is defined in multiple mixin types, the former overwrites the latter.</span>
+
+<span class="sd">    Model type always has following attributes.</span>
+
+<span class="sd">    - name: str</span>
+<span class="sd">        Name of the table.</span>
+<span class="sd">    - table: Table</span>
+<span class="sd">        Table schema.</span>
+<span class="sd">    - columns: [Column]</span>
+<span class="sd">        The list of column schemas.</span>
+<span class="sd">    - column: object</span>
+<span class="sd">        An object exposing schemas of columns via attributes of their names.</span>
+
+<span class="sd">    Model instances are created by passing column name and its value as keyword arguments to the constructor.</span>
+<span class="sd">    They are plain python objects representing a DB record by holding the subset of its columns as attributes.</span>
+
+<span class="sd">    &gt;&gt;&gt; # CREATE TABLE t1 (col1 int, col2 text, col3 text);</span>
+<span class="sd">    &gt;&gt;&gt; table = define_model(&quot;t1&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; model = table(col1=1, col2=&quot;a&quot;)</span>
+
+<span class="sd">    Attributes are also assignable by normal setter. In any case, attribute name must be a one of column names, otherwise `TypeError` raises.</span>
+
+<span class="sd">    &gt;&gt;&gt; model.col3 = &quot;b&quot;</span>
+
+<span class="sd">    Model instance supports iteration which yields pairs of assigned column schema and its value.</span>
+
+<span class="sd">    &gt;&gt;&gt; for c, v in model:</span>
+<span class="sd">    &gt;&gt;&gt;     print(f&quot;{c.name} = {v}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    col1 = 1</span>
+<span class="sd">    col2 = a</span>
+<span class="sd">    col3 = b</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    table: Table</span>
+<span class="sd">    table_: Table</span>
 <span class="sd">        Schema of table.</span>
 <span class="sd">    mixins: [type]</span>
 <span class="sd">        Types the created model type inherits.</span>
@@ -94,46 +145,164 @@
 <span class="sd">    type</span>
 <span class="sd">        Created model type.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="s2">&quot;ModelBase&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mixins</span><span class="p">),</span> <span class="p">{})):</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">columns</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span>
+    <span class="n">column_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">table_</span><span class="o">.</span><span class="n">columns</span><span class="p">}</span>
 
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">table_</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">table_</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="n">table_</span><span class="o">.</span><span class="n">columns</span>
+
+        <span class="nd">@classmethod</span>
+        <span class="k">def</span> <span class="nf">shrink</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">excludes</span><span class="p">,</span> <span class="n">includes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Creates new model type containing subset of columns.</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            excludes: [str]</span>
+<span class="sd">                Column names to exclude.</span>
+<span class="sd">            includes: [str]</span>
+<span class="sd">                Column names to include.</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+<span class="sd">            type</span>
+<span class="sd">                Created model type.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">includes</span> <span class="ow">or</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">includes</span><span class="p">)</span> <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">excludes</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">define_model</span><span class="p">(</span><span class="n">Table</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">comment</span><span class="p">),</span> <span class="n">mixins</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Columns</span><span class="p">:</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">table_</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">Meta</span><span class="p">,</span> <span class="s2">&quot;column&quot;</span><span class="p">,</span> <span class="n">Columns</span><span class="p">())</span>
+
+    <span class="k">class</span> <span class="nc">Base</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="s2">&quot;ModelBase&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">Base</span><span class="p">]</span> <span class="o">+</span> <span class="n">mixins</span><span class="p">),</span> <span class="p">{})):</span>
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-            <span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{k}</span><span class="s2"> is not a column of </span><span class="si">{cls.name}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">))</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">)])</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+        <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">))</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">)])</span><span class="si">}</span><span class="s2">)&quot;</span>
 
         <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">)),</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
 
-        <span class="nd">@classmethod</span>
-        <span class="k">def</span> <span class="nf">_parse_pks</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pks</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pks</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="bp">cls</span><span class="o">.</span><span class="n">_check_columns</span><span class="p">(</span><span class="n">pks</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">split_dict</span><span class="p">(</span><span class="n">pks</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">pk</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The number of primary key columns is not 1.&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="p">([</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">pks</span><span class="p">])</span>
+        <span class="k">def</span> <span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is not a column of </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
-        <span class="nd">@classmethod</span>
-        <span class="k">def</span> <span class="nf">_check_columns</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">col_map</span><span class="p">,</span> <span class="n">condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="n">requires_all</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-            <span class="n">names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">condition</span><span class="p">(</span><span class="n">c</span><span class="p">)])</span>
-            <span class="n">targets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">col_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">names</span> <span class="o">&gt;=</span> <span class="n">targets</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Columns {targets - names} are not columns of &#39;</span><span class="si">{cls.name}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">requires_all</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">names</span> <span class="o">==</span> <span class="n">targets</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Required columns {names - targets} in &#39;</span><span class="si">{cls.name}</span><span class="s2">&#39; are not found.&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">col_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">cls</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">^</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">return</span> <span class="n">Model</span></div>
+
+
+<div class="viewcode-block" id="parse_pks"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.parse_pks">[docs]</a><span class="k">def</span> <span class="nf">parse_pks</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">pks</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a pair of PK columns names and their values from polymorphic input.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model: type</span>
+<span class="sd">        Model class.</span>
+<span class="sd">    pks: object | {str: object}</span>
+<span class="sd">        A dictionary of PK column name and their values or an object of single PK column.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    [str]</span>
+<span class="sd">        Names of PK columns.</span>
+<span class="sd">    [object]</span>
+<span class="sd">        Values of PK columns.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pks</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">check_columns</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">pks</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">pks</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">list</span><span class="p">(</span><span class="n">pks</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">pk</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The number of primary key columns in </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is not 1.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">([</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">pks</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="check_columns"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.check_columns">[docs]</a><span class="k">def</span> <span class="nf">check_columns</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">col_map</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="n">requires_all</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks keys of given `dict` match columns selected by a condition from a model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model: type</span>
+<span class="sd">        Model class.</span>
+<span class="sd">    col_map: {str: object}</span>
+<span class="sd">        Dictionary whose keys are column names.</span>
+<span class="sd">    condition: Column -&gt; boolean</span>
+<span class="sd">        A Function which selects columns from the model.</span>
+<span class="sd">    requires_all: boolean</span>
+<span class="sd">        If `True`, `ValueError` raises when the dictionary does not contain keys of all selected columns.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">condition</span><span class="p">(</span><span class="n">c</span><span class="p">)])</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">col_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">names</span> <span class="o">&gt;=</span> <span class="n">targets</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Columns </span><span class="si">{</span><span class="n">targets</span> <span class="o">-</span> <span class="n">names</span><span class="si">}</span><span class="s2"> are not columns of &#39;</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">requires_all</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">names</span> <span class="o">==</span> <span class="n">targets</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Required columns </span><span class="si">{</span><span class="n">names</span> <span class="o">-</span> <span class="n">targets</span><span class="si">}</span><span class="s2"> in &#39;</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; are not found.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="model_values"><a class="viewcode-back" href="../../pyracmon.model.html#pyracmon.model_values">[docs]</a><span class="k">def</span> <span class="nf">model_values</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">excludes_pk</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a dictionary whose items are pairs of column name and column value.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model: type</span>
+<span class="sd">        Model class.</span>
+<span class="sd">    values: dict | Model</span>
+<span class="sd">        Dictionary from column name to column value or a model instance.</span>
+<span class="sd">    excludes_pk: boolean</span>
+<span class="sd">        If `True`, item of PK column is not contained in returned dictionary.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        A dictionary from column name to column value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">)):</span>
+        <span class="n">includes</span> <span class="o">=</span> <span class="p">{</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">excludes_pk</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">pk</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">includes</span><span class="p">}</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">cv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span><span class="n">cv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">cv</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">excludes_pk</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">cv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pk</span><span class="p">)}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Values to insert or update must be a dictionary or model.&quot;</span><span class="p">)</span></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -150,15 +319,29 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.graph.html">pyracmon.graph</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.util.html">pyracmon.graph.util</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.testing.html">pyracmon.testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.testing.model.html">pyracmon.testing.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.testing.util.html">pyracmon.testing.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.config.html">pyracmon.config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.marker.html">pyracmon.marker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.mixin.html">pyracmon.mixin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.model_graph.html">pyracmon.model_graph</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.sql.html">pyracmon.sql</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.util.html">pyracmon.util</a></li>
 </ul>
 </li>
@@ -173,7 +356,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -189,12 +372,13 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pyracmon.html" >pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../pyracmon.html" >pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.model</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Author.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
     </div>
   </body>
 </html>

@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pyracmon.dialect.mysql &#8212; pyracmon  documentation</title>
-    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/wide.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -27,7 +28,8 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.dialect.mysql</a></li> 
       </ul>
     </div>  
 
@@ -43,63 +45,96 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">timedelta</span>
 <span class="kn">from</span> <span class="nn">pyracmon.model</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Column</span>
 <span class="kn">from</span> <span class="nn">pyracmon.dialect.shared</span> <span class="kn">import</span> <span class="n">MultiInsertMixin</span>
+<span class="kn">from</span> <span class="nn">pyracmon.query</span> <span class="kn">import</span> <span class="n">Q</span><span class="p">,</span> <span class="n">where</span><span class="p">,</span> <span class="n">holders</span>
 
 
-<div class="viewcode-block" id="read_schema"><a class="viewcode-back" href="../../../pyracmon.dialect.mysql.html#pyracmon.dialect.mysql.read_schema">[docs]</a><span class="k">def</span> <span class="nf">read_schema</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">excludes</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">includes</span> <span class="o">=</span> <span class="p">[]):</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+<div class="viewcode-block" id="read_schema"><a class="viewcode-back" href="../../../pyracmon.dialect.mysql.html#pyracmon.dialect.mysql.read_schema">[docs]</a><span class="k">def</span> <span class="nf">read_schema</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">excludes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">includes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Collect tables in current database.</span>
 
-    <span class="n">ex_cond</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">excludes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;AND c.table_name NOT IN ({db.helper.holders(len(excludes))})&quot;</span>
-    <span class="n">in_cond</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">includes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;AND c.table_name IN ({db.helper.holders(len(includes), start = len(excludes))})&quot;</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    excludes: [str]</span>
+<span class="sd">        Excluding table names.</span>
+<span class="sd">    includes: [str]</span>
+<span class="sd">        Including table names. If not specified, all tables are collected.</span>
 
-    <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
-<span class="s2">        SELECT</span>
-<span class="s2">            c.table_name, c.column_name, c.data_type, c.column_type, c.column_key, k.referenced_table_name, k.referenced_column_name, c.extra, c.column_comment</span>
-<span class="s2">        FROM</span>
-<span class="s2">            information_schema.columns AS c</span>
-<span class="s2">            LEFT JOIN information_schema.key_column_usage AS k</span>
-<span class="s2">                ON c.table_catalog = k.table_catalog</span>
-<span class="s2">                    AND c.table_schema = k.table_schema</span>
-<span class="s2">                    AND c.table_name = k.table_name</span>
-<span class="s2">                    AND c.column_name = k.column_name</span>
-<span class="s2">                    AND k.referenced_table_name IS NOT NULL</span>
-<span class="s2">        WHERE</span>
-<span class="s2">            c.table_schema = DATABASE()</span>
-<span class="s2">            </span><span class="si">{ex_cond}</span><span class="s2"></span>
-<span class="s2">            </span><span class="si">{in_cond}</span><span class="s2"></span>
-<span class="s2">        ORDER BY</span>
-<span class="s2">            c.table_name, c.ordinal_position ASC</span>
-<span class="s2">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">excludes</span> <span class="o">+</span> <span class="n">includes</span><span class="p">)</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    [Table]</span>
+<span class="sd">        Tables.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DROP TEMPORARY TABLE IF EXISTS kcu&quot;</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">            CREATE TEMPORARY TABLE kcu</span>
+<span class="s2">            SELECT * FROM information_schema.key_column_usage WHERE table_schema = DATABASE()</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">column_of</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">ct</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">rt</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">comment</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">Column</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">_map_types</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">ct</span><span class="p">,</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;PRI&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">(</span><span class="n">rt</span><span class="p">),</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">extra</span> <span class="o">==</span> <span class="s2">&quot;auto_increment&quot;</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">comment</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="n">excludes</span> <span class="o">=</span> <span class="n">excludes</span><span class="p">,</span> <span class="n">includes</span> <span class="o">=</span> <span class="n">includes</span><span class="p">)</span>
 
-    <span class="n">tables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="s2">&quot;c.table_schema = DATABASE()&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">q</span><span class="o">.</span><span class="n">excludes</span><span class="o">.</span><span class="n">not_in</span><span class="p">(</span><span class="s2">&quot;c.table_name&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">q</span><span class="o">.</span><span class="n">includes</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="s2">&quot;c.table_name&quot;</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">cols</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">fetchall</span><span class="p">(),</span> <span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-        <span class="n">tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Table</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="p">[</span><span class="n">column_of</span><span class="p">(</span><span class="o">*</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]))</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">cond</span><span class="p">)</span>
 
-    <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
-<span class="s2">        SELECT</span>
-<span class="s2">            table_name, table_comment</span>
-<span class="s2">        FROM</span>
-<span class="s2">            information_schema.tables</span>
-<span class="s2">        WHERE</span>
-<span class="s2">            table_name IN ({db.helper.holders(len(tables))})</span>
-<span class="s2">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tables</span><span class="p">])</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">            SELECT</span>
+<span class="s2">                c.table_name, c.column_name, c.data_type, c.is_nullable, c.column_type, c.column_key,</span>
+<span class="s2">                k.referenced_table_name, k.referenced_column_name, c.extra, c.column_comment</span>
+<span class="s2">            FROM</span>
+<span class="s2">                information_schema.columns AS c</span>
+<span class="s2">                LEFT JOIN kcu AS k</span>
+<span class="s2">                    ON c.table_catalog = k.table_catalog</span>
+<span class="s2">                        AND c.table_schema = k.table_schema</span>
+<span class="s2">                        AND c.table_name = k.table_name</span>
+<span class="s2">                        AND c.column_name = k.column_name</span>
+<span class="s2">                        AND k.referenced_table_name IS NOT NULL</span>
+<span class="s2">            </span><span class="si">{</span><span class="n">w</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">            ORDER BY</span>
+<span class="s2">                c.table_name, c.ordinal_position ASC</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span>
 
-    <span class="n">table_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tables</span><span class="p">}</span>
+        <span class="k">def</span> <span class="nf">map_types</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">type_mapping</span>
+            <span class="n">ptype</span> <span class="o">=</span> <span class="n">base</span> <span class="ow">and</span> <span class="n">base</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ptype</span> <span class="ow">or</span> <span class="n">_map_types</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">cmt</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">table_map</span><span class="p">:</span>
-            <span class="n">table_map</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="n">cmt</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">column_of</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">nullable</span><span class="p">,</span> <span class="n">ct</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">rt</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">comment</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Column</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">map_types</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">ct</span><span class="p">,</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;PRI&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">(</span><span class="n">rt</span><span class="p">),</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">extra</span> <span class="o">==</span> <span class="s2">&quot;auto_increment&quot;</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nullable</span> <span class="o">==</span> <span class="s2">&quot;YES&quot;</span><span class="p">,</span> <span class="n">comment</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
 
-    <span class="n">c</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">tables</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">return</span> <span class="n">tables</span></div>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">cols</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">(),</span> <span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Table</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="p">[</span><span class="n">column_of</span><span class="p">(</span><span class="o">*</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]))</span>
+
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">            SELECT</span>
+<span class="s2">                table_name, table_comment</span>
+<span class="s2">            FROM</span>
+<span class="s2">                information_schema.tables</span>
+<span class="s2">            WHERE</span>
+<span class="s2">                table_name IN (</span><span class="si">{</span><span class="n">holders</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tables</span><span class="p">))</span><span class="si">}</span><span class="s2">)</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tables</span><span class="p">])</span>
+
+        <span class="n">table_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tables</span><span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">cmt</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">table_map</span><span class="p">:</span>
+                <span class="n">table_map</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="n">cmt</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">tables</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DROP TEMPORARY TABLE IF EXISTS kcu&quot;</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_map_types</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
-    <span class="c1"># TODO Actually, this mapping depends on connection module.</span>
     <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="s2">&quot;tinyint&quot;</span> <span class="ow">or</span> <span class="n">t</span> <span class="o">==</span> <span class="s2">&quot;smallint&quot;</span> <span class="ow">or</span> <span class="n">t</span> <span class="o">==</span> <span class="s2">&quot;mediumint&quot;</span> <span class="ow">or</span> <span class="n">t</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span> <span class="ow">or</span> <span class="n">t</span> <span class="o">==</span> <span class="s2">&quot;bigint&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">int</span>
     <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="s2">&quot;decimal&quot;</span><span class="p">:</span>
@@ -123,7 +158,7 @@
 
 
 <div class="viewcode-block" id="MySQLMixin"><a class="viewcode-back" href="../../../pyracmon.dialect.mysql.html#pyracmon.dialect.mysql.MySQLMixin">[docs]</a><span class="k">class</span> <span class="nc">MySQLMixin</span><span class="p">(</span><span class="n">MultiInsertMixin</span><span class="p">):</span>
-<div class="viewcode-block" id="MySQLMixin.last_sequences"><a class="viewcode-back" href="../../../pyracmon.dialect.mysql.html#pyracmon.dialect.mysql.MySQLMixin.last_sequences">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">last_sequences</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
         <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">incremental</span><span class="p">]</span>
 
@@ -136,18 +171,19 @@
             <span class="n">d</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="k">return</span> <span class="p">[(</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sequence</span><span class="p">)]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[]</span></div></div>
+            <span class="k">return</span> <span class="p">[]</span></div>
 
 
 <span class="n">mixins</span> <span class="o">=</span> <span class="p">[</span><span class="n">MySQLMixin</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="found_rows"><a class="viewcode-back" href="../../../pyracmon.dialect.mysql.html#pyracmon.dialect.mysql.found_rows">[docs]</a><span class="k">def</span> <span class="nf">found_rows</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">found_rows</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">c</span><span class="p">:</span>
         <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT FOUND_ROWS()&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">c</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="n">c</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -164,15 +200,29 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.graph.html">pyracmon.graph</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.util.html">pyracmon.graph.util</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.testing.html">pyracmon.testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.testing.model.html">pyracmon.testing.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.testing.util.html">pyracmon.testing.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.config.html">pyracmon.config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.marker.html">pyracmon.marker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.mixin.html">pyracmon.mixin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.model_graph.html">pyracmon.model_graph</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.sql.html">pyracmon.sql</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.util.html">pyracmon.util</a></li>
 </ul>
 </li>
@@ -187,7 +237,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -203,12 +253,13 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" >pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" >pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.dialect.mysql</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Author.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
     </div>
   </body>
 </html>

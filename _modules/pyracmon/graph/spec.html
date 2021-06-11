@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pyracmon.graph.spec &#8212; pyracmon  documentation</title>
-    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/wide.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -27,7 +28,8 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.graph.spec</a></li> 
       </ul>
     </div>  
 
@@ -38,111 +40,163 @@
             
   <h1>Source code for pyracmon.graph.spec</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">zip_longest</span>
-<span class="kn">from</span> <span class="nn">pyracmon.graph.graph</span> <span class="kn">import</span> <span class="n">IdentifyPolicy</span>
-<span class="kn">from</span> <span class="nn">pyracmon.graph.template</span> <span class="kn">import</span> <span class="n">P</span><span class="p">,</span> <span class="n">GraphTemplate</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span><span class="p">,</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">pyracmon.graph.identify</span> <span class="kn">import</span> <span class="n">IdentifyPolicy</span><span class="p">,</span> <span class="n">HierarchicalPolicy</span><span class="p">,</span> <span class="n">neverPolicy</span>
+<span class="kn">from</span> <span class="nn">pyracmon.graph.template</span> <span class="kn">import</span> <span class="n">GraphTemplate</span>
 <span class="kn">from</span> <span class="nn">pyracmon.graph.serialize</span> <span class="kn">import</span> <span class="n">S</span><span class="p">,</span> <span class="n">SerializationContext</span><span class="p">,</span> <span class="n">NodeSerializer</span>
+<span class="kn">from</span> <span class="nn">pyracmon.graph.schema</span> <span class="kn">import</span> <span class="n">GraphSchema</span>
+<span class="kn">from</span> <span class="nn">pyracmon.util</span> <span class="kn">import</span> <span class="n">Configurable</span>
 
 
 <div class="viewcode-block" id="GraphSpec"><a class="viewcode-back" href="../../../pyracmon.graph.spec.html#pyracmon.graph.GraphSpec">[docs]</a><span class="k">class</span> <span class="nc">GraphSpec</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This class contains the specifications of graph which determine various behaviors in the lifecycle of graphs.</span>
+<span class="sd">    This class contains the specifications of graph which control various behaviors in the lifecycles of graphs.</span>
 
-<span class="sd">    Behaviors controlled by this specification is:</span>
+<span class="sd">    Each instance contains 3 kind of functions; *identifier*, *entity filter* and *serializer*.</span>
 
-<span class="sd">    - Identification of node entity when it is appended to a graph.</span>
-<span class="sd">    - Filtering of node entity which filters entities to append into a graph.</span>
-<span class="sd">    - Serialization of node entity.</span>
+<span class="sd">    *Identifier* is a function to get a value used for the identification of graph entity. See `Graph` to know how this works.</span>
 
-<span class="sd">    Every attribute is in the form of a list of pairs composed of a type and a function.</span>
-<span class="sd">    The type determines whether to apply the function to the entity value by its type, that is,</span>
-<span class="sd">    the function is applied to the value only when its type is a sub-class of the type.</span>
-<span class="sd">    If multiple items fulfill the condition, only the latest registered one is used.</span>
+<span class="sd">    *Entity fliter* is a function returning `bool` to determine whether the entity should be appended to a graph or not.</span>
+<span class="sd">    If `False` is returned for an entity, it is just ignored.</span>
+
+<span class="sd">    *Serializer* is a function which converts an entity value into a serializable object.</span>
+<span class="sd">    This is used in `to_dict()` to put entities into returning `dict`.</span>
+<span class="sd">    Registered *serializer* is first applied to an entity value and other serialization functions in `NodeSerializer` are applied in order.</span>
+
+<span class="sd">    They are registered in the specification via `add_xxx()` methods of this class with its bound `type`.</span>
+<span class="sd">    The first function whose bound `type` is the subclass of the `kind` of the template property is choosed and applied.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    identifiers: [(type, T -&gt; ID)]</span>
-<span class="sd">        A list of pairs of type and function which extracts identifying key value from the entity.</span>
+<span class="sd">        A list of pairs of type and *identifier*.</span>
 <span class="sd">    entity_filters: [(type, T -&gt; bool)]</span>
-<span class="sd">        A list of pairs of type and function which determines whether to append the entity into the graph.</span>
+<span class="sd">        A list of pairs of type and *entity filter*.</span>
 <span class="sd">    serializers: [(type, T -&gt; U)]</span>
-<span class="sd">        A list of pairs of type and function which converts the entity into a serializable value.</span>
+<span class="sd">        A list of pairs of type and *serializer*.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifiers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">entity_filters</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">serializers</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifiers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">entity_filters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">serializers</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">identifiers</span> <span class="o">=</span> <span class="n">identifiers</span> <span class="ow">or</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">entity_filters</span> <span class="o">=</span> <span class="n">entity_filters</span> <span class="ow">or</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">serializers</span> <span class="o">=</span> <span class="n">serializers</span> <span class="ow">or</span> <span class="p">[]</span>
 
+    <span class="k">def</span> <span class="nf">_get_inherited</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">holder</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="nb">issubclass</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">holder</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">get_identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifiers</span><span class="p">),</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inherited</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identifiers</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_entity_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_filters</span><span class="p">),</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inherited</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entity_filters</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_serializer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">serializers</span><span class="p">),</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">find_serializers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="nb">issubclass</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">serializers</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])))</span>
 
 <div class="viewcode-block" id="GraphSpec.add_identifier"><a class="viewcode-back" href="../../../pyracmon.graph.spec.html#pyracmon.graph.GraphSpec.add_identifier">[docs]</a>    <span class="k">def</span> <span class="nf">add_identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Register a function which extracts identifying key value from the entity.</span>
-
-<span class="sd">        The identification is based on declared type in the definition of graph template, not on an actual type of the entity.</span>
+<span class="sd">        Register an *identifier* with the bound type.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        c: type</span>
-<span class="sd">            Super type of the entity to apply the function.</span>
+<span class="sd">            A type bound for the *identifier*.</span>
 <span class="sd">        f: T -&gt; ID</span>
-<span class="sd">            A function which extracts identifying key value from the entity.</span>
+<span class="sd">            An *identifier* function.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GraphSpec</span>
+<span class="sd">            This instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">identifiers</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="p">)]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">identifiers</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="GraphSpec.add_entity_filter"><a class="viewcode-back" href="../../../pyracmon.graph.spec.html#pyracmon.graph.GraphSpec.add_entity_filter">[docs]</a>    <span class="k">def</span> <span class="nf">add_entity_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Register a function which determines whether to append the entity into the graph.</span>
-
-<span class="sd">        The filtering is based on declared type in the definition of graph template, not on an actual type of the entity.</span>
+<span class="sd">        Register an *entity filter* with the bound type.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        c: type</span>
-<span class="sd">            Super type of the entity to apply the function.</span>
+<span class="sd">            A type bound for the *entity filter*.</span>
 <span class="sd">        f: T -&gt; bool</span>
-<span class="sd">            A function which determines whether to append the entity into the graph.</span>
+<span class="sd">            An *entity filter* function.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GraphSpec</span>
+<span class="sd">            This instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">entity_filters</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="p">)]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entity_filters</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="GraphSpec.add_serializer"><a class="viewcode-back" href="../../../pyracmon.graph.spec.html#pyracmon.graph.GraphSpec.add_serializer">[docs]</a>    <span class="k">def</span> <span class="nf">add_serializer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Register a function which converts the entity into a serializable value.</span>
+<span class="sd">        Register a *serializer* with the bound type.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        c: type</span>
-<span class="sd">            Super type of the entity to apply the function.</span>
+<span class="sd">            A type bound for the *serializer*.</span>
 <span class="sd">        f: T -&gt; U</span>
-<span class="sd">            A function which converts the entity into a serializable value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">serializers</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="p">)]</span></div>
+<span class="sd">            An *serializer* function.</span>
 
-<div class="viewcode-block" id="GraphSpec.new_template"><a class="viewcode-back" href="../../../pyracmon.graph.spec.html#pyracmon.graph.GraphSpec.new_template">[docs]</a>    <span class="k">def</span> <span class="nf">new_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">template</span><span class="p">):</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GraphSpec</span>
+<span class="sd">            This instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">NodeSerializer</span><span class="p">):</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">serializer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serializers</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="k">def</span> <span class="nf">_make_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">f</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_identifier</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">IdentifyPolicy</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">f</span>
+        <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">HierarchicalPolicy</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">neverPolicy</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_property_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">d</span> <span class="ow">or</span> <span class="p">())</span>
+            <span class="n">kind</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">ident</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_policy</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="nb">next</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="n">ef</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_entity_filter</span><span class="p">(</span><span class="n">kind</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">kind</span><span class="p">,</span> <span class="n">ident</span><span class="p">,</span> <span class="n">ef</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_policy</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_entity_filter</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">GraphTemplate</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">d</span><span class="p">,</span> <span class="n">neverPolicy</span><span class="p">(),</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid value was found in keyword arguments of new_template().&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GraphSpec.new_template"><a class="viewcode-back" href="../../../pyracmon.graph.spec.html#pyracmon.graph.GraphSpec.new_template">[docs]</a>    <span class="k">def</span> <span class="nf">new_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">bases</span><span class="p">,</span> <span class="o">**</span><span class="n">template</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates a graph template with given definitions for template properties.</span>
 
-<span class="sd">        Each template property definition can be given as a tuple contains at most 3 values:</span>
+<span class="sd">        Each keyword argument corresponds to a template property where the key is proprety name and value is property definition.</span>
 
-<span class="sd">        - The type of entity value.</span>
-<span class="sd">        - A function which extracts an identifying key value from the entity.</span>
-<span class="sd">        - A function which determines whether to append the entity into the graph.</span>
+<span class="sd">        Property definition can be given as a single value or a tuple of at most 3 values.</span>
+<span class="sd">        The values are interpreted to property attributes in the following order.</span>
 
-<span class="sd">        The first item is used to get identifier and entity filter from the specification, </span>
-<span class="sd">        and they can be overrided by second and third items respectively.</span>
-
-<span class="sd">        Every value can be omitted, thereby minimus definition is `None` or `()`.</span>
-<span class="sd">        When just an item whose type is `type` is given, it is supposed to be a tuple containing just the first item.</span>
+<span class="sd">        - The kind of entity value which must be a `type` object.</span>
+<span class="sd">        - *Identifier* of the property.</span>
+<span class="sd">        - *Entity filter* of the property.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        template: {str: (type, T -&gt; ID, T -&gt; bool) | type | None}</span>
+<span class="sd">        bases: [GraphTemplate]</span>
+<span class="sd">            Base templates whose properties and relations are merged into new template.</span>
+<span class="sd">        template: {str: (type | Tuple[type, T -&gt; ID, T -&gt; bool])}</span>
 <span class="sd">            Definitions of template properties.</span>
 
 <span class="sd">        Returns</span>
@@ -150,64 +204,54 @@
 <span class="sd">        GraphTemplate</span>
 <span class="sd">            Created graph template.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">make_identifier</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">IdentifyPolicy</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">f</span>
-            <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">IdentifyPolicy</span><span class="o">.</span><span class="n">hierarchical</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">IdentifyPolicy</span><span class="o">.</span><span class="n">never</span><span class="p">()</span>
-        <span class="k">def</span> <span class="nf">definition</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">d</span> <span class="o">==</span> <span class="p">():</span>
-                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">make_identifier</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="kc">None</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">P</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">make_identifier</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">identifier</span><span class="p">),</span> <span class="n">d</span><span class="o">.</span><span class="n">entity_filter</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-                <span class="n">kind</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
-                <span class="n">ident</span> <span class="o">=</span> <span class="n">make_identifier</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_identifier</span><span class="p">(</span><span class="n">kind</span><span class="p">))</span>
-                <span class="n">ef</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_entity_filter</span><span class="p">(</span><span class="n">kind</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">kind</span><span class="p">,</span> <span class="n">ident</span><span class="p">,</span> <span class="n">ef</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">d</span><span class="p">,</span> <span class="n">make_identifier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_identifier</span><span class="p">(</span><span class="n">d</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_entity_filter</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid value was found in keyword arguments of new_template().&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">GraphTemplate</span><span class="p">([(</span><span class="n">n</span><span class="p">,</span> <span class="o">*</span><span class="n">definition</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">template</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span></div>
+        <span class="n">base</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">bases</span><span class="p">,</span> <span class="n">GraphTemplate</span><span class="p">([]))</span>
 
-<div class="viewcode-block" id="GraphSpec.to_dict"><a class="viewcode-back" href="../../../pyracmon.graph.spec.html#pyracmon.graph.GraphSpec.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="o">**</span><span class="n">serializers</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">base</span> <span class="o">+</span> <span class="n">GraphTemplate</span><span class="p">([(</span><span class="n">n</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_property_definition</span><span class="p">(</span><span class="n">d</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">template</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span></div>
+
+<div class="viewcode-block" id="GraphSpec.to_dict"><a class="viewcode-back" href="../../../pyracmon.graph.spec.html#pyracmon.graph.GraphSpec.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">__params</span><span class="o">=</span><span class="p">{},</span> <span class="o">**</span><span class="n">settings</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Generates a dictionary representing structured values of a graph.</span>
+<span class="sd">        Generates a dictionary representing structured entity values of a graph.</span>
 
-<span class="sd">        Only nodes whose names appear in keys of `serializers` are used.</span>
+<span class="sd">        Only nodes whose names appear in keys of `settings` are contained int the result.</span>
+
+<span class="sd">        `NodeSerializer` object of each value in `settings` keyword arguments can be built by builder methods of `S`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        graph: Graph.View</span>
+<span class="sd">        graph: GraphView</span>
 <span class="sd">            A view of the graph.</span>
-<span class="sd">        serializers: {str: NodeSerializer | (str | str -&gt; str, [T] -&gt; T | int, T -&gt; U)}</span>
-<span class="sd">            Mapping from property name to `NodeSerializer` s or their equivalents.</span>
+<span class="sd">        __params: {str: {str: object}}</span>
+<span class="sd">            Parameters keyed by node names.</span>
+<span class="sd">        settings: {str: NodeSerializer}</span>
+<span class="sd">            Mapping from property name to `NodeSerializer` s.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Dict[str, object]</span>
 <span class="sd">            A dictionary representing the graph.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">to_serializer</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">NodeSerializer</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">s</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">settings</span> <span class="o">=</span> <span class="p">[(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">zip_longest</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">fillvalue</span><span class="o">=</span><span class="kc">None</span><span class="p">)]</span>
-                <span class="k">return</span> <span class="n">S</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="o">*</span><span class="n">settings</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SerializationContext</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_serializers</span><span class="p">,</span> <span class="n">__params</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span></div>
 
-        <span class="n">context</span> <span class="o">=</span> <span class="n">SerializationContext</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">n</span><span class="p">,</span> <span class="n">to_serializer</span><span class="p">(</span><span class="n">s</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">serializers</span><span class="o">.</span><span class="n">items</span><span class="p">()]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_serializer</span><span class="p">)</span>
+<div class="viewcode-block" id="GraphSpec.to_schema"><a class="viewcode-back" href="../../../pyracmon.graph.spec.html#pyracmon.graph.GraphSpec.to_schema">[docs]</a>    <span class="k">def</span> <span class="nf">to_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="o">**</span><span class="n">settings</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates `GraphSchema` under this specifications.</span>
 
-        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        template: GraphTemplate</span>
+<span class="sd">            A template of serializing graph.</span>
+<span class="sd">        settings: {str: NodeSerializer}</span>
+<span class="sd">            Mapping from property name to `NodeSerializer` s.</span>
 
-        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">()</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
-            <span class="n">context</span><span class="o">.</span><span class="n">serialize_to</span><span class="p">(</span><span class="n">c</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">result</span></div></div>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GraphSchema</span>
+<span class="sd">            An object having schema information of serialized dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">GraphSchema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="o">**</span><span class="n">settings</span><span class="p">)</span></div></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -224,15 +268,29 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.graph.html">pyracmon.graph</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.util.html">pyracmon.graph.util</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.testing.html">pyracmon.testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.testing.model.html">pyracmon.testing.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.testing.util.html">pyracmon.testing.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.config.html">pyracmon.config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.marker.html">pyracmon.marker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.mixin.html">pyracmon.mixin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.model_graph.html">pyracmon.model_graph</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.sql.html">pyracmon.sql</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.util.html">pyracmon.util</a></li>
 </ul>
 </li>
@@ -247,7 +305,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -263,12 +321,13 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" >pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" >pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.graph.spec</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Author.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
     </div>
   </body>
 </html>

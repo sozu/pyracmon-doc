@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pyracmon.mixin &#8212; pyracmon  documentation</title>
-    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/wide.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
@@ -27,7 +28,8 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.mixin</a></li> 
       </ul>
     </div>  
 
@@ -38,252 +40,51 @@
             
   <h1>Source code for pyracmon.mixin</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">zip_longest</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">pyracmon.query</span> <span class="kn">import</span> <span class="n">Q</span><span class="p">,</span> <span class="n">where</span><span class="p">,</span> <span class="n">order_by</span><span class="p">,</span> <span class="n">ranged_by</span>
-<span class="kn">from</span> <span class="nn">pyracmon.util</span> <span class="kn">import</span> <span class="n">split_dict</span><span class="p">,</span> <span class="n">index_qualifier</span><span class="p">,</span> <span class="n">model_values</span>
+<span class="kn">from</span> <span class="nn">.model</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.select</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.query</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">key_to_index</span>
 
 
-<div class="viewcode-block" id="Selection"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.Selection">[docs]</a><span class="k">class</span> <span class="nc">Selection</span><span class="p">:</span>
+<div class="viewcode-block" id="CRUDMixin"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin">[docs]</a><span class="k">class</span> <span class="nc">CRUDMixin</span><span class="p">(</span><span class="n">SelectMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The representation of table and its columns used in SQL.</span>
-
-<span class="sd">    This class is designed to be a bridge from query generation to reading results.</span>
-<span class="sd">    String expression of the instance is comma-separated column names with alias, which can be embedded in the select query.</span>
-
-<span class="sd">    &gt;&gt;&gt; s1 = table1.select(&quot;t1&quot;, includes = [&quot;col11&quot;, &quot;col12&quot;])</span>
-<span class="sd">    &gt;&gt;&gt; s2 = table2.select(&quot;t2&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; str(s1)</span>
-<span class="sd">    &#39;t1.col11, t1.col12&#39;</span>
-<span class="sd">    &gt;&gt;&gt; str(s2)</span>
-<span class="sd">    &#39;t2.col21, t2.col22, t2.col23&#39;</span>
-
-<span class="sd">    The instances of this class are used in `read_row()` to read model object from obtained row.</span>
-
-<span class="sd">    &gt;&gt;&gt; c.execute(f&quot;SELECT {s1}, {s2} FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; for row in c.fetchall():</span>
-<span class="sd">    &gt;&gt;&gt;     r = read_row(row, s1, s2)</span>
-<span class="sd">    &gt;&gt;&gt;     assert isinstance(r.t1, table1)</span>
-<span class="sd">    &gt;&gt;&gt;     assert isinstance(r.t2, table2)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">table</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">alias</span> <span class="o">=</span> <span class="n">alias</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">alias</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alias</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">name</span>
-
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">a</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{self.alias}</span><span class="s2">.&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alias</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{a}{c.name}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">])</span>
-
-    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">Expressions</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span> <span class="o">+</span> <span class="n">other</span>
-
-<div class="viewcode-block" id="Selection.consume"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.Selection.consume">[docs]</a>    <span class="k">def</span> <span class="nf">consume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">)]))</span></div></div>
-
-
-<div class="viewcode-block" id="Expressions"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.Expressions">[docs]</a><span class="k">class</span> <span class="nc">Expressions</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The instance of this class works as the composition of `Selection`s which provides attributes to access each `Selection`.</span>
-
-<span class="sd">    The main purpose of this class is avoiding a flood of occurrence of `Selection` variables. </span>
-<span class="sd">    Just applying + operator to them creates an instance of `Expressions`, by which all `Selection` are available via attributes of their names.</span>
-
-<span class="sd">    &gt;&gt;&gt; exp = table1.select(&quot;t1&quot;, includes = [&quot;col11&quot;, &quot;col12&quot;]) + table2.select(&quot;t2&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; c.execute(f&quot;SELECT {exp.t1}, {exp.t2} FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; for row in c.fetchall():</span>
-<span class="sd">    &gt;&gt;&gt;     r = read_row(row, *exp)</span>
-<span class="sd">    &gt;&gt;&gt;     assert isinstance(r.t1, table1)</span>
-<span class="sd">    &gt;&gt;&gt;     assert isinstance(r.t2, table2)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__selections</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Selection</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__selections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Expressions</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__selections</span> <span class="o">+=</span> <span class="n">other</span><span class="o">.</span><span class="n">__selections</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Operand of + for Expressions must be a Selection or Expressions but {type(other)} is given.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="fm">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selection</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selection</span><span class="p">,</span> <span class="n">Selection</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Operand of += for Expressions must be a Selection or Expressions object but {type(selection)} is given.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__selections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">selection</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__selections</span><span class="p">))</span>
-
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__selections</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="RowValues"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.RowValues">[docs]</a><span class="k">class</span> <span class="nc">RowValues</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This class provides attribute access for each row in query result.</span>
-
-<span class="sd">    Values converted by `read_row()` can be accessed as if this instance is the list of them by using index or iteration.</span>
-<span class="sd">    They can also be accessed via the attribute whose name is the alias (if exists) or the table name.</span>
-
-<span class="sd">    &gt;&gt;&gt; sels = table1.select(&quot;t1&quot;), table2.select()</span>
-<span class="sd">    &gt;&gt;&gt; v = read_row(row, *sels)</span>
-<span class="sd">    &gt;&gt;&gt; v.t1</span>
-<span class="sd">    &gt;&gt;&gt; v.table2</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selections</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">key_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">s</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_of</span><span class="p">,</span> <span class="n">selections</span><span class="p">))</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">def</span> <span class="nf">_key_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">Selection</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">name</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">s</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">key_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No selection is found whose table name or alias is &#39;</span><span class="si">{key}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-
-<div class="viewcode-block" id="RowValues.append"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.RowValues.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div></div>
-
-
-<div class="viewcode-block" id="read_row"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.read_row">[docs]</a><span class="k">def</span> <span class="nf">read_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="o">*</span><span class="n">selections</span><span class="p">,</span> <span class="n">allow_redundancy</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Read values in a row according to `selections`.</span>
-
-<span class="sd">    This function returns `RowValues` where each value is created by the item of `selections` respectively.</span>
-<span class="sd">    The type of the item determines how values in the row is handled:</span>
-
-<span class="sd">    - Selection consumes as many values as the number of columns in it and creates a model instance.</span>
-<span class="sd">    - Callable consumes a value and returns another value.</span>
-<span class="sd">    - Empty tuple or a string consumes a value, which is stored in `RowValues` as it is.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    row: object</span>
-<span class="sd">        An object representing a row returned by fetchone() / fetchall().</span>
-<span class="sd">    selections: [Selection | S -&gt; T | () | str]</span>
-<span class="sd">        various type of objects determining the way to handle values in the row.</span>
-<span class="sd">    allow_redundancy: bool</span>
-<span class="sd">        If `False`, an exception is thrown when not all values in a row are consumed.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    RowValues</span>
-<span class="sd">        Values read from the row.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">RowValues</span><span class="p">(</span><span class="n">selections</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">selections</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">Selection</span><span class="p">):</span>
-            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">consume</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
-            <span class="n">row</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">):]</span>
-        <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-            <span class="n">row</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-        <span class="k">elif</span> <span class="n">s</span> <span class="o">==</span> <span class="p">()</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">row</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unavailable value is given to read_row().&quot;</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_redundancy</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Not all elements in row is consumed.&quot;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">result</span></div>
-
-
-<div class="viewcode-block" id="CRUDMixin"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin">[docs]</a><span class="k">class</span> <span class="nc">CRUDMixin</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This class provides class methods available on all model classes.</span>
+<span class="sd">    This class provides class methods available on all model types.</span>
 
 <span class="sd">    Every method takes the DB connection object as its first argument.</span>
 
 <span class="sd">    Also, arguments listed below are commonly used in some methods of this mixin class:</span>
 
 <span class="sd">    - `pks` represents value(s) of primary key(s).</span>
-<span class="sd">        - If `pks` is a dictionary, each item is considered to be a pair of column name and value for primary keys respectively.</span>
-<span class="sd">        - Otherwise, the model must have a primary key and `pks` is considered as its value.</span>
-<span class="sd">    - `gen_condition` represents a condition or a function generating a condition with marker object.</span>
-<span class="sd">        - This polymorphism enables the use of marker especially if it is stateful.</span>
+<span class="sd">        - If `pks` is a dictionary, each item is considered to be a pair of column name and value respectively.</span>
+<span class="sd">        - Otherwise, the model must have a single primary key and `pks` is its value.</span>
 <span class="sd">    - `qualifier` is a dictionary whose key is a column name and the value is a function generating SQL expression around the placeholder for the column.</span>
-<span class="sd">        - By default in insert and update query, the expressions generated by a marker is used for column values.</span>
-<span class="sd">        - This argument is used to override the expression.</span>
-<span class="sd">        - Because the function takes default expression as an argument, you can generate another expression by qualifying it.</span>
+<span class="sd">        - This argument is used to overwrite the expression generated by `Marker` in insert and update query.</span>
+<span class="sd">        - The function must take an argument to which the default expression is passed.</span>
+<span class="sd">        - Be aware that the actual value stored in database can be different from value set on model when this argument exists.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="CRUDMixin.select"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.select">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">includes</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">excludes</span> <span class="o">=</span> <span class="p">[]):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Select columns to use in a query with an alias of this table.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        alias: str</span>
-<span class="sd">            An alias string of this table.</span>
-<span class="sd">        includes: [str]</span>
-<span class="sd">            Column names to use. All columns are selected if empty.</span>
-<span class="sd">        excludes: [str]</span>
-<span class="sd">            Column names not to use.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        Selection</span>
-<span class="sd">            An object which has selected columns.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">excludes</span><span class="p">]</span> \
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="n">includes</span><span class="p">)</span> <span class="k">else</span> \
-                <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">excludes</span> <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">includes</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">Selection</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">columns</span><span class="p">)</span></div>
-
 <div class="viewcode-block" id="CRUDMixin.count"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.count">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">gen_condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">()):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Count rows which fulfill the condition.</span>
+<span class="sd">        Count rows which satisfies the condition.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        db: Connection</span>
 <span class="sd">            DB connection.</span>
-<span class="sd">        gen_condition: Q.C | Marker -&gt; Q.C</span>
-<span class="sd">            Condition or a function creating a condition with a marker.</span>
+<span class="sd">        condition: Conditional</span>
+<span class="sd">            Condition.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        int</span>
 <span class="sd">            The number of rows.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-        <span class="n">m</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">marker</span><span class="p">()</span>
-        <span class="n">wc</span><span class="p">,</span> <span class="n">wp</span> <span class="o">=</span> <span class="n">_where</span><span class="p">(</span><span class="n">gen_condition</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
-        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT COUNT(*) FROM </span><span class="si">{cls.name}</span><span class="s2"> </span><span class="si">{wc}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">wp</span><span class="p">))</span>
+        <span class="n">wc</span><span class="p">,</span> <span class="n">wp</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT COUNT(*) FROM </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="si">}{</span><span class="n">_spacer</span><span class="p">(</span><span class="n">wc</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">wp</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">c</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="CRUDMixin.fetch"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.fetch">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">pks</span><span class="p">,</span> <span class="n">lock</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">pks</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fetch a record by primary key(s).</span>
 
@@ -292,145 +93,198 @@
 <span class="sd">        db: Connection</span>
 <span class="sd">            DB connection.</span>
 <span class="sd">        pks: object | {str: object}</span>
-<span class="sd">            A primary key or a mapping from column name to a value of primary keys.</span>
+<span class="sd">            Representation of primary key(s).</span>
+<span class="sd">        lock: object</span>
+<span class="sd">            An object whose string expression is appended to query.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        cls</span>
-<span class="sd">            A model of the record.</span>
+<span class="sd">            A model of the record or `None` if the primary key is not found.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">where_values</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_pks</span><span class="p">(</span><span class="n">pks</span><span class="p">)</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-        <span class="n">m</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">marker</span><span class="p">()</span>
+        <span class="n">cols</span><span class="p">,</span> <span class="n">vals</span> <span class="o">=</span> <span class="n">parse_pks</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pks</span><span class="p">)</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="n">Conditional</span><span class="o">.</span><span class="n">all</span><span class="p">([</span><span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="n">v</span><span class="p">})</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">vals</span><span class="p">)])</span>
+        <span class="n">wc</span><span class="p">,</span> <span class="n">wp</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">cond</span><span class="p">)</span>
         <span class="n">s</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
-        <span class="n">where</span> <span class="o">=</span> <span class="s1">&#39; AND &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{n}</span><span class="s2"> = {m()}&quot;</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">where_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
-        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT </span><span class="si">{s}</span><span class="s2"> FROM </span><span class="si">{cls.name}</span><span class="s2"> WHERE </span><span class="si">{where}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">where_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT </span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2"> FROM </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="si">}{</span><span class="n">_spacer</span><span class="p">(</span><span class="n">wc</span><span class="p">)</span><span class="si">}{</span><span class="n">_spacer</span><span class="p">(</span><span class="n">lock</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">wp</span><span class="p">)</span>
         <span class="n">row</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">read_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">s</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">row</span> <span class="k">else</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="CRUDMixin.fetch_where"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.fetch_where">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">fetch_where</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">gen_condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="n">orders</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">limit</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lock</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fetch_where</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(),</span> <span class="n">orders</span><span class="o">=</span><span class="p">{},</span> <span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Fetch records which fulfill a condition.</span>
+<span class="sd">        Fetch records which satisfy a condition.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        db: Connection</span>
 <span class="sd">            DB connection.</span>
-<span class="sd">        gen_condition: Q.C | Marker -&gt; Q.C</span>
-<span class="sd">            Condition or a function creating a condition with a marker.</span>
+<span class="sd">        condition: Conditional</span>
+<span class="sd">            Condition.</span>
 <span class="sd">        orders: {str: bool}</span>
-<span class="sd">            Ordered dict composed of column names and their ordering method. `True` means `ASC` and `False` means `DESC`.</span>
+<span class="sd">            Ordering parameters. Each key is column and its value denotes direction; `True` is ascending and `False` is descending.</span>
 <span class="sd">        limit: int</span>
 <span class="sd">            The number of rows to fetch. If `None`, all rows are obtained.</span>
 <span class="sd">        offset: int</span>
 <span class="sd">            The number of rows to skip.</span>
+<span class="sd">        lock: object</span>
+<span class="sd">            An object whose string expression is appended to query.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        [cls]</span>
 <span class="sd">            Models of records.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">spacer</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-            <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">s</span><span class="p">)</span> <span class="k">if</span> <span class="n">s</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-        <span class="n">m</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">marker</span><span class="p">()</span>
+        <span class="n">wc</span><span class="p">,</span> <span class="n">wp</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
+        <span class="n">rc</span><span class="p">,</span> <span class="n">rp</span> <span class="o">=</span> <span class="n">ranged_by</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
         <span class="n">s</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
-        <span class="n">wc</span><span class="p">,</span> <span class="n">wp</span> <span class="o">=</span> <span class="n">_where</span><span class="p">(</span><span class="n">gen_condition</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
-        <span class="n">rc</span><span class="p">,</span> <span class="n">rp</span> <span class="o">=</span> <span class="n">ranged_by</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
-        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT </span><span class="si">{s}</span><span class="s2"> FROM </span><span class="si">{cls.name}</span><span class="s2">{spacer(wc)}{spacer(order_by(orders))}{spacer(rc)}&quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">wp</span> <span class="o">+</span> <span class="n">rp</span><span class="p">))</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT </span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2"> FROM </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="si">}{</span><span class="n">_spacer</span><span class="p">(</span><span class="n">wc</span><span class="p">)</span><span class="si">}{</span><span class="n">_spacer</span><span class="p">(</span><span class="n">order_by</span><span class="p">(</span><span class="n">orders</span><span class="p">))</span><span class="si">}{</span><span class="n">_spacer</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span><span class="si">}{</span><span class="n">_spacer</span><span class="p">(</span><span class="n">lock</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="n">wp</span> <span class="o">+</span> <span class="n">rp</span><span class="p">))</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">read_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">s</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span></div>
 
-<div class="viewcode-block" id="CRUDMixin.insert"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.insert">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">qualifier</span> <span class="o">=</span> <span class="p">{}):</span>
+<div class="viewcode-block" id="CRUDMixin.fetch_one"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.fetch_one">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">fetch_one</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(),</span> <span class="n">orders</span><span class="o">=</span><span class="p">{},</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Insert a record.</span>
+<span class="sd">        Fetch a record which satisfies a condition.</span>
+
+<span class="sd">        `ValueError` raises When multiple records are found.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        db: Connection</span>
 <span class="sd">            DB connection.</span>
-<span class="sd">        values: {str: object} | model</span>
-<span class="sd">            Columns and values to insert.</span>
-<span class="sd">        qualifier: {str: str -&gt; str}</span>
-<span class="sd">            A mapping from column name to a function converting holder marker into another SQL expression.</span>
+<span class="sd">        condition: Conditional</span>
+<span class="sd">            Condition.</span>
+<span class="sd">        orders: {str: bool}</span>
+<span class="sd">            Ordering parameters. Each key is column and its value denotes direction; `True` is ascending and `False` is descending.</span>
+<span class="sd">        offset: int</span>
+<span class="sd">            The number of rows to skip.</span>
+<span class="sd">        lock: object</span>
+<span class="sd">            An object whose string expression is appended to query.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        object</span>
-<span class="sd">            An object returned by `execute()` of DB-API 2.0 module.</span>
+<span class="sd">        cls</span>
+<span class="sd">            A model of record or `None` if the result is empty.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">value_dict</span> <span class="o">=</span> <span class="n">model_values</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
-        <span class="bp">cls</span><span class="o">.</span><span class="n">_check_columns</span><span class="p">(</span><span class="n">value_dict</span><span class="p">)</span>
-        <span class="n">column_values</span> <span class="o">=</span> <span class="n">split_dict</span><span class="p">(</span><span class="n">value_dict</span><span class="p">)</span>
-        <span class="n">qualifier</span> <span class="o">=</span> <span class="n">index_qualifier</span><span class="p">(</span><span class="n">qualifier</span><span class="p">,</span> <span class="n">column_values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">rs</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">fetch_where</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">orders</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">lock</span><span class="p">)</span>
 
-        <span class="n">m</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">marker</span><span class="p">()</span>
-        <span class="n">sql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;INSERT INTO </span><span class="si">{cls.name}</span><span class="s2"> ({&#39;, &#39;.join(column_values[0])}) VALUES {db.helper.values(len(column_values[1]), 1, qualifier, marker = m)}&quot;</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">column_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">rs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">rs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rs</span><span class="p">)</span><span class="si">}</span><span class="s2"> records are found on the invocation of fetch_one().&quot;</span><span class="p">)</span></div>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">last_sequences</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<div class="viewcode-block" id="CRUDMixin.insert"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.insert">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">qualifier</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert a record.</span>
 
-        <span class="k">return</span> <span class="n">result</span></div>
+<span class="sd">        Returned model object contains auto incremental column even if they are not set beforehand.</span>
+<span class="sd">        On the contrary, default value defined on column is not set.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        db: Connection</span>
+<span class="sd">            DB connection.</span>
+<span class="sd">        record: cls | {str: object}</span>
+<span class="sd">            Model object or dictionary of columns and values.</span>
+<span class="sd">        qualifier: {str: str -&gt; str}</span>
+<span class="sd">            Functions converting place holders.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Model</span>
+<span class="sd">            Model object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="n">record</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span> <span class="k">else</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">record</span><span class="p">)</span>
+        <span class="n">value_dict</span> <span class="o">=</span> <span class="n">model_values</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span>
+        <span class="n">check_columns</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value_dict</span><span class="p">)</span>
+        <span class="n">cols</span><span class="p">,</span> <span class="n">vals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">value_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">list</span><span class="p">(</span><span class="n">value_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">qualifier</span> <span class="o">=</span> <span class="n">key_to_index</span><span class="p">(</span><span class="n">qualifier</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
+
+        <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;INSERT INTO </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="si">}</span><span class="s2">) VALUES </span><span class="si">{</span><span class="n">values</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">qualifier</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">vals</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">last_sequences</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">record</span></div>
 
 <div class="viewcode-block" id="CRUDMixin.update"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.update">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">pks</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">qualifier</span> <span class="o">=</span> <span class="p">{}):</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">pks</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">qualifier</span><span class="o">=</span><span class="p">{}):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update a record by primary key(s).</span>
+
+<span class="sd">        This method only updates columns which are found in `values` and not primary key.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        db: Connection</span>
 <span class="sd">            DB connection.</span>
 <span class="sd">        pks: object | {str: object}</span>
-<span class="sd">            A primary key or a mapping from column name to a value of primary keys.</span>
-<span class="sd">        values: {str: object} | model</span>
-<span class="sd">            Columns and values to update.</span>
+<span class="sd">            Representation of primary key(s).</span>
+<span class="sd">        values: cls | {str: object}</span>
+<span class="sd">            Model object or dictionary of columns and values.</span>
 <span class="sd">        qualifier: {str: str -&gt; str}</span>
-<span class="sd">            A mapping from column name to a function converting holder marker into another SQL expression.</span>
+<span class="sd">            Functions converting place holders.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        object</span>
-<span class="sd">            An object returned by `execute()` of DB-API 2.0 module.</span>
+<span class="sd">        bool</span>
+<span class="sd">            Boolean which shows whether a row is updated or not. When there exists no row having given primary key(s), `False` is returned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">gen_condition</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-            <span class="n">cols</span><span class="p">,</span> <span class="n">vals</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_pks</span><span class="p">(</span><span class="n">pks</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">acc</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">acc</span> <span class="o">&amp;</span> <span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{c}</span><span class="s2"> = {m()}&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">vals</span><span class="p">)])</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">update_where</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">gen_condition</span><span class="p">,</span> <span class="n">qualifier</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div>
+        <span class="n">cols</span><span class="p">,</span> <span class="n">vals</span> <span class="o">=</span> <span class="n">parse_pks</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pks</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">update_where</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">Conditional</span><span class="o">.</span><span class="n">all</span><span class="p">([</span><span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="n">v</span><span class="p">})</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">vals</span><span class="p">)]),</span> <span class="n">qualifier</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span></div>
 
 <div class="viewcode-block" id="CRUDMixin.update_where"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.update_where">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">update_where</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">gen_condition</span><span class="p">,</span> <span class="n">qualifier</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">allow_all</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">update_where</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">qualifier</span><span class="o">=</span><span class="p">{},</span> <span class="n">allow_all</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Update records which fulfill a condition.</span>
+<span class="sd">        Update records which satisfy a condition.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        db: Connection</span>
 <span class="sd">            DB connection.</span>
-<span class="sd">        values: {str: object} | model</span>
-<span class="sd">            Columns and values to update.</span>
-<span class="sd">        gen_condition: Q.C | Marker -&gt; Q.C</span>
-<span class="sd">            Condition or a function creating a condition with a marker.</span>
+<span class="sd">        values: cls | {str: object}</span>
+<span class="sd">            Model object or dictionary of columns and values.</span>
+<span class="sd">        condition: Conditional</span>
+<span class="sd">            Condition.</span>
 <span class="sd">        qualifier: {str: str -&gt; str}</span>
-<span class="sd">            A mapping from column name to a function converting holder marker into another SQL expression.</span>
+<span class="sd">            Functions converting place holders.</span>
 <span class="sd">        allow_all: bool</span>
 <span class="sd">            Empty condition raises an exception if this is `False`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        object</span>
-<span class="sd">            An object returned by `execute()` of DB-API 2.0 module.</span>
+<span class="sd">        int</span>
+<span class="sd">            The number of affected rows.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">setters</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">_update</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">qualifier</span><span class="p">)</span>
+        <span class="n">value_dict</span> <span class="o">=</span> <span class="n">model_values</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">excludes_pk</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">check_columns</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value_dict</span><span class="p">)</span>
+        <span class="n">cols</span><span class="p">,</span> <span class="n">vals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">value_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">list</span><span class="p">(</span><span class="n">value_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">qualifier</span> <span class="o">=</span> <span class="n">key_to_index</span><span class="p">(</span><span class="n">qualifier</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
 
-        <span class="n">wc</span><span class="p">,</span> <span class="n">wp</span> <span class="o">=</span> <span class="n">_where</span><span class="p">(</span><span class="n">gen_condition</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">set_col</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="n">icv</span><span class="p">):</span>
+            <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="n">icv</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Expression</span><span class="p">):</span>
+                <span class="n">clause</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">qualifier</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">)(</span><span class="n">v</span><span class="o">.</span><span class="n">expression</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">params</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">clause</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">qualifier</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">)(</span><span class="s1">&#39;$_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span>
+            <span class="n">acc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clause</span><span class="p">)</span>
+            <span class="n">acc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">acc</span>
+
+        <span class="n">setters</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">set_col</span><span class="p">,</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">vals</span><span class="p">)),</span> <span class="p">([],</span> <span class="p">[]))</span>
+
+        <span class="n">wc</span><span class="p">,</span> <span class="n">wp</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">wc</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">allow_all</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;By default, update_where does not allow empty condition.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Update query to update all records is not allowed.&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;UPDATE </span><span class="si">{cls.name}</span><span class="s2"> SET {&#39;, &#39;.join(setters)} </span><span class="si">{wc}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">params</span> <span class="o">+</span> <span class="n">wp</span><span class="p">))</span></div>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;UPDATE </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> SET </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">setters</span><span class="p">)</span><span class="si">}{</span><span class="n">_spacer</span><span class="p">(</span><span class="n">wc</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="n">params</span> <span class="o">+</span> <span class="n">wp</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="s2">&quot;rowcount&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CRUDMixin.delete"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.delete">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">pks</span><span class="p">):</span>
@@ -442,20 +296,18 @@
 <span class="sd">        db: Connection</span>
 <span class="sd">            DB connection.</span>
 <span class="sd">        pks: object | {str: object}</span>
-<span class="sd">            A primary key or a mapping from column name to a value of primary keys.</span>
+<span class="sd">            Representation of primary key(s).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        object</span>
-<span class="sd">            An object returned by `execute()` of DB-API 2.0 module.</span>
+<span class="sd">        bool</span>
+<span class="sd">            Boolean which shows whether a row is deleted or not. When there exists no row having given primary key(s), `False` is returned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cols</span><span class="p">,</span> <span class="n">vals</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_pks</span><span class="p">(</span><span class="n">pks</span><span class="p">)</span>
-        <span class="n">gen_condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">acc</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">acc</span> <span class="o">&amp;</span> <span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{c}</span><span class="s2"> = {m()}&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">vals</span><span class="p">)])</span>
-
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">delete_where</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">gen_condition</span><span class="p">)</span></div>
+        <span class="n">cols</span><span class="p">,</span> <span class="n">vals</span> <span class="o">=</span> <span class="n">parse_pks</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pks</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">delete_where</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Conditional</span><span class="o">.</span><span class="n">all</span><span class="p">([</span><span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">c</span><span class="p">:</span> <span class="n">v</span><span class="p">})</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">vals</span><span class="p">)]))</span> <span class="o">==</span> <span class="mi">1</span></div>
 
 <div class="viewcode-block" id="CRUDMixin.delete_where"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.delete_where">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">delete_where</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">gen_condition</span><span class="p">,</span> <span class="n">allow_all</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">delete_where</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">allow_all</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Delete records which fulfill a condition.</span>
 
@@ -463,22 +315,23 @@
 <span class="sd">        ----------</span>
 <span class="sd">        db: Connection</span>
 <span class="sd">            DB connection.</span>
-<span class="sd">        gen_condition: Q.C | Marker -&gt; Q.C</span>
-<span class="sd">            Condition or a function creating a condition with a marker.</span>
+<span class="sd">        condition: Conditional</span>
+<span class="sd">            Condition.</span>
 <span class="sd">        allow_all: bool</span>
 <span class="sd">            Empty condition raises an exception if this is `False`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        object</span>
-<span class="sd">            An object returned by `execute()` of DB-API 2.0 module.</span>
+<span class="sd">        int</span>
+<span class="sd">            The number of affected rows.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">m</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">marker</span><span class="p">()</span>
-        <span class="n">wc</span><span class="p">,</span> <span class="n">wp</span> <span class="o">=</span> <span class="n">_where</span><span class="p">(</span><span class="n">gen_condition</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+        <span class="n">wc</span><span class="p">,</span> <span class="n">wp</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">wc</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">allow_all</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;By default, delete_where does not allow empty condition.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Delete query to delete all records is not allowed.&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DELETE FROM </span><span class="si">{cls.name}</span><span class="s2"> </span><span class="si">{wc}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">wp</span><span class="p">))</span></div>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DELETE FROM </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="si">}{</span><span class="n">_spacer</span><span class="p">(</span><span class="n">wc</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">wp</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="s2">&quot;rowcount&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CRUDMixin.last_sequences"><a class="viewcode-back" href="../../pyracmon.mixin.html#pyracmon.CRUDMixin.last_sequences">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">last_sequences</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
@@ -500,22 +353,11 @@
         <span class="k">return</span> <span class="p">[]</span></div></div>
 
 
-<span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">qualifier</span><span class="p">):</span>
-    <span class="n">value_dict</span> <span class="o">=</span> <span class="n">model_values</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
-    <span class="bp">cls</span><span class="o">.</span><span class="n">_check_columns</span><span class="p">(</span><span class="n">value_dict</span><span class="p">)</span>
-    <span class="n">column_values</span> <span class="o">=</span> <span class="n">split_dict</span><span class="p">(</span><span class="n">value_dict</span><span class="p">)</span>
-    <span class="n">qualifier</span> <span class="o">=</span> <span class="n">index_qualifier</span><span class="p">(</span><span class="n">qualifier</span><span class="p">,</span> <span class="n">column_values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-    <span class="n">m</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">marker</span><span class="p">()</span>
-    <span class="n">setters</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{n}</span><span class="s2"> = {qualifier.get(i, lambda x: x)(m())}&quot;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">column_values</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
-
-    <span class="k">return</span> <span class="n">setters</span><span class="p">,</span> <span class="n">column_values</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">m</span>
-
-
-<span class="k">def</span> <span class="nf">_where</span><span class="p">(</span><span class="n">gen_condition</span><span class="p">,</span> <span class="n">marker</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">where</span><span class="p">(</span><span class="n">gen_condition</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gen_condition</span><span class="p">,</span> <span class="n">Q</span><span class="o">.</span><span class="n">C</span><span class="p">)</span> <span class="k">else</span> <span class="n">gen_condition</span><span class="p">(</span><span class="n">marker</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">_spacer</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">))</span> <span class="k">if</span> <span class="n">s</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -532,15 +374,29 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.graph.html">pyracmon.graph</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.util.html">pyracmon.graph.util</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.testing.html">pyracmon.testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.testing.model.html">pyracmon.testing.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.testing.util.html">pyracmon.testing.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.config.html">pyracmon.config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.marker.html">pyracmon.marker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.mixin.html">pyracmon.mixin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.model_graph.html">pyracmon.model_graph</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.sql.html">pyracmon.sql</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.util.html">pyracmon.util</a></li>
 </ul>
 </li>
@@ -555,7 +411,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -571,12 +427,13 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pyracmon.html" >pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../pyracmon.html" >pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.mixin</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Author.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
     </div>
   </body>
 </html>

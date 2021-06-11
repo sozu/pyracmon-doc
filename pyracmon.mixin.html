@@ -1,22 +1,23 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pyracmon.mixin &#8212; pyracmon  documentation</title>
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/wide.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="pyracmon.model" href="pyracmon.model.html" />
-    <link rel="prev" title="pyracmon.connection" href="pyracmon.connection.html" /> 
+    <link rel="prev" title="pyracmon.marker" href="pyracmon.marker.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -31,10 +32,11 @@
           <a href="pyracmon.model.html" title="pyracmon.model"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="pyracmon.connection.html" title="pyracmon.connection"
+          <a href="pyracmon.marker.html" title="pyracmon.marker"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="pyracmon.html" accesskey="U">pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="pyracmon.html" accesskey="U">pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.mixin</a></li> 
       </ul>
     </div>  
 
@@ -45,150 +47,40 @@
             
   <div class="section" id="module-pyracmon.mixin">
 <span id="pyracmon-mixin"></span><h1>pyracmon.mixin<a class="headerlink" href="#module-pyracmon.mixin" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="pyracmon.mixin.Selection">
-<em class="property">class </em><code class="sig-prename descclassname">pyracmon.mixin.</code><code class="sig-name descname">Selection</code><span class="sig-paren">(</span><em class="sig-param">table</em>, <em class="sig-param">alias</em>, <em class="sig-param">columns</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#Selection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.Selection" title="Permalink to this definition">¶</a></dt>
-<dd><p>The representation of table and its columns used in SQL.</p>
-<p>This class is designed to be a bridge from query generation to reading results.
-String expression of the instance is comma-separated column names with alias, which can be embedded in the select query.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s1</span> <span class="o">=</span> <span class="n">table1</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;t1&quot;</span><span class="p">,</span> <span class="n">includes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;col11&quot;</span><span class="p">,</span> <span class="s2">&quot;col12&quot;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s2</span> <span class="o">=</span> <span class="n">table2</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;t2&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
-<span class="go">&#39;t1.col11, t1.col12&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span>
-<span class="go">&#39;t2.col21, t2.col22, t2.col23&#39;</span>
-</pre></div>
-</div>
-<p>The instances of this class are used in <cite>read_row()</cite> to read model object from obtained row.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT </span><span class="si">{s1}</span><span class="s2">, </span><span class="si">{s2}</span><span class="s2"> FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">r</span> <span class="o">=</span> <span class="n">read_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">t1</span><span class="p">,</span> <span class="n">table1</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">t2</span><span class="p">,</span> <span class="n">table2</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="class">
-<dt id="pyracmon.mixin.Expressions">
-<em class="property">class </em><code class="sig-prename descclassname">pyracmon.mixin.</code><code class="sig-name descname">Expressions</code><a class="reference internal" href="_modules/pyracmon/mixin.html#Expressions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.Expressions" title="Permalink to this definition">¶</a></dt>
-<dd><p>The instance of this class works as the composition of <cite>Selection`s which provides attributes to access each `Selection</cite>.</p>
-<p>The main purpose of this class is avoiding a flood of occurrence of <cite>Selection</cite> variables.
-Just applying + operator to them creates an instance of <cite>Expressions</cite>, by which all <cite>Selection</cite> are available via attributes of their names.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">exp</span> <span class="o">=</span> <span class="n">table1</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;t1&quot;</span><span class="p">,</span> <span class="n">includes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;col11&quot;</span><span class="p">,</span> <span class="s2">&quot;col12&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="n">table2</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;t2&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT </span><span class="si">{exp.t1}</span><span class="s2">, </span><span class="si">{exp.t2}</span><span class="s2"> FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">r</span> <span class="o">=</span> <span class="n">read_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="o">*</span><span class="n">exp</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">t1</span><span class="p">,</span> <span class="n">table1</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">t2</span><span class="p">,</span> <span class="n">table2</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="class">
-<dt id="pyracmon.mixin.RowValues">
-<em class="property">class </em><code class="sig-prename descclassname">pyracmon.mixin.</code><code class="sig-name descname">RowValues</code><span class="sig-paren">(</span><em class="sig-param">selections</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#RowValues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.RowValues" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class provides attribute access for each row in query result.</p>
-<p>Values converted by <cite>read_row()</cite> can be accessed as if this instance is the list of them by using index or iteration.
-They can also be accessed via the attribute whose name is the alias (if exists) or the table name.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sels</span> <span class="o">=</span> <span class="n">table1</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;t1&quot;</span><span class="p">),</span> <span class="n">table2</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">read_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="o">*</span><span class="n">sels</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span><span class="o">.</span><span class="n">t1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span><span class="o">.</span><span class="n">table2</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyracmon.mixin.read_row">
-<code class="sig-prename descclassname">pyracmon.mixin.</code><code class="sig-name descname">read_row</code><span class="sig-paren">(</span><em class="sig-param">row</em>, <em class="sig-param">*selections</em>, <em class="sig-param">allow_redundancy=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#read_row"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.read_row" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read values in a row according to <cite>selections</cite>.</p>
-<p>This function returns <cite>RowValues</cite> where each value is created by the item of <cite>selections</cite> respectively.
-The type of the item determines how values in the row is handled:</p>
-<ul class="simple">
-<li><p>Selection consumes as many values as the number of columns in it and creates a model instance.</p></li>
-<li><p>Callable consumes a value and returns another value.</p></li>
-<li><p>Empty tuple or a string consumes a value, which is stored in <cite>RowValues</cite> as it is.</p></li>
-</ul>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>row</strong> (<em>object</em>) – An object representing a row returned by fetchone() / fetchall().</p></li>
-<li><p><strong>selections</strong> (<em>[</em><em>Selection | S -&gt; T |</em><em> (</em><em>) </em><em>| str</em><em>]</em>) – various type of objects determining the way to handle values in the row.</p></li>
-<li><p><strong>allow_redundancy</strong> (<em>bool</em>) – If <cite>False</cite>, an exception is thrown when not all values in a row are consumed.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Values read from the row.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#pyracmon.mixin.RowValues" title="pyracmon.mixin.RowValues">RowValues</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="class">
+<dl class="py class">
 <dt id="pyracmon.mixin.CRUDMixin">
 <em class="property">class </em><code class="sig-prename descclassname">pyracmon.mixin.</code><code class="sig-name descname">CRUDMixin</code><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class provides class methods available on all model classes.</p>
+<dd><p>This class provides class methods available on all model types.</p>
 <p>Every method takes the DB connection object as its first argument.</p>
 <p>Also, arguments listed below are commonly used in some methods of this mixin class:</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt><cite>pks</cite> represents value(s) of primary key(s).</dt><dd><ul>
-<li><p>If <cite>pks</cite> is a dictionary, each item is considered to be a pair of column name and value for primary keys respectively.</p></li>
-<li><p>Otherwise, the model must have a primary key and <cite>pks</cite> is considered as its value.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt><cite>gen_condition</cite> represents a condition or a function generating a condition with marker object.</dt><dd><ul>
-<li><p>This polymorphism enables the use of marker especially if it is stateful.</p></li>
+<li><p>If <cite>pks</cite> is a dictionary, each item is considered to be a pair of column name and value respectively.</p></li>
+<li><p>Otherwise, the model must have a single primary key and <cite>pks</cite> is its value.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
 <dt><cite>qualifier</cite> is a dictionary whose key is a column name and the value is a function generating SQL expression around the placeholder for the column.</dt><dd><ul>
-<li><p>By default in insert and update query, the expressions generated by a marker is used for column values.</p></li>
-<li><p>This argument is used to override the expression.</p></li>
-<li><p>Because the function takes default expression as an argument, you can generate another expression by qualifying it.</p></li>
+<li><p>This argument is used to overwrite the expression generated by <cite>Marker</cite> in insert and update query.</p></li>
+<li><p>The function must take an argument to which the default expression is passed.</p></li>
+<li><p>Be aware that the actual value stored in database can be different from value set on model when this argument exists.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 </ul>
-<dl class="method">
-<dt id="pyracmon.mixin.CRUDMixin.select">
-<em class="property">classmethod </em><code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param">alias=''</em>, <em class="sig-param">includes=[]</em>, <em class="sig-param">excludes=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.select" title="Permalink to this definition">¶</a></dt>
-<dd><p>Select columns to use in a query with an alias of this table.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>alias</strong> (<em>str</em>) – An alias string of this table.</p></li>
-<li><p><strong>includes</strong> (<em>[</em><em>str</em><em>]</em>) – Column names to use. All columns are selected if empty.</p></li>
-<li><p><strong>excludes</strong> (<em>[</em><em>str</em><em>]</em>) – Column names not to use.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An object which has selected columns.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#pyracmon.mixin.Selection" title="pyracmon.mixin.Selection">Selection</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
+<dl class="py method">
 <dt id="pyracmon.mixin.CRUDMixin.count">
-<em class="property">classmethod </em><code class="sig-name descname">count</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">gen_condition=&lt;function CRUDMixin.&lt;lambda&gt;&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.count" title="Permalink to this definition">¶</a></dt>
-<dd><p>Count rows which fulfill the condition.</p>
+<em class="property">classmethod </em><code class="sig-name descname">count</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">condition=Condition: '' -- []</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count rows which satisfies the condition.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Connection" title="pyracmon.Connection"><em>Connection</em></a>) – DB connection.</p></li>
-<li><p><strong>gen_condition</strong> (<em>Q.C | Marker -&gt; Q.C</em>) – Condition or a function creating a condition with a marker.</p></li>
+<li><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional"><em>Conditional</em></a>) – Condition.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -200,19 +92,20 @@ The type of the item determines how values in the row is handled:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pyracmon.mixin.CRUDMixin.fetch">
-<em class="property">classmethod </em><code class="sig-name descname">fetch</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">pks</em>, <em class="sig-param">lock=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.fetch" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">fetch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">db</span></em>, <em class="sig-param"><span class="n">pks</span></em>, <em class="sig-param"><span class="n">lock</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.fetch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.fetch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch a record by primary key(s).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Connection" title="pyracmon.Connection"><em>Connection</em></a>) – DB connection.</p></li>
-<li><p><strong>pks</strong> (<em>object | {str: object}</em>) – A primary key or a mapping from column name to a value of primary keys.</p></li>
+<li><p><strong>pks</strong> (<em>object | {str: object}</em>) – Representation of primary key(s).</p></li>
+<li><p><strong>lock</strong> (<em>object</em>) – An object whose string expression is appended to query.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A model of the record.</p>
+<dd class="field-even"><p>A model of the record or <cite>None</cite> if the primary key is not found.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>cls</p>
@@ -220,18 +113,19 @@ The type of the item determines how values in the row is handled:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pyracmon.mixin.CRUDMixin.fetch_where">
-<em class="property">classmethod </em><code class="sig-name descname">fetch_where</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">gen_condition=&lt;function CRUDMixin.&lt;lambda&gt;&gt;</em>, <em class="sig-param">orders={}</em>, <em class="sig-param">limit=None</em>, <em class="sig-param">offset=None</em>, <em class="sig-param">lock=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.fetch_where"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.fetch_where" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fetch records which fulfill a condition.</p>
+<em class="property">classmethod </em><code class="sig-name descname">fetch_where</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">condition=Condition: '' -- []</em>, <em class="sig-param">orders={}</em>, <em class="sig-param">limit=None</em>, <em class="sig-param">offset=None</em>, <em class="sig-param">lock=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.fetch_where"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.fetch_where" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch records which satisfy a condition.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Connection" title="pyracmon.Connection"><em>Connection</em></a>) – DB connection.</p></li>
-<li><p><strong>gen_condition</strong> (<em>Q.C | Marker -&gt; Q.C</em>) – Condition or a function creating a condition with a marker.</p></li>
-<li><p><strong>orders</strong> (<em>{str: bool}</em>) – Ordered dict composed of column names and their ordering method. <cite>True</cite> means <cite>ASC</cite> and <cite>False</cite> means <cite>DESC</cite>.</p></li>
+<li><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional"><em>Conditional</em></a>) – Condition.</p></li>
+<li><p><strong>orders</strong> (<em>{str: bool}</em>) – Ordering parameters. Each key is column and its value denotes direction; <cite>True</cite> is ascending and <cite>False</cite> is descending.</p></li>
 <li><p><strong>limit</strong> (<em>int</em>) – The number of rows to fetch. If <cite>None</cite>, all rows are obtained.</p></li>
 <li><p><strong>offset</strong> (<em>int</em>) – The number of rows to skip.</p></li>
+<li><p><strong>lock</strong> (<em>object</em>) – An object whose string expression is appended to query.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -243,116 +137,143 @@ The type of the item determines how values in the row is handled:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
+<dt id="pyracmon.mixin.CRUDMixin.fetch_one">
+<em class="property">classmethod </em><code class="sig-name descname">fetch_one</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">condition=Condition: '' -- []</em>, <em class="sig-param">orders={}</em>, <em class="sig-param">offset=None</em>, <em class="sig-param">lock=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.fetch_one"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.fetch_one" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch a record which satisfies a condition.</p>
+<p><cite>ValueError</cite> raises When multiple records are found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Connection" title="pyracmon.Connection"><em>Connection</em></a>) – DB connection.</p></li>
+<li><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional"><em>Conditional</em></a>) – Condition.</p></li>
+<li><p><strong>orders</strong> (<em>{str: bool}</em>) – Ordering parameters. Each key is column and its value denotes direction; <cite>True</cite> is ascending and <cite>False</cite> is descending.</p></li>
+<li><p><strong>offset</strong> (<em>int</em>) – The number of rows to skip.</p></li>
+<li><p><strong>lock</strong> (<em>object</em>) – An object whose string expression is appended to query.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A model of record or <cite>None</cite> if the result is empty.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>cls</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="pyracmon.mixin.CRUDMixin.insert">
-<em class="property">classmethod </em><code class="sig-name descname">insert</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">values</em>, <em class="sig-param">qualifier={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.insert" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">insert</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">db</span></em>, <em class="sig-param"><span class="n">record</span></em>, <em class="sig-param"><span class="n">qualifier</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.insert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert a record.</p>
+<p>Returned model object contains auto incremental column even if they are not set beforehand.
+On the contrary, default value defined on column is not set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Connection" title="pyracmon.Connection"><em>Connection</em></a>) – DB connection.</p></li>
-<li><p><strong>values</strong> (<em>{str: object} | model</em>) – Columns and values to insert.</p></li>
-<li><p><strong>qualifier</strong> (<em>{str: str -&gt; str}</em>) – A mapping from column name to a function converting holder marker into another SQL expression.</p></li>
+<li><p><strong>record</strong> (<em>cls | {str: object}</em>) – Model object or dictionary of columns and values.</p></li>
+<li><p><strong>qualifier</strong> (<em>{str: str -&gt; str}</em>) – Functions converting place holders.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An object returned by <cite>execute()</cite> of DB-API 2.0 module.</p>
+<dd class="field-even"><p>Model object.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>object</p>
+<dd class="field-odd"><p>Model</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pyracmon.mixin.CRUDMixin.update">
-<em class="property">classmethod </em><code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">pks</em>, <em class="sig-param">values</em>, <em class="sig-param">qualifier={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.update" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">db</span></em>, <em class="sig-param"><span class="n">pks</span></em>, <em class="sig-param"><span class="n">values</span></em>, <em class="sig-param"><span class="n">qualifier</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update a record by primary key(s).</p>
+<p>This method only updates columns which are found in <cite>values</cite> and not primary key.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Connection" title="pyracmon.Connection"><em>Connection</em></a>) – DB connection.</p></li>
-<li><p><strong>pks</strong> (<em>object | {str: object}</em>) – A primary key or a mapping from column name to a value of primary keys.</p></li>
-<li><p><strong>values</strong> (<em>{str: object} | model</em>) – Columns and values to update.</p></li>
-<li><p><strong>qualifier</strong> (<em>{str: str -&gt; str}</em>) – A mapping from column name to a function converting holder marker into another SQL expression.</p></li>
+<li><p><strong>pks</strong> (<em>object | {str: object}</em>) – Representation of primary key(s).</p></li>
+<li><p><strong>values</strong> (<em>cls | {str: object}</em>) – Model object or dictionary of columns and values.</p></li>
+<li><p><strong>qualifier</strong> (<em>{str: str -&gt; str}</em>) – Functions converting place holders.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An object returned by <cite>execute()</cite> of DB-API 2.0 module.</p>
+<dd class="field-even"><p>Boolean which shows whether a row is updated or not. When there exists no row having given primary key(s), <cite>False</cite> is returned.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>object</p>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pyracmon.mixin.CRUDMixin.update_where">
-<em class="property">classmethod </em><code class="sig-name descname">update_where</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">values</em>, <em class="sig-param">gen_condition</em>, <em class="sig-param">qualifier={}</em>, <em class="sig-param">allow_all=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.update_where"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.update_where" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update records which fulfill a condition.</p>
+<em class="property">classmethod </em><code class="sig-name descname">update_where</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">db</span></em>, <em class="sig-param"><span class="n">values</span></em>, <em class="sig-param"><span class="n">condition</span></em>, <em class="sig-param"><span class="n">qualifier</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">allow_all</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.update_where"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.update_where" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update records which satisfy a condition.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Connection" title="pyracmon.Connection"><em>Connection</em></a>) – DB connection.</p></li>
-<li><p><strong>values</strong> (<em>{str: object} | model</em>) – Columns and values to update.</p></li>
-<li><p><strong>gen_condition</strong> (<em>Q.C | Marker -&gt; Q.C</em>) – Condition or a function creating a condition with a marker.</p></li>
-<li><p><strong>qualifier</strong> (<em>{str: str -&gt; str}</em>) – A mapping from column name to a function converting holder marker into another SQL expression.</p></li>
+<li><p><strong>values</strong> (<em>cls | {str: object}</em>) – Model object or dictionary of columns and values.</p></li>
+<li><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional"><em>Conditional</em></a>) – Condition.</p></li>
+<li><p><strong>qualifier</strong> (<em>{str: str -&gt; str}</em>) – Functions converting place holders.</p></li>
 <li><p><strong>allow_all</strong> (<em>bool</em>) – Empty condition raises an exception if this is <cite>False</cite>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An object returned by <cite>execute()</cite> of DB-API 2.0 module.</p>
+<dd class="field-even"><p>The number of affected rows.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>object</p>
+<dd class="field-odd"><p>int</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pyracmon.mixin.CRUDMixin.delete">
-<em class="property">classmethod </em><code class="sig-name descname">delete</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">pks</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.delete" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">delete</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">db</span></em>, <em class="sig-param"><span class="n">pks</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete a record by primary key(s).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Connection" title="pyracmon.Connection"><em>Connection</em></a>) – DB connection.</p></li>
-<li><p><strong>pks</strong> (<em>object | {str: object}</em>) – A primary key or a mapping from column name to a value of primary keys.</p></li>
+<li><p><strong>pks</strong> (<em>object | {str: object}</em>) – Representation of primary key(s).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An object returned by <cite>execute()</cite> of DB-API 2.0 module.</p>
+<dd class="field-even"><p>Boolean which shows whether a row is deleted or not. When there exists no row having given primary key(s), <cite>False</cite> is returned.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>object</p>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pyracmon.mixin.CRUDMixin.delete_where">
-<em class="property">classmethod </em><code class="sig-name descname">delete_where</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">gen_condition</em>, <em class="sig-param">allow_all=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.delete_where"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.delete_where" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">delete_where</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">db</span></em>, <em class="sig-param"><span class="n">condition</span></em>, <em class="sig-param"><span class="n">allow_all</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.delete_where"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.delete_where" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete records which fulfill a condition.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Connection" title="pyracmon.Connection"><em>Connection</em></a>) – DB connection.</p></li>
-<li><p><strong>gen_condition</strong> (<em>Q.C | Marker -&gt; Q.C</em>) – Condition or a function creating a condition with a marker.</p></li>
+<li><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional"><em>Conditional</em></a>) – Condition.</p></li>
 <li><p><strong>allow_all</strong> (<em>bool</em>) – Empty condition raises an exception if this is <cite>False</cite>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An object returned by <cite>execute()</cite> of DB-API 2.0 module.</p>
+<dd class="field-even"><p>The number of affected rows.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>object</p>
+<dd class="field-odd"><p>int</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pyracmon.mixin.CRUDMixin.last_sequences">
-<em class="property">classmethod </em><code class="sig-name descname">last_sequences</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.last_sequences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.last_sequences" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">last_sequences</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">db</span></em>, <em class="sig-param"><span class="n">num</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/mixin.html#CRUDMixin.last_sequences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.mixin.CRUDMixin.last_sequences" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns latest auto generated numbers in this table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -365,7 +286,7 @@ The type of the item determines how values in the row is handled:</p>
 <dd class="field-even"><p>A list of pairs of column and the generated number.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>[(Column, int)]</p>
+<dd class="field-odd"><p>[(<a class="reference internal" href="pyracmon.html#pyracmon.Column" title="pyracmon.Column">Column</a>, int)]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -375,6 +296,7 @@ The type of the item determines how values in the row is handled:</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -391,15 +313,29 @@ The type of the item determines how values in the row is handled:</p>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.graph.html">pyracmon.graph</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.util.html">pyracmon.graph.util</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.testing.html">pyracmon.testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.model.html">pyracmon.testing.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.util.html">pyracmon.testing.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.config.html">pyracmon.config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.marker.html">pyracmon.marker</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">pyracmon.mixin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.model_graph.html">pyracmon.model_graph</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.sql.html">pyracmon.sql</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.util.html">pyracmon.util</a></li>
 </ul>
 </li>
@@ -421,7 +357,7 @@ The type of the item determines how values in the row is handled:</p>
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -439,15 +375,16 @@ The type of the item determines how values in the row is handled:</p>
           <a href="pyracmon.model.html" title="pyracmon.model"
              >next</a> |</li>
         <li class="right" >
-          <a href="pyracmon.connection.html" title="pyracmon.connection"
+          <a href="pyracmon.marker.html" title="pyracmon.marker"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="pyracmon.html" >pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="pyracmon.html" >pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.mixin</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Author.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
     </div>
   </body>
 </html>

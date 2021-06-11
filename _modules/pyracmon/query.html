@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pyracmon.query &#8212; pyracmon  documentation</title>
-    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/wide.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
   </head><body>
@@ -27,7 +28,8 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.query</a></li> 
       </ul>
     </div>  
 
@@ -37,115 +39,444 @@
           <div class="body" role="main">
             
   <h1>Source code for pyracmon.query</h1><div class="highlight"><pre>
-<div class="viewcode-block" id="Q"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q">[docs]</a><span></span><span class="k">class</span> <span class="nc">Q</span><span class="p">:</span>
+<span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+<span class="kn">from</span> <span class="nn">.sql</span> <span class="kn">import</span> <span class="n">Sql</span>
+<span class="kn">from</span> <span class="nn">.marker</span> <span class="kn">import</span> <span class="n">Marker</span>
+
+
+<div class="viewcode-block" id="Q"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q">[docs]</a><span class="k">class</span> <span class="nc">Q</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The instance of this class holds parameters to build query conditions.</span>
 
 <span class="sd">    Each parameter passed by the constructor becomes an instance method of created instance,</span>
 <span class="sd">    which takes a condition clause including placeholders which will accept the parameter in query execution.</span>
+<span class="sd">    `$_` in the clause will be replaced with correct placeholder marker in query execution by `Statement`.</span>
 
-<span class="sd">    &gt;&gt;&gt; q = Q(a = 1)</span>
-<span class="sd">    &gt;&gt;&gt; q.a(&quot;a = %s&quot;)</span>
-<span class="sd">    Condition: &#39;a = %s&#39; -- (1,)</span>
+<span class="sd">    &gt;&gt;&gt; q = Q(a=1)</span>
+<span class="sd">    &gt;&gt;&gt; q.a(&quot;a = $_&quot;)</span>
+<span class="sd">    Condition: &#39;a = $_&#39; -- [1]</span>
 
 <span class="sd">    Method whose name is not passed by the constructor returns empty condition which has no effect on the query.</span>
 
-<span class="sd">    &gt;&gt;&gt; q.b(&quot;b = %s&quot;)</span>
-<span class="sd">    Condition: &#39;&#39; -- ()</span>
+<span class="sd">    &gt;&gt;&gt; q.b(&quot;b = $_&quot;)</span>
+<span class="sd">    Condition: &#39;&#39; -- []</span>
 
-<span class="sd">    Those features simplifies a query construction in case some parameters can be absent.</span>
-<span class="sd">    A function taking Q instance and constructing a query by using it enables caller to control conditions at runtime.</span>
+<span class="sd">    This feature simplifies a query construction in case some parameters can be absent.</span>
 
 <span class="sd">    &gt;&gt;&gt; def search(db, q):</span>
-<span class="sd">    &gt;&gt;&gt;     w, params = where(q.a(&quot;a = %s&quot;) &amp; q.b(&quot;b = %s&quot;))</span>
-<span class="sd">    &gt;&gt;&gt;     db.cursor().execute(f&quot;SELECT * FROM table {w}&quot;, params)</span>
+<span class="sd">    &gt;&gt;&gt;     w, params = where(q.a(&quot;a = $_&quot;) &amp; q.b(&quot;b = $_&quot;))</span>
+<span class="sd">    &gt;&gt;&gt;     db.stmt().execute(f&quot;SELECT * FROM table {w}&quot;, *params)</span>
 <span class="sd">    &gt;&gt;&gt; </span>
-<span class="sd">    &gt;&gt;&gt; search(Q(a = 1))        # SELECT * FROM table WHERE a = 1</span>
-<span class="sd">    &gt;&gt;&gt; search(Q(a = 1, b = 2)) # SELECT * FROM table WHERE a = 1 AND b = 2</span>
-<span class="sd">    &gt;&gt;&gt; search(Q())             # SELECT * FROM table</span>
+<span class="sd">    &gt;&gt;&gt; search(db, Q(a=1))        # SELECT * FROM table WHERE a = 1</span>
+<span class="sd">    &gt;&gt;&gt; search(db, Q(a=1, b=2)) # SELECT * FROM table WHERE a = 1 AND b = 2</span>
+<span class="sd">    &gt;&gt;&gt; search(db, Q())             # SELECT * FROM table</span>
+
+<span class="sd">    Additionally, this class provides utility class methods creating conditions.</span>
+
+<span class="sd">    Using `of()` is the most simple way to create a condition clause.</span>
+
+<span class="sd">    &gt;&gt;&gt; Q.of(&quot;a = $_&quot;, 1)</span>
+<span class="sd">    Condition: &#39;a = $_&#39; -- [1]</span>
+
+<span class="sd">    Other utility methods correspond to basic operators defined in SQL.</span>
+<span class="sd">    They takes keyword arguments and create conditions by applying operator to each item respectively.</span>
+
+<span class="sd">    &gt;&gt;&gt; Q.eq(a=1)</span>
+<span class="sd">    Condition: &#39;a = %s&#39; -- [1]</span>
+<span class="sd">    &gt;&gt;&gt; Q.eq(a=1, b=2)</span>
+<span class="sd">    Condition: &#39;a = %s AND b = %s&#39; -- [1, 2]</span>
+<span class="sd">    &gt;&gt;&gt; Q.in_(a=[1, 2, 3])</span>
+<span class="sd">    Condition: &#39;a IN (%s, %s, %s)&#39; -- [1, 2, 3]</span>
+<span class="sd">    &gt;&gt;&gt; Q.like(a=&quot;abc&quot;)</span>
+<span class="sd">    Condition: &#39;a LIKE %s&#39; -- [&quot;%abc%&quot;]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Q.C"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.C">[docs]</a>    <span class="k">class</span> <span class="nc">C</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This class represents a condition, which can be composed of many conditions.</span>
+    <span class="k">class</span> <span class="nc">Attribute</span><span class="p">:</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
 
-<span class="sd">        Some bitwise operators are applicable to create another condition by logical operator.</span>
-
-<span class="sd">        - `&amp;` concatenates two conditions by AND.</span>
-<span class="sd">        - `|` concatenates two conditions by OR.</span>
-<span class="sd">        - `~` creates inverted condition by NOT.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clause</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">clause</span> <span class="o">=</span> <span class="n">clause</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> \
-                <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> \
-                <span class="k">else</span> <span class="p">(</span><span class="n">params</span><span class="p">,)</span>
-
-        <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Condition: &#39;</span><span class="si">{self.clause}</span><span class="s2">&#39; -- </span><span class="si">{self.params}</span><span class="s2">&quot;</span>
-
-<div class="viewcode-block" id="Q.C.concat"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.C.concat">[docs]</a>        <span class="nd">@classmethod</span>
-        <span class="k">def</span> <span class="nf">concat</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">op</span><span class="p">):</span>
+        <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">convert</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            Concatenate two conditions with an operator.</span>
+<span class="sd">            Craetes conditional object composed of given clause and the attribute value as parameters.</span>
 
 <span class="sd">            Parameters</span>
 <span class="sd">            ----------</span>
-<span class="sd">            c1: Q.C</span>
-<span class="sd">                First condition,</span>
-<span class="sd">            c2: Q.C</span>
-<span class="sd">                Second condition,</span>
-<span class="sd">            c3: str</span>
-<span class="sd">                An operator.</span>
+<span class="sd">            clause: str | object -&gt; str</span>
+<span class="sd">                A clause or a function generating a clause by taking the attribute value.</span>
+<span class="sd">            convert: object -&gt; object</span>
+<span class="sd">                A function converting the attribute value to parameters.</span>
+<span class="sd">                If this function returns a value which is not a list, a list having only the value is used.</span>
 
 <span class="sd">            Returns</span>
 <span class="sd">            -------</span>
-<span class="sd">            Q.C</span>
-<span class="sd">                Concatenated condition.</span>
+<span class="sd">            Conditional</span>
+<span class="sd">                Condition.</span>
 <span class="sd">            &quot;&quot;&quot;</span>
-            <span class="k">if</span> <span class="n">c1</span><span class="o">.</span><span class="n">clause</span> <span class="ow">and</span> <span class="n">c2</span><span class="o">.</span><span class="n">clause</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">{}</span><span class="s1">) </span><span class="si">{}</span><span class="s1"> (</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c1</span><span class="o">.</span><span class="n">clause</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">c2</span><span class="o">.</span><span class="n">clause</span><span class="p">),</span> <span class="n">c1</span><span class="o">.</span><span class="n">params</span> <span class="o">+</span> <span class="n">c2</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">c1</span><span class="o">.</span><span class="n">clause</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">c1</span>
-            <span class="k">elif</span> <span class="n">c2</span><span class="o">.</span><span class="n">clause</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">c2</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="p">())</span></div>
+            <span class="n">expression</span> <span class="o">=</span> <span class="n">expression</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">expression</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="n">convert</span> <span class="k">else</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
 
-        <span class="k">def</span> <span class="fm">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">Q</span><span class="o">.</span><span class="n">C</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="s1">&#39;AND&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Conditional</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">params</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">params</span><span class="p">])</span>
 
-        <span class="k">def</span> <span class="fm">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">Q</span><span class="o">.</span><span class="n">C</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="s1">&#39;OR&#39;</span><span class="p">)</span>
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Q</span><span class="o">.</span><span class="n">CompositeAttribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="fm">__invert__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">Q</span><span class="o">.</span><span class="n">C</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NOT (</span><span class="si">{self.clause}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span></div>
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">any</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Q</span><span class="o">.</span><span class="n">CompositeAttribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
+        <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">convert</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="n">convert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="n">convert</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">})</span>
+            <span class="k">return</span> <span class="n">invoke</span>
+
+    <span class="k">class</span> <span class="nc">CompositeAttribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">and_</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_and</span> <span class="o">=</span> <span class="n">and_</span>
+
+        <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">convert</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">conds</span> <span class="o">=</span> <span class="p">[</span><span class="n">Q</span><span class="o">.</span><span class="n">Attribute</span><span class="p">(</span><span class="n">v</span><span class="p">)(</span><span class="n">expression</span><span class="p">,</span> <span class="n">convert</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">Conditional</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">conds</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_and</span> <span class="k">else</span> <span class="n">Conditional</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">conds</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">convert</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                <span class="n">conds</span> <span class="o">=</span> <span class="p">[</span><span class="n">method</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="n">convert</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">convert</span> <span class="k">else</span> <span class="n">v</span><span class="p">})</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">Conditional</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">conds</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_and</span> <span class="k">else</span> <span class="n">Conditional</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">conds</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">invoke</span>
+
+    <span class="k">class</span> <span class="nc">NoAttribute</span><span class="p">:</span>
+        <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">holder</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Conditional</span><span class="p">()</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">any</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">convert</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">Conditional</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">invoke</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__include_none</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">__include_none</span> <span class="ow">or</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-        <span class="k">def</span> <span class="nf">attr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">Q</span><span class="o">.</span><span class="n">C</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="k">else</span> <span class="n">Q</span><span class="o">.</span><span class="n">C</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="p">())</span>
-        <span class="k">return</span> <span class="n">attr</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Q</span><span class="o">.</span><span class="n">Attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Q</span><span class="o">.</span><span class="n">NoAttribute</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Q.of"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.of">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">of</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">clause</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">of</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[]):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Utility method to create condition object directly from where clause and the parameters.</span>
+<span class="sd">        Creates a condition directly from an expression and parameters.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        clause: str</span>
-<span class="sd">            Where clause.</span>
+<span class="sd">        expression: str</span>
+<span class="sd">            Condition expression.</span>
 <span class="sd">        params: [object]</span>
 <span class="sd">            Parameters used in the condition.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        Q.C</span>
-<span class="sd">            Created condition.</span>
+<span class="sd">        Conditional</span>
+<span class="sd">            Condition.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">Q</span><span class="o">.</span><span class="n">C</span><span class="p">(</span><span class="n">clause</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></div></div>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="n">params</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">Conditional</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.eq"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.eq">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">eq</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a condition applying &#39;=&#39; operator to columns.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        __alias: str</span>
+<span class="sd">            Alias prepended to the column.</span>
+<span class="sd">        __and: bool</span>
+<span class="sd">            If `True`, conditions are concatenated by `AND`, otherwise `OR`.</span>
+<span class="sd">        kwargs: {str:object}</span>
+<span class="sd">            Mapping from columns to values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Conditional</span>
+<span class="sd">            Condition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">is_null</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2"> IS NULL&quot;</span><span class="p">,</span> <span class="p">[]</span>
+            <span class="k">elif</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">[]</span>
+            <span class="k">elif</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;NOT </span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">[]</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">is_null</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.neq"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.neq">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">neq</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Works like `eq`, but applies `!=`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">is_null</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2"> IS NOT NULL&quot;</span><span class="p">,</span> <span class="p">[]</span>
+            <span class="k">elif</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;NOT </span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">[]</span>
+            <span class="k">elif</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">[]</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;!=&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">is_null</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.in_"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.in_">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">in_</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Works like `eq`, but applies `IN`.</span>
+
+<span class="sd">        If parameters are empty, this method returns a condition being never satisfied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">in_list</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;1 = 0&quot;</span><span class="p">,</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">holder</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;$_&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2"> IN (</span><span class="si">{</span><span class="n">holder</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;IN&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">in_list</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.not_in"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.not_in">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">not_in</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Works like `eq`, but applies `NOT IN`.</span>
+
+<span class="sd">        If parameters are empty, this method returns a condition being always satisfied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">in_list</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">holder</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;$_&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2"> NOT IN (</span><span class="si">{</span><span class="n">holder</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;NOT IN&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">in_list</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.match"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.match">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Works like `eq`, but applies &#39;LIKE&#39;. Parameter is passed to query without being modified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;LIKE&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.like"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.like">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">like</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Works like `eq`, but applies &#39;LIKE&#39;. Parameter is escaped and enclosed with wildcards (%) to execute partial match.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;LIKE&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;%</span><span class="si">{</span><span class="n">escape_like</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">%&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span> <span class="kc">None</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.startswith"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.startswith">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">startswith</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Works like `eq`, but applies &#39;LIKE&#39;. Parameter is escaped and appended with wildcards (%) to execute prefix match.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;LIKE&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">escape_like</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">%&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span> <span class="kc">None</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.endswith"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.endswith">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">endswith</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Works like `eq`, but applies &#39;LIKE&#39;. Parameter is escaped and prepended with wildcards (%) to execute backward match.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;LIKE&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;%</span><span class="si">{</span><span class="n">escape_like</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span> <span class="kc">None</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.lt"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.lt">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">lt</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Works like `eq`, but applies &#39;&lt;&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;&lt;&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.le"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.le">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">le</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Works like `eq`, but applies &#39;&lt;=&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;&lt;=&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.gt"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.gt">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">gt</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Works like `eq`, but applies &#39;&gt;&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Q.ge"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Q.ge">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">ge</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">__alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">__and</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Works like `eq`, but applies &#39;&gt;=&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_conditional</span><span class="p">(</span><span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span> <span class="n">__and</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">__alias</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_conditional</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">and_</span><span class="p">,</span> <span class="n">column_values</span><span class="p">,</span> <span class="n">gen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">cond</span> <span class="o">=</span> <span class="n">Conditional</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">concat</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+        <span class="k">nonlocal</span> <span class="n">cond</span>
+        <span class="k">if</span> <span class="n">and_</span><span class="p">:</span>
+            <span class="n">cond</span> <span class="o">&amp;=</span> <span class="n">c</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cond</span> <span class="o">|=</span> <span class="n">c</span>
+
+    <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">column_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">alias</span> <span class="k">else</span> <span class="n">col</span>
+
+        <span class="k">if</span> <span class="n">gen</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">r</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">concat</span><span class="p">(</span><span class="n">Conditional</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="k">continue</span>
+
+        <span class="n">concat</span><span class="p">(</span><span class="n">Conditional</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">op</span><span class="si">}</span><span class="s2"> $_&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">val</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">cond</span>
+
+
+<span class="k">class</span> <span class="nc">Expression</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expression</span> <span class="o">=</span> <span class="n">expression</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
+
+
+<div class="viewcode-block" id="Conditional"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Conditional">[docs]</a><span class="k">class</span> <span class="nc">Conditional</span><span class="p">(</span><span class="n">Expression</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a single condition composed of an expression and parameters used for placeholders in the expression.</span>
+
+<span class="sd">    Parameters must be a list where the index of each parameter matches the index of placeholder for it.</span>
+<span class="sd">    The expression accepts only the automatic numbering template parameter `$_`.</span>
+
+<span class="sd">    Logical operators such as `&amp;`, `|` and `~` is available to generate new condition.</span>
+
+<span class="sd">    &gt;&gt;&gt; c1 = Q.of(&quot;a = $_&quot;, 0)</span>
+<span class="sd">    &gt;&gt;&gt; c2 = Q.of(&quot;b &lt; $_&quot;, 1)</span>
+<span class="sd">    &gt;&gt;&gt; c3 = Q.of(&quot;c &gt; $_&quot;, 2)</span>
+<span class="sd">    &gt;&gt;&gt; c = ~(c1 &amp; c2 | c3)</span>
+<span class="sd">    &gt;&gt;&gt; c</span>
+<span class="sd">    Condition: NOT (((a = $_) AND (b &lt; $_)) OR (c &gt; $_)) -- [0, 1, 2]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Conditional.all"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Conditional.all">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">conditionals</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Concatenates conditional objects with `AND`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        conditionals: [Conditional]</span>
+<span class="sd">            Condition.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Conditional</span>
+<span class="sd">            Concatenated conditional object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">acc</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">acc</span> <span class="o">&amp;</span> <span class="n">c</span><span class="p">,</span> <span class="n">conditionals</span><span class="p">,</span> <span class="n">Conditional</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Conditional.any"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Conditional.any">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">any</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">conditionals</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Concatenates conditional objects with `OR`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        conditionals: [Conditional]</span>
+<span class="sd">            Condition.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Conditional</span>
+<span class="sd">            Concatenated conditional object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">acc</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">acc</span> <span class="o">|</span> <span class="n">c</span><span class="p">,</span> <span class="n">conditionals</span><span class="p">,</span> <span class="n">Conditional</span><span class="p">())</span></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">params</span> <span class="ow">or</span> <span class="p">[])</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Condition: &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">expression</span><span class="si">}</span><span class="s2">&#39; -- </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">marker</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deprecated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">c</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">Sql</span><span class="p">(</span><span class="n">marker</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">expression</span><span class="p">)</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Only list style marker is available.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Conditional</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="n">expression</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">expression</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">expression</span><span class="p">:</span>
+            <span class="n">expression</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">expression</span><span class="si">}</span><span class="s2">) AND (</span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">expression</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">expression</span><span class="p">:</span>
+            <span class="n">expression</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expression</span>
+        <span class="k">elif</span> <span class="n">other</span><span class="o">.</span><span class="n">expression</span><span class="p">:</span>
+            <span class="n">expression</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">expression</span>
+
+        <span class="k">return</span> <span class="n">Conditional</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="n">expression</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">expression</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">expression</span><span class="p">:</span>
+            <span class="n">expression</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">expression</span><span class="si">}</span><span class="s2">) OR (</span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">expression</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">expression</span><span class="p">:</span>
+            <span class="n">expression</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expression</span>
+        <span class="k">elif</span> <span class="n">other</span><span class="o">.</span><span class="n">expression</span><span class="p">:</span>
+            <span class="n">expression</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">expression</span>
+
+        <span class="k">return</span> <span class="n">Conditional</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__invert__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">expression</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Conditional</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NOT (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">expression</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Conditional</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;1 = 0&quot;</span><span class="p">,</span> <span class="p">[])</span></div>
+
+
+<div class="viewcode-block" id="escape_like"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.escape_like">[docs]</a><span class="k">def</span> <span class="nf">escape_like</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Escape characters for the use in `LIKE` condition.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    v: str</span>
+<span class="sd">        A string.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Escaped string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">esc</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\\\</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">&quot;%&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">r</span><span class="s2">&quot;\%&quot;</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">&quot;_&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">r</span><span class="s2">&quot;\_&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">c</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">esc</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="where"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.where">[docs]</a><span class="k">def</span> <span class="nf">where</span><span class="p">(</span><span class="n">condition</span><span class="p">):</span>
@@ -154,15 +485,17 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    condition: Q.C</span>
-<span class="sd">        A condition built by `Q` and concatenated with operators.</span>
+<span class="sd">    condition: Conditional</span>
+<span class="sd">        Condition.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    str</span>
 <span class="sd">        A where clause starting from `WHERE` or empty string if the condition is empty.</span>
+<span class="sd">    [object]</span>
+<span class="sd">        Parameters for placeholders in where clause.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="n">condition</span><span class="o">.</span><span class="n">clause</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="k">else</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;WHERE </span><span class="si">{condition.clause}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">condition</span><span class="o">.</span><span class="n">params</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="n">condition</span><span class="o">.</span><span class="n">expression</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="k">else</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;WHERE </span><span class="si">{</span><span class="n">condition</span><span class="o">.</span><span class="n">expression</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">condition</span><span class="o">.</span><span class="n">params</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="order_by"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.order_by">[docs]</a><span class="k">def</span> <span class="nf">order_by</span><span class="p">(</span><span class="n">columns</span><span class="p">):</span>
@@ -173,228 +506,149 @@
 <span class="sd">    ----------</span>
 <span class="sd">    columns: { str: bool }</span>
 <span class="sd">        An ordered dictionary mapping column name to its direction, where `True` denotes `ASC` and `False` denotes `DESC`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        ORDER BY clause.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">col</span><span class="p">(</span><span class="n">cd</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{cd[0]}</span><span class="s2"> ASC&quot;</span> <span class="k">if</span> <span class="n">cd</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{cd[0]}</span><span class="s2"> DESC&quot;</span>
-    <span class="k">return</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;ORDER BY {&#39;, &#39;.join(map(col, columns.items()))}&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> ASC&quot;</span> <span class="k">if</span> <span class="n">cd</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> DESC&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;ORDER BY </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">columns</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 
-<span class="k">def</span> <span class="nf">ranged_by</span><span class="p">(</span><span class="n">marker</span><span class="p">,</span> <span class="n">limit</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ranged_by"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.ranged_by">[docs]</a><span class="k">def</span> <span class="nf">ranged_by</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates LIMIT and OFFSET clause using marker.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    limit: int</span>
+<span class="sd">        Limit value or `None`. </span>
+<span class="sd">    offset: int</span>
+<span class="sd">        OFfset value or `None`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        LIMIT and OFFSET clause.</span>
+<span class="sd">    [object]</span>
+<span class="sd">        Parameters for placeholders in LIMIT and OFFSET clause.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">clause</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+
     <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">clause</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LIMIT {marker()}&quot;</span><span class="p">)</span>
+        <span class="n">clause</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;LIMIT $_&quot;</span><span class="p">)</span>
         <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">offset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">clause</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;OFFSET {marker()}&quot;</span><span class="p">)</span>
+        <span class="n">clause</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;OFFSET $_&quot;</span><span class="p">)</span>
         <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">clause</span><span class="p">),</span> <span class="n">params</span>
+
+    <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">clause</span><span class="p">)</span> <span class="k">if</span> <span class="n">clause</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">params</span></div>
+
+
+<div class="viewcode-block" id="holders"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.holders">[docs]</a><span class="k">def</span> <span class="nf">holders</span><span class="p">(</span><span class="n">length_or_keys</span><span class="p">,</span> <span class="n">qualifier</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates partial query string containing placeholders separated by comma.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    length_or_keys: int | [str]</span>
+<span class="sd">        The number of placeholders or keys assigned to them.</span>
+<span class="sd">    qualifier: {int: str -&gt; str}</span>
+<span class="sd">        Mapping from indexes to functions. Each function converts placeholder string at paired index.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Query string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length_or_keys</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">hs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;$</span><span class="si">{_}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">length_or_keys</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">key</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="se">{{</span><span class="s2">_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
+            <span class="k">elif</span> <span class="n">k</span><span class="p">:</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="se">{{</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;$</span><span class="si">{_}</span><span class="s2">&quot;</span>
+        <span class="n">hs</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">length_or_keys</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">qualifier</span><span class="p">:</span>
+        <span class="n">hs</span> <span class="o">=</span> <span class="p">[</span><span class="n">qualifier</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">_noop</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">hs</span><span class="p">)]</span>
+
+    <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">hs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="values"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.values">[docs]</a><span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="n">length_or_key_gen</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">qualifier</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates partial query string for `VALUES` clause in insertion query.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    length_or_key_gen: int | [int -&gt; str]</span>
+<span class="sd">        The number of placeholders or functions which takes a row index and returns a key.</span>
+<span class="sd">    rows: int</span>
+<span class="sd">        The number of rows to insert.</span>
+<span class="sd">    qualifier: {int: str -&gt; str}</span>
+<span class="sd">        Mapping from indexes to functions. Each function converts placeholder string at paired index.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Query string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">length_or_key_gen</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">lok</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="n">length_or_key_gen</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lok</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="p">[</span><span class="n">g</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">length_or_key_gen</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">holders</span><span class="p">(</span><span class="n">lok</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">qualifier</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">)])</span></div>
 
 
 <div class="viewcode-block" id="QueryHelper"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.QueryHelper">[docs]</a><span class="k">class</span> <span class="nc">QueryHelper</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This class provides methods helping query construction.</span>
-
-<span class="sd">    The instance can be obtained via `helper` attribute in `pyracmon.connection.Connection`.</span>
+<span class="sd">    Deprecated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">api</span> <span class="o">=</span> <span class="n">api</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
 
 <div class="viewcode-block" id="QueryHelper.marker"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.QueryHelper.marker">[docs]</a>    <span class="k">def</span> <span class="nf">marker</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create new marker.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        Marker</span>
-<span class="sd">            Created marker.</span>
+<span class="sd">        Deprecated. Don&#39;t create marker.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">_marker_of</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">paramstyle</span><span class="p">)</span></div>
+        <span class="c1"># TODO read paramstyle from config.</span>
+        <span class="k">return</span> <span class="n">Marker</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">paramstyle</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="QueryHelper.holders"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.QueryHelper.holders">[docs]</a>    <span class="k">def</span> <span class="nf">holders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">qualifier</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">marker</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Generates partial query string containing place holder markers with comma.</span>
-
-<span class="sd">        &gt;&gt;&gt; # when db.api.paramstyle == &quot;format&quot;</span>
-<span class="sd">        &gt;&gt;&gt; db.helper.holders(5)</span>
-<span class="sd">        &#39;%s, %s, %s, %s, %s&#39;</span>
-
-<span class="sd">        &gt;&gt;&gt; # when db.api.paramstyle == &quot;numeric&quot;</span>
-<span class="sd">        &gt;&gt;&gt; db.helper.holders(5, start=3)</span>
-<span class="sd">        &#39;:3, :4, :5, :6, :7&#39;</span>
-
-<span class="sd">        &gt;&gt;&gt; # when db.api.paramstyle == &quot;named&quot;</span>
-<span class="sd">        &gt;&gt;&gt; db.helper.holders([&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;])</span>
-<span class="sd">        &#39;:a, :b, :c, :d, :e&#39;</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        keys: int / [str]</span>
-<span class="sd">            The number of holders / Keys of holders.</span>
-<span class="sd">        qualifier: {int: str -&gt; str}</span>
-<span class="sd">            Functions for each index converting the marker into another expression.</span>
-<span class="sd">        start: int</span>
-<span class="sd">            First index to calculate integral marker parameter.</span>
-<span class="sd">        marker: Marker</span>
-<span class="sd">            A marker object used in this method. If `None`, new marker instance is created and used.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        str</span>
-<span class="sd">            Generated string.</span>
+<span class="sd">        Deprecated. Use global `holders` instead.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">key_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">keys</span><span class="p">)])</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> \
-            <span class="k">else</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">)])</span>
-        <span class="n">qualifier</span> <span class="o">=</span> <span class="n">qualifier</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="n">m</span> <span class="o">=</span> <span class="n">marker</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker</span><span class="p">()</span>
-        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">qualifier</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">_noop</span><span class="p">)(</span><span class="n">m</span><span class="p">(</span><span class="n">key_map</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">key_map</span><span class="p">))])</span></div>
+        <span class="n">qualifier</span> <span class="o">=</span> <span class="n">qualifier</span> <span class="ow">or</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">qualifier</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">_noop</span><span class="p">)(</span><span class="n">m</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">start</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">keys</span><span class="p">)])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">qualifier</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">_noop</span><span class="p">)(</span><span class="n">m</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">)])</span></div>
 
 <div class="viewcode-block" id="QueryHelper.values"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.QueryHelper.values">[docs]</a>    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">qualifier</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">marker</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Generates partial query string corresponding `VALUES` clause in insertion query.</span>
-
-<span class="sd">        &gt;&gt;&gt; # when db.api.paramstyle == &quot;format&quot;</span>
-<span class="sd">        &gt;&gt;&gt; db.helper.values(5, 3)</span>
-<span class="sd">        &#39;(%s, %s, %s, %s, %s), (%s, %s, %s, %s, %s), (%s, %s, %s, %s, %s)&#39;</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        keys: int / [str]</span>
-<span class="sd">            The number of holders / Keys of holders.</span>
-<span class="sd">        rows: int</span>
-<span class="sd">            The number of rows to insert.</span>
-<span class="sd">        qualifier: {int: str -&gt; str}</span>
-<span class="sd">            Functions for each index converting the marker into another expression.</span>
-<span class="sd">        start: int</span>
-<span class="sd">            First index to calculate integral marker parameter.</span>
-<span class="sd">        marker: Marker</span>
-<span class="sd">            A marker object used in this method. If `None`, new marker instance is created and used.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        str</span>
-<span class="sd">            Generated string.</span>
+<span class="sd">        Deprecated. Use global `values` instead.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">num</span> <span class="o">=</span> <span class="n">keys</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
         <span class="n">m</span> <span class="o">=</span> <span class="n">marker</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">marker</span><span class="p">()</span>
-        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;({self.holders(keys, qualifier, start + num * i, m)})&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rows</span><span class="p">)])</span></div></div>
+        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">holders</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">qualifier</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">num</span> <span class="o">*</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rows</span><span class="p">)])</span></div></div>
 
-
-<div class="viewcode-block" id="Marker"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Marker">[docs]</a><span class="k">class</span> <span class="nc">Marker</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This class provides the abstration mechanism for marker creation used to embed parameters in a query.</span>
-
-<span class="sd">    The instance is obtained by invoking `db.helper.marker()`.</span>
-<span class="sd">    In many cases, it&#39;s enough to get string representation of the instance, because the marker manges it state by its own.</span>
-
-<span class="sd">    &gt;&gt;&gt; m = db.helper.marker()</span>
-<span class="sd">    &gt;&gt;&gt; # when db.api.paramstyle == &quot;format&quot;</span>
-<span class="sd">    &gt;&gt;&gt; f&quot;SELECT * FROM table1 WHERE col11 = {m()} AND col2 = {m()}&quot;</span>
-<span class="sd">    &#39;SELECT * FROM table1 WHERE col11 = %s AND col2 = %s&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Marker.reset"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.Marker.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Reset the internal state.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
-    <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ps</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">ps</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameters argument must be a list or tuple.&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="QMarker"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.QMarker">[docs]</a><span class="k">class</span> <span class="nc">QMarker</span><span class="p">(</span><span class="n">Marker</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s1">&#39;?&#39;</span></div>
-
-<div class="viewcode-block" id="NumericMarker"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.NumericMarker">[docs]</a><span class="k">class</span> <span class="nc">NumericMarker</span><span class="p">(</span><span class="n">Marker</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">index</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{self.index}</span><span class="s2">&quot;</span>
-<div class="viewcode-block" id="NumericMarker.reset"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.NumericMarker.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="mi">0</span></div></div>
-
-<div class="viewcode-block" id="NamedMarker"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.NamedMarker">[docs]</a><span class="k">class</span> <span class="nc">NamedMarker</span><span class="p">(</span><span class="n">Marker</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{name}</span><span class="s2">&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;key{len(self.keys)}&quot;</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Explicit key &#39;</span><span class="si">{key}</span><span class="s2">&#39; prevented key generation for named marker.&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{key}</span><span class="s2">&quot;</span>
-<div class="viewcode-block" id="NamedMarker.reset"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.NamedMarker.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span></div>
-    <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ps</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">ps</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">,</span> <span class="n">ps</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter argument must be a dict, list or tuple.&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="FormatMarker"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.FormatMarker">[docs]</a><span class="k">class</span> <span class="nc">FormatMarker</span><span class="p">(</span><span class="n">Marker</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span></div>
-
-<div class="viewcode-block" id="PyformatMarker"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.PyformatMarker">[docs]</a><span class="k">class</span> <span class="nc">PyformatMarker</span><span class="p">(</span><span class="n">Marker</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_named</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="n">named</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_named</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">is_named</span> <span class="o">=</span> <span class="n">named</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_named</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">named</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;key{len(self.keys)}&quot;</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_named</span> <span class="ow">and</span> <span class="n">named</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mixed usage of </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%(name)s</span><span class="s2"> is not allowed.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">named</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;%(</span><span class="si">{name}</span><span class="s2">)s&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;%(</span><span class="si">{name}</span><span class="s2">)s&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_named</span> <span class="k">else</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span>
-<div class="viewcode-block" id="PyformatMarker.reset"><a class="viewcode-back" href="../../pyracmon.query.html#pyracmon.PyformatMarker.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_named</span> <span class="o">=</span> <span class="kc">None</span></div>
-    <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ps</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_named</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="k">pass</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
-                <span class="n">ps</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">,</span> <span class="n">ps</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pyformat with named parameters requires dict parameters.&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_named</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pyformat without parameter names requires list or tuple parameters.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">ps</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_named</span> <span class="ow">is</span> <span class="kc">False</span> <span class="k">else</span> <span class="n">ps</span></div>
 
 <span class="k">def</span> <span class="nf">_noop</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">x</span>
-
-<span class="k">def</span> <span class="nf">_marker_of</span><span class="p">(</span><span class="n">paramstyle</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">paramstyle</span> <span class="o">==</span> <span class="s1">&#39;qmark&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">QMarker</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">paramstyle</span> <span class="o">==</span> <span class="s1">&#39;numeric&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">NumericMarker</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">paramstyle</span> <span class="o">==</span> <span class="s1">&#39;named&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">NamedMarker</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">paramstyle</span> <span class="o">==</span> <span class="s1">&#39;format&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">FormatMarker</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">paramstyle</span> <span class="o">==</span> <span class="s1">&#39;pyformat&#39;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">PyformatMarker</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown parameter style: </span><span class="si">{paramstyle}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -411,15 +665,29 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.graph.html">pyracmon.graph</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.util.html">pyracmon.graph.util</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.testing.html">pyracmon.testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.testing.model.html">pyracmon.testing.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.testing.util.html">pyracmon.testing.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.config.html">pyracmon.config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.marker.html">pyracmon.marker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.mixin.html">pyracmon.mixin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.model_graph.html">pyracmon.model_graph</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.sql.html">pyracmon.sql</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../pyracmon.util.html">pyracmon.util</a></li>
 </ul>
 </li>
@@ -434,7 +702,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -450,12 +718,13 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pyracmon.html" >pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../pyracmon.html" >pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.query</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Author.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
     </div>
   </body>
 </html>

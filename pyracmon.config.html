@@ -1,0 +1,311 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyracmon.config &#8212; pyracmon  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/wide.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pyracmon.connection" href="pyracmon.connection.html" />
+    <link rel="prev" title="pyracmon.testing.util" href="pyracmon.testing.util.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.connection.html" title="pyracmon.connection"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.testing.util.html" title="pyracmon.testing.util"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="pyracmon.html" accesskey="U">pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.config</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pyracmon.config">
+<span id="pyracmon-config"></span><h1>pyracmon.config<a class="headerlink" href="#module-pyracmon.config" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="pyracmon.config.PyracmonConfiguration">
+<em class="property">class </em><code class="sig-prename descclassname">pyracmon.config.</code><code class="sig-name descname">PyracmonConfiguration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">logger</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_level</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sql_log_length</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parameter_log</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">paramstyle</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">type_mapping</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">graph_spec</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fixture_mapping</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fixture_tz_aware</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fixture_ignore_fk</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fixture_ignore_nullable</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">timedelta_unit</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/config.html#PyracmonConfiguration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configurations for various modules.</p>
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of this configuration. This value has no effect on any behavior of modules.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.logger">
+<code class="sig-name descname">logger</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logger or the name of logger used for internal logs such as query logging.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str | logging.Logger</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.log_level">
+<code class="sig-name descname">log_level</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.log_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logging level of internal logs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.sql_log_length">
+<code class="sig-name descname">sql_log_length</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.sql_log_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum length for query log. Queries longer than this value are output with being trimmed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.parameter_log">
+<code class="sig-name descname">parameter_log</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.parameter_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag to log query parameters also.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.paramstyle">
+<code class="sig-name descname">paramstyle</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.paramstyle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameter style defined in DB-API 2.0. This value overwrites the style obtained via DB module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.type_mapping">
+<code class="sig-name descname">type_mapping</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.type_mapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function estimating python type from type name in database and optional DBMS dependent keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>(str, <a href="#id1"><span class="problematic" id="id2">**</span></a>) -&gt; type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.graph_spec">
+<code class="sig-name descname">graph_spec</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.graph_spec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Graph specification used as default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.model_graph.html#pyracmon.model_graph.ConfigurableSpec" title="pyracmon.model_graph.ConfigurableSpec">ConfigurableSpec</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.fixture_mapping">
+<code class="sig-name descname">fixture_mapping</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.fixture_mapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function generating fixture value for a column and an index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>(<a class="reference internal" href="pyracmon.html#pyracmon.Table" title="pyracmon.Table">Table</a>, <a class="reference internal" href="pyracmon.html#pyracmon.Column" title="pyracmon.Column">Column</a>, int) -&gt; object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.fixture_tz_aware">
+<code class="sig-name descname">fixture_tz_aware</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.fixture_tz_aware" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag to make fixture datetime being aware of timezone.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.fixture_ignore_fk">
+<code class="sig-name descname">fixture_ignore_fk</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.fixture_ignore_fk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag not to generate fixuture value on foreign key columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.fixture_ignore_nullable">
+<code class="sig-name descname">fixture_ignore_nullable</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.fixture_ignore_nullable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag not to generate fixuture value on nullable columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pyracmon.config.PyracmonConfiguration.timedelta_unit">
+<code class="sig-name descname">timedelta_unit</code><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.timedelta_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default keyword arguments to pass <cite>timedelta()</cite> to compare actual <cite>date</cite>/<cite>datetime</cite> with expected one in <cite>near</cite> matcher.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pyracmon.config.DerivingConfiguration">
+<em class="property">class </em><code class="sig-prename descclassname">pyracmon.config.</code><code class="sig-name descname">DerivingConfiguration</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/config.html#DerivingConfiguration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.config.DerivingConfiguration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="pyracmon.config.pyracmon">
+<code class="sig-prename descclassname">pyracmon.config.</code><code class="sig-name descname">pyracmon</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/config.html#pyracmon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.config.pyracmon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates an object which starts <cite>with</cite> context, where global configuration can be changed.</p>
+<p>An object obtained by <cite>as</cite> keyword in <cite>with</cite> clause is an instance of <cite>PyracmonConfiguration</cite>,
+and changes to it done in the <cite>with</cite> context are copied into global configuration at the end of the context if no exception raises.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">pyracmon</span><span class="p">()</span> <span class="k">as</span> <span class="n">cfg</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">cfg</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;my_config&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="o">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="pyracmon.html">pyracmon</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.dialect.html">pyracmon.dialect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.mysql.html">pyracmon.dialect.mysql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.postgresql.html">pyracmon.dialect.postgresql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.shared.html">pyracmon.dialect.shared</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.graph.html">pyracmon.graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.util.html">pyracmon.graph.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.testing.html">pyracmon.testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.model.html">pyracmon.testing.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.util.html">pyracmon.testing.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pyracmon.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.marker.html">pyracmon.marker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.model_graph.html">pyracmon.model_graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.sql.html">pyracmon.sql</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pyracmon.config.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.connection.html" title="pyracmon.connection"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyracmon.testing.util.html" title="pyracmon.testing.util"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="pyracmon.html" >pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.config</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Author.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

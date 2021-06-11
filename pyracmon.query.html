@@ -1,22 +1,23 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pyracmon.query &#8212; pyracmon  documentation</title>
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/wide.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pyracmon.util" href="pyracmon.util.html" />
-    <link rel="prev" title="pyracmon.model" href="pyracmon.model.html" /> 
+    <link rel="next" title="pyracmon.select" href="pyracmon.select.html" />
+    <link rel="prev" title="pyracmon.model_graph" href="pyracmon.model_graph.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -28,13 +29,14 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pyracmon.util.html" title="pyracmon.util"
+          <a href="pyracmon.select.html" title="pyracmon.select"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="pyracmon.model.html" title="pyracmon.model"
+          <a href="pyracmon.model_graph.html" title="pyracmon.model_graph"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="pyracmon.html" accesskey="U">pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="pyracmon.html" accesskey="U">pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.query</a></li> 
       </ul>
     </div>  
 
@@ -45,98 +47,223 @@
             
   <div class="section" id="module-pyracmon.query">
 <span id="pyracmon-query"></span><h1>pyracmon.query<a class="headerlink" href="#module-pyracmon.query" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="pyracmon.query.Q">
-<em class="property">class </em><code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">Q</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">Q</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__include_none</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q" title="Permalink to this definition">¶</a></dt>
 <dd><p>The instance of this class holds parameters to build query conditions.</p>
 <p>Each parameter passed by the constructor becomes an instance method of created instance,
-which takes a condition clause including placeholders which will accept the parameter in query execution.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">a</span><span class="p">(</span><span class="s2">&quot;a = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">Condition: &#39;a = %s&#39; -- (1,)</span>
+which takes a condition clause including placeholders which will accept the parameter in query execution.
+<cite>$_</cite> in the clause will be replaced with correct placeholder marker in query execution by <cite>Statement</cite>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">a</span><span class="p">(</span><span class="s2">&quot;a = $_&quot;</span><span class="p">)</span>
+<span class="go">Condition: &#39;a = $_&#39; -- [1]</span>
 </pre></div>
 </div>
 <p>Method whose name is not passed by the constructor returns empty condition which has no effect on the query.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s2">&quot;b = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">Condition: &#39;&#39; -- ()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s2">&quot;b = $_&quot;</span><span class="p">)</span>
+<span class="go">Condition: &#39;&#39; -- []</span>
 </pre></div>
 </div>
-<p>Those features simplifies a query construction in case some parameters can be absent.
-A function taking Q instance and constructing a query by using it enables caller to control conditions at runtime.</p>
+<p>This feature simplifies a query construction in case some parameters can be absent.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">w</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">a</span><span class="p">(</span><span class="s2">&quot;a = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">q</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s2">&quot;b = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT * FROM table </span><span class="si">{w}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">w</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">a</span><span class="p">(</span><span class="s2">&quot;a = $_&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">q</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s2">&quot;b = $_&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT * FROM table </span><span class="si">{</span><span class="n">w</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span>        <span class="c1"># SELECT * FROM table WHERE a = 1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">2</span><span class="p">))</span> <span class="c1"># SELECT * FROM table WHERE a = 1 AND b = 2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">(</span><span class="n">Q</span><span class="p">())</span>             <span class="c1"># SELECT * FROM table</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Q</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>        <span class="c1"># SELECT * FROM table WHERE a = 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Q</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span> <span class="c1"># SELECT * FROM table WHERE a = 1 AND b = 2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Q</span><span class="p">())</span>             <span class="c1"># SELECT * FROM table</span>
 </pre></div>
 </div>
-<dl class="class">
-<dt id="pyracmon.query.Q.C">
-<em class="property">class </em><code class="sig-name descname">C</code><span class="sig-paren">(</span><em class="sig-param">clause</em>, <em class="sig-param">params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.C"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.C" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class represents a condition, which can be composed of many conditions.</p>
-<p>Some bitwise operators are applicable to create another condition by logical operator.</p>
-<ul class="simple">
-<li><p><cite>&amp;</cite> concatenates two conditions by AND.</p></li>
-<li><p><cite>|</cite> concatenates two conditions by OR.</p></li>
-<li><p><cite>~</cite> creates inverted condition by NOT.</p></li>
-</ul>
-<dl class="method">
-<dt id="pyracmon.query.Q.C.concat">
-<em class="property">classmethod </em><code class="sig-name descname">concat</code><span class="sig-paren">(</span><em class="sig-param">c1</em>, <em class="sig-param">c2</em>, <em class="sig-param">op</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.C.concat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.C.concat" title="Permalink to this definition">¶</a></dt>
-<dd><p>Concatenate two conditions with an operator.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>c1</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Q.C" title="pyracmon.Q.C"><em>Q.C</em></a>) – First condition,</p></li>
-<li><p><strong>c2</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Q.C" title="pyracmon.Q.C"><em>Q.C</em></a>) – Second condition,</p></li>
-<li><p><strong>c3</strong> (<em>str</em>) – An operator.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Concatenated condition.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="pyracmon.html#pyracmon.Q.C" title="pyracmon.Q.C">Q.C</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="method">
+<p>Additionally, this class provides utility class methods creating conditions.</p>
+<p>Using <cite>of()</cite> is the most simple way to create a condition clause.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="s2">&quot;a = $_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">Condition: &#39;a = $_&#39; -- [1]</span>
+</pre></div>
+</div>
+<p>Other utility methods correspond to basic operators defined in SQL.
+They takes keyword arguments and create conditions by applying operator to each item respectively.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">Condition: &#39;a = %s&#39; -- [1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">Condition: &#39;a = %s AND b = %s&#39; -- [1, 2]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Q</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">Condition: &#39;a IN (%s, %s, %s)&#39; -- [1, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Q</span><span class="o">.</span><span class="n">like</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="s2">&quot;abc&quot;</span><span class="p">)</span>
+<span class="go">Condition: &#39;a LIKE %s&#39; -- [&quot;%abc%&quot;]</span>
+</pre></div>
+</div>
+<dl class="py method">
 <dt id="pyracmon.query.Q.of">
-<em class="property">classmethod </em><code class="sig-name descname">of</code><span class="sig-paren">(</span><em class="sig-param">clause</em>, <em class="sig-param">params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.of" title="Permalink to this definition">¶</a></dt>
-<dd><p>Utility method to create condition object directly from where clause and the parameters.</p>
+<em class="property">classmethod </em><code class="sig-name descname">of</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">expression</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">params</span><span class="o">=</span><span class="default_value">[]</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a condition directly from an expression and parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>clause</strong> (<em>str</em>) – Where clause.</p></li>
+<li><p><strong>expression</strong> (<em>str</em>) – Condition expression.</p></li>
 <li><p><strong>params</strong> (<em>[</em><em>object</em><em>]</em>) – Parameters used in the condition.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Created condition.</p>
+<dd class="field-even"><p>Condition.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="pyracmon.html#pyracmon.Q.C" title="pyracmon.Q.C">Q.C</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional">Conditional</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.eq">
+<em class="property">classmethod </em><code class="sig-name descname">eq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.eq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.eq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a condition applying ‘=’ operator to columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>__alias</strong> (<em>str</em>) – Alias prepended to the column.</p></li>
+<li><p><strong>__and</strong> (<em>bool</em>) – If <cite>True</cite>, conditions are concatenated by <cite>AND</cite>, otherwise <cite>OR</cite>.</p></li>
+<li><p><strong>kwargs</strong> (<em>{str:object}</em>) – Mapping from columns to values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional">Conditional</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.neq">
+<em class="property">classmethod </em><code class="sig-name descname">neq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.neq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.neq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <cite>eq</cite>, but applies <cite>!=</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.in_">
+<em class="property">classmethod </em><code class="sig-name descname">in_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.in_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.in_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <cite>eq</cite>, but applies <cite>IN</cite>.</p>
+<p>If parameters are empty, this method returns a condition being never satisfied.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.not_in">
+<em class="property">classmethod </em><code class="sig-name descname">not_in</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.not_in"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.not_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <cite>eq</cite>, but applies <cite>NOT IN</cite>.</p>
+<p>If parameters are empty, this method returns a condition being always satisfied.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.match">
+<em class="property">classmethod </em><code class="sig-name descname">match</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <cite>eq</cite>, but applies ‘LIKE’. Parameter is passed to query without being modified.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.like">
+<em class="property">classmethod </em><code class="sig-name descname">like</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.like"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.like" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <cite>eq</cite>, but applies ‘LIKE’. Parameter is escaped and enclosed with wildcards (%) to execute partial match.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.startswith">
+<em class="property">classmethod </em><code class="sig-name descname">startswith</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.startswith"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.startswith" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <cite>eq</cite>, but applies ‘LIKE’. Parameter is escaped and appended with wildcards (%) to execute prefix match.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.endswith">
+<em class="property">classmethod </em><code class="sig-name descname">endswith</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.endswith"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.endswith" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <cite>eq</cite>, but applies ‘LIKE’. Parameter is escaped and prepended with wildcards (%) to execute backward match.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.lt">
+<em class="property">classmethod </em><code class="sig-name descname">lt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.lt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.lt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <cite>eq</cite>, but applies ‘&lt;’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.le">
+<em class="property">classmethod </em><code class="sig-name descname">le</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.le"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.le" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <cite>eq</cite>, but applies ‘&lt;=’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.gt">
+<em class="property">classmethod </em><code class="sig-name descname">gt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.gt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.gt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <cite>eq</cite>, but applies ‘&gt;’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Q.ge">
+<em class="property">classmethod </em><code class="sig-name descname">ge</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_Q__alias</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">_Q__and</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Q.ge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Q.ge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <cite>eq</cite>, but applies ‘&gt;=’.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pyracmon.query.Conditional">
+<em class="property">class </em><code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">Conditional</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">expression</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">params</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Conditional"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Conditional" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a single condition composed of an expression and parameters used for placeholders in the expression.</p>
+<p>Parameters must be a list where the index of each parameter matches the index of placeholder for it.
+The expression accepts only the automatic numbering template parameter <cite>$_</cite>.</p>
+<p>Logical operators such as <cite>&amp;</cite>, <cite>|</cite> and <cite>~</cite> is available to generate new condition.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="s2">&quot;a = $_&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c2</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="s2">&quot;b &lt; $_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c3</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="s2">&quot;c &gt; $_&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="o">~</span><span class="p">(</span><span class="n">c1</span> <span class="o">&amp;</span> <span class="n">c2</span> <span class="o">|</span> <span class="n">c3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span>
+<span class="go">Condition: NOT (((a = $_) AND (b &lt; $_)) OR (c &gt; $_)) -- [0, 1, 2]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="pyracmon.query.Conditional.all">
+<em class="property">classmethod </em><code class="sig-name descname">all</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">conditionals</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Conditional.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Conditional.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenates conditional objects with <cite>AND</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>conditionals</strong> (<em>[</em><a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional"><em>Conditional</em></a><em>]</em>) – Condition.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Concatenated conditional object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional">Conditional</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyracmon.query.Conditional.any">
+<em class="property">classmethod </em><code class="sig-name descname">any</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">conditionals</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Conditional.any"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Conditional.any" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenates conditional objects with <cite>OR</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>conditionals</strong> (<em>[</em><a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional"><em>Conditional</em></a><em>]</em>) – Condition.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Concatenated conditional object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional">Conditional</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="function">
-<dt id="pyracmon.query.where">
-<code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">where</code><span class="sig-paren">(</span><em class="sig-param">condition</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#where"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.where" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates a where clause representing given condition.</p>
+<dl class="py function">
+<dt id="pyracmon.query.escape_like">
+<code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">escape_like</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#escape_like"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.escape_like" title="Permalink to this definition">¶</a></dt>
+<dd><p>Escape characters for the use in <cite>LIKE</cite> condition.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Q.C" title="pyracmon.Q.C"><em>Q.C</em></a>) – A condition built by <cite>Q</cite> and concatenated with operators.</p>
+<dd class="field-odd"><p><strong>v</strong> (<em>str</em>) – A string.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A where clause starting from <cite>WHERE</cite> or empty string if the condition is empty.</p>
+<dd class="field-even"><p>Escaped string.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>str</p>
@@ -144,162 +271,123 @@ A function taking Q instance and constructing a query by using it enables caller
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
+<dt id="pyracmon.query.where">
+<code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">where</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">condition</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#where"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.where" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a where clause representing given condition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Conditional" title="pyracmon.Conditional"><em>Conditional</em></a>) – Condition.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>str</em> – A where clause starting from <cite>WHERE</cite> or empty string if the condition is empty.</p></li>
+<li><p><em>[object]</em> – Parameters for placeholders in where clause.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="pyracmon.query.order_by">
-<code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">order_by</code><span class="sig-paren">(</span><em class="sig-param">columns</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#order_by"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.order_by" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">order_by</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">columns</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#order_by"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.order_by" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates ORDER BY clause from columns and directions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>columns</strong> (<em>{ str: bool }</em>) – An ordered dictionary mapping column name to its direction, where <cite>True</cite> denotes <cite>ASC</cite> and <cite>False</cite> denotes <cite>DESC</cite>.</p>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>ORDER BY clause.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
 </dl>
 </dd></dl>
 
-<dl class="class">
+<dl class="py function">
+<dt id="pyracmon.query.ranged_by">
+<code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">ranged_by</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">limit</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#ranged_by"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.ranged_by" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates LIMIT and OFFSET clause using marker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>limit</strong> (<em>int</em>) – Limit value or <cite>None</cite>.</p></li>
+<li><p><strong>offset</strong> (<em>int</em>) – OFfset value or <cite>None</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>str</em> – LIMIT and OFFSET clause.</p></li>
+<li><p><em>[object]</em> – Parameters for placeholders in LIMIT and OFFSET clause.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pyracmon.query.holders">
+<code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">holders</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">length_or_keys</span></em>, <em class="sig-param"><span class="n">qualifier</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#holders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.holders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates partial query string containing placeholders separated by comma.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>length_or_keys</strong> (<em>int |</em><em> [</em><em>str</em><em>]</em>) – The number of placeholders or keys assigned to them.</p></li>
+<li><p><strong>qualifier</strong> (<em>{int: str -&gt; str}</em>) – Mapping from indexes to functions. Each function converts placeholder string at paired index.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Query string.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pyracmon.query.values">
+<code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">values</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">length_or_key_gen</span></em>, <em class="sig-param"><span class="n">rows</span></em>, <em class="sig-param"><span class="n">qualifier</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates partial query string for <cite>VALUES</cite> clause in insertion query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>length_or_key_gen</strong> (<em>int |</em><em> [</em><em>int -&gt; str</em><em>]</em>) – The number of placeholders or functions which takes a row index and returns a key.</p></li>
+<li><p><strong>rows</strong> (<em>int</em>) – The number of rows to insert.</p></li>
+<li><p><strong>qualifier</strong> (<em>{int: str -&gt; str}</em>) – Mapping from indexes to functions. Each function converts placeholder string at paired index.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Query string.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
 <dt id="pyracmon.query.QueryHelper">
-<em class="property">class </em><code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">QueryHelper</code><span class="sig-paren">(</span><em class="sig-param">api</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#QueryHelper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.QueryHelper" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class provides methods helping query construction.</p>
-<p>The instance can be obtained via <cite>helper</cite> attribute in <cite>pyracmon.connection.Connection</cite>.</p>
-<dl class="method">
+<em class="property">class </em><code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">QueryHelper</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">api</span></em>, <em class="sig-param"><span class="n">config</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#QueryHelper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.QueryHelper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deprecated.</p>
+<dl class="py method">
 <dt id="pyracmon.query.QueryHelper.marker">
 <code class="sig-name descname">marker</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#QueryHelper.marker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.QueryHelper.marker" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create new marker.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Created marker.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#pyracmon.query.Marker" title="pyracmon.query.Marker">Marker</a></p>
-</dd>
-</dl>
+<dd><p>Deprecated. Don’t create marker.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pyracmon.query.QueryHelper.holders">
-<code class="sig-name descname">holders</code><span class="sig-paren">(</span><em class="sig-param">keys</em>, <em class="sig-param">qualifier=None</em>, <em class="sig-param">start=0</em>, <em class="sig-param">marker=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#QueryHelper.holders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.QueryHelper.holders" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates partial query string containing place holder markers with comma.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># when db.api.paramstyle == &quot;format&quot;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">holders</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-<span class="go">&#39;%s, %s, %s, %s, %s&#39;</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># when db.api.paramstyle == &quot;numeric&quot;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">holders</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="go">&#39;:3, :4, :5, :6, :7&#39;</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># when db.api.paramstyle == &quot;named&quot;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">holders</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;e&#39;</span><span class="p">])</span>
-<span class="go">&#39;:a, :b, :c, :d, :e&#39;</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>keys</strong> (<em>int /</em><em> [</em><em>str</em><em>]</em>) – The number of holders / Keys of holders.</p></li>
-<li><p><strong>qualifier</strong> (<em>{int: str -&gt; str}</em>) – Functions for each index converting the marker into another expression.</p></li>
-<li><p><strong>start</strong> (<em>int</em>) – First index to calculate integral marker parameter.</p></li>
-<li><p><strong>marker</strong> (<a class="reference internal" href="#pyracmon.query.Marker" title="pyracmon.query.Marker"><em>Marker</em></a>) – A marker object used in this method. If <cite>None</cite>, new marker instance is created and used.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Generated string.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
+<code class="sig-name descname">holders</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">keys</span></em>, <em class="sig-param"><span class="n">qualifier</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">marker</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#QueryHelper.holders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.QueryHelper.holders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deprecated. Use global <cite>holders</cite> instead.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="pyracmon.query.QueryHelper.values">
-<code class="sig-name descname">values</code><span class="sig-paren">(</span><em class="sig-param">keys</em>, <em class="sig-param">rows</em>, <em class="sig-param">qualifier=None</em>, <em class="sig-param">start=0</em>, <em class="sig-param">marker=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#QueryHelper.values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.QueryHelper.values" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates partial query string corresponding <cite>VALUES</cite> clause in insertion query.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># when db.api.paramstyle == &quot;format&quot;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="go">&#39;(%s, %s, %s, %s, %s), (%s, %s, %s, %s, %s), (%s, %s, %s, %s, %s)&#39;</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>keys</strong> (<em>int /</em><em> [</em><em>str</em><em>]</em>) – The number of holders / Keys of holders.</p></li>
-<li><p><strong>rows</strong> (<em>int</em>) – The number of rows to insert.</p></li>
-<li><p><strong>qualifier</strong> (<em>{int: str -&gt; str}</em>) – Functions for each index converting the marker into another expression.</p></li>
-<li><p><strong>start</strong> (<em>int</em>) – First index to calculate integral marker parameter.</p></li>
-<li><p><strong>marker</strong> (<a class="reference internal" href="#pyracmon.query.Marker" title="pyracmon.query.Marker"><em>Marker</em></a>) – A marker object used in this method. If <cite>None</cite>, new marker instance is created and used.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Generated string.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pyracmon.query.Marker">
-<em class="property">class </em><code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">Marker</code><a class="reference internal" href="_modules/pyracmon/query.html#Marker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Marker" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class provides the abstration mechanism for marker creation used to embed parameters in a query.</p>
-<p>The instance is obtained by invoking <cite>db.helper.marker()</cite>.
-In many cases, it’s enough to get string representation of the instance, because the marker manges it state by its own.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">marker</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># when db.api.paramstyle == &quot;format&quot;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="sa">f</span><span class="s2">&quot;SELECT * FROM table1 WHERE col11 = {m()} AND col2 = {m()}&quot;</span>
-<span class="go">&#39;SELECT * FROM table1 WHERE col11 = %s AND col2 = %s&#39;</span>
-</pre></div>
-</div>
-<dl class="method">
-<dt id="pyracmon.query.Marker.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#Marker.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.Marker.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset the internal state.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pyracmon.query.QMarker">
-<em class="property">class </em><code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">QMarker</code><a class="reference internal" href="_modules/pyracmon/query.html#QMarker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.QMarker" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="class">
-<dt id="pyracmon.query.NumericMarker">
-<em class="property">class </em><code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">NumericMarker</code><a class="reference internal" href="_modules/pyracmon/query.html#NumericMarker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.NumericMarker" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="pyracmon.query.NumericMarker.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#NumericMarker.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.NumericMarker.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset the internal state.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pyracmon.query.NamedMarker">
-<em class="property">class </em><code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">NamedMarker</code><a class="reference internal" href="_modules/pyracmon/query.html#NamedMarker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.NamedMarker" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="pyracmon.query.NamedMarker.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#NamedMarker.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.NamedMarker.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset the internal state.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pyracmon.query.FormatMarker">
-<em class="property">class </em><code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">FormatMarker</code><a class="reference internal" href="_modules/pyracmon/query.html#FormatMarker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.FormatMarker" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="class">
-<dt id="pyracmon.query.PyformatMarker">
-<em class="property">class </em><code class="sig-prename descclassname">pyracmon.query.</code><code class="sig-name descname">PyformatMarker</code><a class="reference internal" href="_modules/pyracmon/query.html#PyformatMarker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.PyformatMarker" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="pyracmon.query.PyformatMarker.reset">
-<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#PyformatMarker.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.PyformatMarker.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset the internal state.</p>
+<code class="sig-name descname">values</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">keys</span></em>, <em class="sig-param"><span class="n">rows</span></em>, <em class="sig-param"><span class="n">qualifier</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">marker</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/query.html#QueryHelper.values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.query.QueryHelper.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deprecated. Use global <cite>values</cite> instead.</p>
 </dd></dl>
 
 </dd></dl>
@@ -307,6 +395,7 @@ In many cases, it’s enough to get string representation of the instance, becau
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -323,15 +412,29 @@ In many cases, it’s enough to get string representation of the instance, becau
 </li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.graph.html">pyracmon.graph</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.util.html">pyracmon.graph.util</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.testing.html">pyracmon.testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.model.html">pyracmon.testing.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.util.html">pyracmon.testing.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.config.html">pyracmon.config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.marker.html">pyracmon.marker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.mixin.html">pyracmon.mixin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.model_graph.html">pyracmon.model_graph</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.sql.html">pyracmon.sql</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.util.html">pyracmon.util</a></li>
 </ul>
 </li>
@@ -353,7 +456,7 @@ In many cases, it’s enough to get string representation of the instance, becau
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -368,18 +471,19 @@ In many cases, it’s enough to get string representation of the instance, becau
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pyracmon.util.html" title="pyracmon.util"
+          <a href="pyracmon.select.html" title="pyracmon.select"
              >next</a> |</li>
         <li class="right" >
-          <a href="pyracmon.model.html" title="pyracmon.model"
+          <a href="pyracmon.model_graph.html" title="pyracmon.model_graph"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="pyracmon.html" >pyracmon</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="pyracmon.html" >pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.query</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Author.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
     </div>
   </body>
 </html>

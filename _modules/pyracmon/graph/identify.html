@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyracmon.graph.identify &#8212; pyracmon  documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/wide.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.graph.identify</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pyracmon.graph.identify</h1><div class="highlight"><pre>
+<div class="viewcode-block" id="IdentifyPolicy"><a class="viewcode-back" href="../../../pyracmon.graph.identify.html#pyracmon.graph.IdentifyPolicy">[docs]</a><span></span><span class="k">class</span> <span class="nc">IdentifyPolicy</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides functionalities to handle identical entities in appending sessions of a graph.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="o">=</span> <span class="n">identifier</span>
+
+<div class="viewcode-block" id="IdentifyPolicy.get_identifier"><a class="viewcode-back" href="../../../pyracmon.graph.identify.html#pyracmon.graph.IdentifyPolicy.get_identifier">[docs]</a>    <span class="k">def</span> <span class="nf">get_identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns identification key from an entity value.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value: object</span>
+<span class="sd">            An entity value.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        object</span>
+<span class="sd">            Identification key of the entity value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="IdentifyPolicy.identify"><a class="viewcode-back" href="../../../pyracmon.graph.identify.html#pyracmon.graph.IdentifyPolicy.identify">[docs]</a>    <span class="k">def</span> <span class="nf">identify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">ancestors</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Select parent nodes and identical nodes of a new entity.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        prop: GraphTemplate.Property</span>
+<span class="sd">            Template property for new entity.</span>
+<span class="sd">        candidates: [Node]</span>
+<span class="sd">            Nodes having the same identification key.</span>
+<span class="sd">        ancestors: {str: [Node]}</span>
+<span class="sd">            Mappings from property name to identical node set which appeared in current appending session.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        [Node | None]</span>
+<span class="sd">            Parent nodes which the node of new entity should be appended newly.</span>
+<span class="sd">            `None` means to append a new node without parent.</span>
+<span class="sd">        [Node]</span>
+<span class="sd">            Identical existing nodes propagated to identifications of children as ancestors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="HierarchicalPolicy"><a class="viewcode-back" href="../../../pyracmon.graph.identify.html#pyracmon.graph.HierarchicalPolicy">[docs]</a><span class="k">class</span> <span class="nc">HierarchicalPolicy</span><span class="p">(</span><span class="n">IdentifyPolicy</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Default policy for template properties having identifier.</span>
+
+<span class="sd">    This policy identifies nodes whose entity has the same identification key as one of appending entity</span>
+<span class="sd">    and whose parent is also identical to the parent of the entity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="HierarchicalPolicy.identify"><a class="viewcode-back" href="../../../pyracmon.graph.identify.html#pyracmon.graph.HierarchicalPolicy.identify">[docs]</a>    <span class="k">def</span> <span class="nf">identify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">ancestors</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">parent</span> <span class="ow">and</span> <span class="n">prop</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">ancestors</span><span class="p">:</span>
+            <span class="c1"># This entity has parent in this session.</span>
+            <span class="n">parents</span> <span class="o">=</span> <span class="n">ancestors</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+
+            <span class="n">parent_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">:</span>
+                <span class="c1"># Find parent nodes which don&#39;t have child of the same identifier.</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">]):</span>
+                    <span class="n">parent_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+            <span class="c1"># Find identical nodes from candidates by checking whether the node belogs to a parent contained in ancestors.</span>
+            <span class="n">identical_nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">candidates</span> <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">])]</span>
+
+            <span class="k">return</span> <span class="n">parent_nodes</span><span class="p">,</span> <span class="n">identical_nodes</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># This entity is a root entity. Key equality is only a criteria of identification.</span>
+            <span class="k">return</span> <span class="p">([],</span> <span class="n">candidates</span><span class="p">)</span> <span class="k">if</span> <span class="n">candidates</span> <span class="k">else</span> <span class="p">([</span><span class="kc">None</span><span class="p">],</span> <span class="p">[])</span></div></div>
+
+
+<div class="viewcode-block" id="NeverPolicy"><a class="viewcode-back" href="../../../pyracmon.graph.identify.html#pyracmon.graph.NeverPolicy">[docs]</a><span class="k">class</span> <span class="nc">NeverPolicy</span><span class="p">(</span><span class="n">IdentifyPolicy</span><span class="p">):</span>
+<div class="viewcode-block" id="NeverPolicy.identify"><a class="viewcode-back" href="../../../pyracmon.graph.identify.html#pyracmon.graph.NeverPolicy.identify">[docs]</a>    <span class="k">def</span> <span class="nf">identify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">ancestors</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">parent</span> <span class="ow">and</span> <span class="n">prop</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">ancestors</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ancestors</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="p">[]</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">neverPolicy</span><span class="p">(</span><span class="n">instance</span><span class="o">=</span><span class="n">NeverPolicy</span><span class="p">(</span><span class="kc">None</span><span class="p">)):</span>
+    <span class="k">return</span> <span class="n">instance</span>
+
+
+<div class="viewcode-block" id="AlwaysPolicy"><a class="viewcode-back" href="../../../pyracmon.graph.identify.html#pyracmon.graph.AlwaysPolicy">[docs]</a><span class="k">class</span> <span class="nc">AlwaysPolicy</span><span class="p">(</span><span class="n">IdentifyPolicy</span><span class="p">):</span>
+<div class="viewcode-block" id="AlwaysPolicy.identify"><a class="viewcode-back" href="../../../pyracmon.graph.identify.html#pyracmon.graph.AlwaysPolicy.identify">[docs]</a>    <span class="k">def</span> <span class="nf">identify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">ancestors</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">parent</span> <span class="ow">and</span> <span class="n">prop</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">ancestors</span><span class="p">:</span>
+            <span class="n">parents</span> <span class="o">=</span> <span class="n">ancestors</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+
+            <span class="n">parent_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">:</span>
+                <span class="c1"># Find parent nodes which don&#39;t have child of the same identifier.</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">]):</span>
+                    <span class="n">parent_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">parent_nodes</span><span class="p">,</span> <span class="n">candidates</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">([],</span> <span class="n">candidates</span><span class="p">)</span> <span class="k">if</span> <span class="n">candidates</span> <span class="k">else</span> <span class="p">([</span><span class="kc">None</span><span class="p">],</span> <span class="p">[])</span></div></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3><a href="../../../index.html">Table of Contents</a></h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../pyracmon.html">pyracmon</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.dialect.html">pyracmon.dialect</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.mysql.html">pyracmon.dialect.mysql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.postgresql.html">pyracmon.dialect.postgresql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.dialect.shared.html">pyracmon.dialect.shared</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.graph.html">pyracmon.graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.graph.util.html">pyracmon.graph.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.testing.html">pyracmon.testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.testing.model.html">pyracmon.testing.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../pyracmon.testing.util.html">pyracmon.testing.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.config.html">pyracmon.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.marker.html">pyracmon.marker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.model_graph.html">pyracmon.model_graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.sql.html">pyracmon.sql</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pyracmon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pyracmon.html" >pyracmon</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.graph.identify</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Author.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

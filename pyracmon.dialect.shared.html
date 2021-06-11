@@ -1,18 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>pyracmon.dialect.shared &#8212; pyracmon  documentation</title>
-    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/wide.css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="pyracmon.graph" href="pyracmon.graph.html" />
@@ -35,7 +36,8 @@
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="pyracmon.html" >pyracmon</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="pyracmon.dialect.html" accesskey="U">pyracmon.dialect</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="pyracmon.dialect.html" accesskey="U">pyracmon.dialect</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.dialect.shared</a></li> 
       </ul>
     </div>  
 
@@ -46,20 +48,20 @@
             
   <div class="section" id="module-pyracmon.dialect.shared">
 <span id="pyracmon-dialect-shared"></span><h1>pyracmon.dialect.shared<a class="headerlink" href="#module-pyracmon.dialect.shared" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="pyracmon.dialect.shared.MultiInsertMixin">
 <em class="property">class </em><code class="sig-prename descclassname">pyracmon.dialect.shared.</code><code class="sig-name descname">MultiInsertMixin</code><a class="reference internal" href="_modules/pyracmon/dialect/shared.html#MultiInsertMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.dialect.shared.MultiInsertMixin" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class provides methods to execute queries which is not standard SQL but common to some RDBMS.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="pyracmon.dialect.shared.MultiInsertMixin.inserts">
-<em class="property">classmethod </em><code class="sig-name descname">inserts</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">rows</em>, <em class="sig-param">qualifier={}</em>, <em class="sig-param">rows_per_insert=1000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/dialect/shared.html#MultiInsertMixin.inserts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.dialect.shared.MultiInsertMixin.inserts" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">inserts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">db</span></em>, <em class="sig-param"><span class="n">rows</span></em>, <em class="sig-param"><span class="n">qualifier</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">rows_per_insert</span><span class="o">=</span><span class="default_value">1000</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyracmon/dialect/shared.html#MultiInsertMixin.inserts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyracmon.dialect.shared.MultiInsertMixin.inserts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert multiple records.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.html#pyracmon.Connection" title="pyracmon.Connection"><em>Connection</em></a>) – DB connection.</p></li>
-<li><p><strong>values</strong> (<em>[</em><em>{str: object}</em><em>] </em><em>|</em><em> [</em><em>model</em><em>]</em>) – Rows to insert. Each item should be a dictionary of columns and values or model object.</p></li>
-<li><p><strong>qualifier</strong> (<em>{str: str -&gt; str}</em>) – A mapping from column name to a function converting holder marker into another SQL expression.</p></li>
+<li><p><strong>values</strong> (<em>[</em><em>model</em><em>] </em><em>|</em><em> [</em><em>{str: object}</em><em>]</em>) – Rows to insert. Each item should be a model object or dictionary of columns and values.</p></li>
+<li><p><strong>qualifier</strong> (<em>{str: str -&gt; str}</em>) – Functions converting place holders.</p></li>
 <li><p><strong>rows_per_insert</strong> (<em>int</em>) – Maximum number of rows to insert in one query execution.</p></li>
 </ul>
 </dd>
@@ -77,6 +79,7 @@
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -93,15 +96,29 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.graph.html">pyracmon.graph</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.util.html">pyracmon.graph.util</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.testing.html">pyracmon.testing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.model.html">pyracmon.testing.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.util.html">pyracmon.testing.util</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.config.html">pyracmon.config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.marker.html">pyracmon.marker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.mixin.html">pyracmon.mixin</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.model_graph.html">pyracmon.model_graph</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyracmon.sql.html">pyracmon.sql</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pyracmon.util.html">pyracmon.util</a></li>
 </ul>
 </li>
@@ -123,7 +140,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -145,12 +162,13 @@
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pyracmon  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="pyracmon.html" >pyracmon</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="pyracmon.dialect.html" >pyracmon.dialect</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="pyracmon.dialect.html" >pyracmon.dialect</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pyracmon.dialect.shared</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Author.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
     </div>
   </body>
 </html>
