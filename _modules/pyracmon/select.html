@@ -1,50 +1,134 @@
 
-<!DOCTYPE html>
 
-<html lang="en">
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xml:lang="" lang="" version="-//W3C//DTD XHTML 1.1//EN" xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pyracmon.select &#8212; pyracmon  documentation</title>
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/wide.css" />
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/language_data.js"></script>
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">pyracmon  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pyracmon.html" accesskey="U">pyracmon</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">pyracmon.select</a></li> 
-      </ul>
-    </div>  
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+  
+  <title>pyracmon.select &mdash; pyracmon  documentation</title>
+  
+
+  
+
+  
+
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'/>
+    <link rel="stylesheet" href="../../_static/css/pdj.css" type="text/css" />
+
+  
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../../_static/css/pdj.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../../_static/pyracmon.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="pyracmon  documentation" href="../../index.html"/>
+        <link rel="up" title="pyracmon" href="../pyracmon.html"/>
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="cache-control" content="public" />
+    <meta name="robots" content="follow, all" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Add jQuery library -->
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+  </head>
+
+  <body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../../index.html" class="fa fa-home"> pyracmon </a>
+        <div role="search">
+	  <form id ="rtd-search-form" class="wy-form"
+		action="../../search.html" method="get">
+	    <input type="text" name="q" placeholder="Search docs" />
+	    <input type="hidden" name="check_keywords" value="yes" />
+	    <input type="hidden" name="area" value="default" />
+	  </form>
+	</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guide.html">Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">API documentation</a></li>
+</ul>
+
+
+
+      </div>
+      &nbsp;
+    </nav>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      <nav class="wy-nav-top" id="barra-mobile" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">Porão do Juca</a>
+      </nav>
+
+      <div class="wy-nav-content">
+	<div class="fundo-claro">
+	</div>
+	<div class="fundo-escuro">
+	</div>
+
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+	    
+	    <!-- <ul class="wy-breadcrumbs"> -->
+	    <!--   <li><a href="#">Docs</a> &raquo;</li> -->
+
+	    <!--   <li>Features</li> -->
+	    <!--   <li class="wy-breadcrumbs-aside"> -->
+
+	    <!-- 	<a href="_sources/index.txt" rel="nofollow"> View page source</a> -->
+
+	    <!--   </li> -->
+	    <!-- </ul> -->
+	    <!-- <hr/> -->
+	  </div>
+
+          <div role="main" class="">
+
+	    <div id="content" class="hfeed entry-container hentry">
   <h1>Source code for pyracmon.select</h1><div class="highlight"><pre>
-<div class="viewcode-block" id="Selection"><a class="viewcode-back" href="../../pyracmon.select.html#pyracmon.Selection">[docs]</a><span></span><span class="k">class</span> <span class="nc">Selection</span><span class="p">:</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module exports types and functions used for ``SELECT`` queries.</span>
+
+<span class="sd">Main purpose is providing a type which contains information of selecting columns,</span>
+<span class="sd">i.e. which columns are selected and how they are expressed in the query.</span>
+<span class="sd">Using the same instance of the type in both of query genration and reading results enables consistent reconstruction of model objects.</span>
+
+<span class="sd">In most cases, classes of this module should not be used directly.</span>
+<span class="sd">The use of `SelectMixin.select` and `read_row` is sufficient way to benefit from this module.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="Selection"><a class="viewcode-back" href="../../_autosummary/pyracmon.select.html#pyracmon.Selection">[docs]</a><span class="k">class</span> <span class="nc">Selection</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The representation of table and its columns used in SQL.</span>
+<span class="sd">    A representation of table and its columns used in query.</span>
 
 <span class="sd">    This class is designed to be a bridge from query generation to reading results.</span>
-<span class="sd">    String expression of the instance is comma-separated column names with alias, which can be embedded in the select query.</span>
+<span class="sd">    String expression of the instance is comma-separated column names prepended with alias, which can be embedded in the select query.</span>
+
+<span class="sd">    Due to `SelectMixin`, factory method is available on every model type.</span>
 
 <span class="sd">    &gt;&gt;&gt; s1 = table1.select(&quot;t1&quot;, includes = [&quot;col11&quot;, &quot;col12&quot;])</span>
 <span class="sd">    &gt;&gt;&gt; s2 = table2.select(&quot;t2&quot;)</span>
@@ -53,21 +137,30 @@
 <span class="sd">    &gt;&gt;&gt; str(s2)</span>
 <span class="sd">    &#39;t2.col21, t2.col22, t2.col23&#39;</span>
 
-<span class="sd">    The instances of this class are used in `read_row()` to read model object from obtained row.</span>
+<span class="sd">    The instances of this class are used in `read_row` to reconstruct model objects from each obtained row.</span>
 
 <span class="sd">    &gt;&gt;&gt; c.execute(f&quot;SELECT {s1}, {s2} FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&quot;)</span>
 <span class="sd">    &gt;&gt;&gt; for row in c.fetchall():</span>
 <span class="sd">    &gt;&gt;&gt;     r = read_row(row, s1, s2)</span>
 <span class="sd">    &gt;&gt;&gt;     assert isinstance(r.t1, table1)</span>
 <span class="sd">    &gt;&gt;&gt;     assert isinstance(r.t2, table2)</span>
+
+<span class="sd">    :param table: Model type.</span>
+<span class="sd">    :param alias: An alias string of this table.</span>
+<span class="sd">    :param columns: Names of columns to select.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="s1">&#39;Model&#39;</span><span class="p">,</span> <span class="n">alias</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">table</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alias</span> <span class="o">=</span> <span class="n">alias</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns alias or name of the table.</span>
+
+<span class="sd">        :getter: Alias or name of the table.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">alias</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alias</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">name</span>
 
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -83,15 +176,22 @@
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">([</span><span class="bp">self</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">consume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">)]))</span></div>
+<div class="viewcode-block" id="Selection.consume"><a class="viewcode-back" href="../../_autosummary/pyracmon.select.html#pyracmon.Selection.consume">[docs]</a>    <span class="k">def</span> <span class="nf">consume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;Model&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct a model object from a row.</span>
+
+<span class="sd">        :param values: Values of row. The length must be equal to the number of columns in this.</span>
+<span class="sd">        :returns: Model object where column values obtained from the row are set. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">([(</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">)]))</span></div></div>
 
 
-<div class="viewcode-block" id="FieldExpressions"><a class="viewcode-back" href="../../pyracmon.select.html#pyracmon.FieldExpressions">[docs]</a><span class="k">class</span> <span class="nc">FieldExpressions</span><span class="p">:</span>
+<div class="viewcode-block" id="FieldExpressions"><a class="viewcode-back" href="../../_autosummary/pyracmon.select.html#pyracmon.FieldExpressions">[docs]</a><span class="k">class</span> <span class="nc">FieldExpressions</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The instance of this class works as the composition of `Selection` s which provides attributes to access each `Selection`.</span>
+<span class="sd">    The instance of this class works as the composition of selections.</span>
 
-<span class="sd">    `+` operation on `Selection` s creates an instance of `FieldExpressions`. Each `Selection` is available via attributes of its name.</span>
+<span class="sd">    ``+`` operation on `Selection` s creates an instance of `FieldExpressions`. Each selection is available via attributes of its name.</span>
+<span class="sd">    Also, `FieldExpression` can be extended by ``+=`` .</span>
 
 <span class="sd">    &gt;&gt;&gt; exp = table1.select(&quot;t1&quot;, includes=[&quot;col11&quot;, &quot;col12&quot;]) + table2.select(&quot;t2&quot;)</span>
 <span class="sd">    &gt;&gt;&gt; c.execute(f&quot;SELECT {exp} FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&quot;)</span>
@@ -100,8 +200,8 @@
 <span class="sd">    &gt;&gt;&gt;     assert isinstance(r.t1, table1)</span>
 <span class="sd">    &gt;&gt;&gt;     assert isinstance(r.t2, table2)</span>
 
-<span class="sd">    Empty tuple and string are available in addition to `Selection` object.</span>
-<span class="sd">    They are replaced with index arguments and keywords arguments each other on the direct invocation of the instance.</span>
+<span class="sd">    Here, selection means not only `Selection` instance but empty tuple and string.</span>
+<span class="sd">    They are replaced with index arguments (tuple) or keywords arguments (string) each other by the direct invocation of the instance.</span>
 
 <span class="sd">    &gt;&gt;&gt; exp = table1.select(&quot;t1&quot;, includes=[&quot;col11&quot;, &quot;col12&quot;]) + () + &quot;a&quot; + () + &quot;b&quot;</span>
 <span class="sd">    &gt;&gt;&gt; f&quot;{exp(&quot;t2.col21&quot;, &quot;t2.col23&quot;, a=&quot;t2.col22&quot;, b=&quot;t2.col24&quot;)}&quot;</span>
@@ -163,11 +263,11 @@
         <span class="k">return</span> <span class="bp">self</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="RowValues"><a class="viewcode-back" href="../../pyracmon.select.html#pyracmon.RowValues">[docs]</a><span class="k">class</span> <span class="nc">RowValues</span><span class="p">:</span>
+<div class="viewcode-block" id="RowValues"><a class="viewcode-back" href="../../_autosummary/pyracmon.select.html#pyracmon.RowValues">[docs]</a><span class="k">class</span> <span class="nc">RowValues</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This class provides attribute access for each row in query result.</span>
+<span class="sd">    This class provides attribute access to each row in query result.</span>
 
-<span class="sd">    Each instance behaves as if it is a list of values created by `Selection` s.</span>
+<span class="sd">    Each instance behaves as if it is a list of values created by holding `Selection` s.</span>
 <span class="sd">    Index access returns the value at the index and iteration yields values in order.</span>
 
 <span class="sd">    &gt;&gt;&gt; exp = table1.select(&quot;t1&quot;), table2.select()</span>
@@ -183,8 +283,10 @@
 <span class="sd">    ...</span>
 <span class="sd">    &gt;&gt;&gt; r.table2</span>
 <span class="sd">    ...</span>
+
+<span class="sd">    :param selections: List of selections which assign each value in row to a column.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selections</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selections</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Selection</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[()]]]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">key_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">s</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key_of</span><span class="p">,</span> <span class="n">selections</span><span class="p">))</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -211,34 +313,28 @@
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No selection is found whose table name or alias is &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+<div class="viewcode-block" id="RowValues.append"><a class="viewcode-back" href="../../_autosummary/pyracmon.select.html#pyracmon.RowValues.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Appends a value in the row.</span>
+
+<span class="sd">        :param value: A value in the row.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="read_row"><a class="viewcode-back" href="../../pyracmon.select.html#pyracmon.read_row">[docs]</a><span class="k">def</span> <span class="nf">read_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="o">*</span><span class="n">selections</span><span class="p">,</span> <span class="n">allow_redundancy</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="read_row"><a class="viewcode-back" href="../../_autosummary/pyracmon.select.html#pyracmon.read_row">[docs]</a><span class="k">def</span> <span class="nf">read_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="o">*</span><span class="n">selections</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Selection</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[()]],</span> <span class="n">allow_redundancy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RowValues</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Read values in a row according to `selections`.</span>
+<span class="sd">    Read values in a row according to given selections.</span>
 
-<span class="sd">    This function returns `RowValues` where each value is created by the item of `selections` respectively.</span>
-<span class="sd">    The type of the item determines how values in the row is handled:</span>
+<span class="sd">    This function returns `RowValues` where each value is created by each selection respectively.</span>
+<span class="sd">    The type of the selection determines how values in the row are handled:</span>
 
-<span class="sd">    - Selection consumes as many values as the number of columns in it and creates a model instance.</span>
-<span class="sd">    - Callable consumes a value and returns another value.</span>
+<span class="sd">    - `Selection` consumes as many values as the number of columns in it and creates a model instance.</span>
 <span class="sd">    - Empty tuple or a string consumes a value, which is stored in `RowValues` as it is.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    row: object</span>
-<span class="sd">        An object representing a row returned by fetchone() / fetchall().</span>
-<span class="sd">    selections: [Selection | S -&gt; T | () | str]</span>
-<span class="sd">        various type of objects determining the way to handle values in the row.</span>
-<span class="sd">    allow_redundancy: bool</span>
-<span class="sd">        If `False`, an exception is thrown when not all values in a row are consumed.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    RowValues</span>
-<span class="sd">        Values read from the row.</span>
+<span class="sd">    :param selections: List of selections.</span>
+<span class="sd">    :param allow_redundancy: If ``False`` , `ValueError` is thrown when not all values in a row are consumed.</span>
+<span class="sd">    :returns: Values read from the row accoding to the selections.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">RowValues</span><span class="p">(</span><span class="n">selections</span><span class="p">)</span>
 
@@ -263,23 +359,14 @@
 
 <span class="k">class</span> <span class="nc">SelectMixin</span><span class="p">:</span>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">includes</span><span class="o">=</span><span class="p">[],</span> <span class="n">excludes</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">alias</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">includes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">excludes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[])</span> <span class="o">-&gt;</span> <span class="n">Selection</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Select columns to use in a query with an alias of this table.</span>
+<span class="sd">        Default mixin class of every model type providing method to generate `Selection` by Selecting columns with alias.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        alias: str</span>
-<span class="sd">            An alias string of this table.</span>
-<span class="sd">        includes: [str]</span>
-<span class="sd">            Column names to use. All columns are selected if empty.</span>
-<span class="sd">        excludes: [str]</span>
-<span class="sd">            Column names not to use.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        Selection</span>
-<span class="sd">            An object which has selected columns.</span>
+<span class="sd">        :param alias: An alias string of this table.</span>
+<span class="sd">        :param includes: Column names to use. All columns are selected if empty.</span>
+<span class="sd">        :param excludes: Column names not to use.</span>
+<span class="sd">        :returns: Selection object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">excludes</span><span class="p">]</span> \
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="n">includes</span><span class="p">)</span> <span class="k">else</span> \
@@ -287,83 +374,63 @@
         <span class="k">return</span> <span class="n">Selection</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">columns</span><span class="p">)</span>
 </pre></div>
 
-            <div class="clearer"></div>
-          </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><h3><a href="../../index.html">Table of Contents</a></h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../pyracmon.html">pyracmon</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.dialect.html">pyracmon.dialect</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.dialect.mysql.html">pyracmon.dialect.mysql</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.dialect.postgresql.html">pyracmon.dialect.postgresql</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.dialect.shared.html">pyracmon.dialect.shared</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.graph.html">pyracmon.graph</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.template.html">pyracmon.graph.template</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.graph.util.html">pyracmon.graph.util</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.testing.html">pyracmon.testing</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.testing.model.html">pyracmon.testing.model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../pyracmon.testing.util.html">pyracmon.testing.util</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.config.html">pyracmon.config</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.connection.html">pyracmon.connection</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.context.html">pyracmon.context</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.marker.html">pyracmon.marker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.mixin.html">pyracmon.mixin</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.model.html">pyracmon.model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.model_graph.html">pyracmon.model_graph</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.query.html">pyracmon.query</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.select.html">pyracmon.select</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.sql.html">pyracmon.sql</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../pyracmon.util.html">pyracmon.util</a></li>
-</ul>
-</li>
-</ul>
+	    </div>
+            <footer>
+  
 
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">pyracmon  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../pyracmon.html" >pyracmon</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">pyracmon.select</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Author.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
-    </div>
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Author.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/jucacrispim/sphinx_pdj_theme">theme</a> provided by <a href="http://poraodojuca.net">Porão do Juca</a>.
+
+</footer>
+	</div>
+	</div>
+	  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+    <script type="text/javascript" src="../../_static/documentation_options.js">
+
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js">
+
+    </script>
+    <script type="text/javascript" src="../../_static/underscore.js">
+
+    </script>
+    <script type="text/javascript" src="../../_static/doctools.js">
+
+    </script>
+
+  
+
+   <script type="text/javascript"
+           src="../../_static/js/theme.js"></script>
+
+   <script type="text/javascript"
+           src="../../_static/js/pdj.js"></script>
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
   </body>
 </html>

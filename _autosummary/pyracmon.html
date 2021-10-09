@@ -1,0 +1,1626 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xml:lang="" lang="" version="-//W3C//DTD XHTML 1.1//EN" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>pyracmon &mdash; pyracmon  documentation</title>
+  
+
+  
+
+  
+
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'/>
+    <link rel="stylesheet" href="../_static/css/pdj.css" type="text/css" />
+
+  
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../_static/css/pdj.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../_static/pyracmon.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="pyracmon  documentation" href="../index.html"/>
+        <link rel="up" title="API documentation" href="../modules.html"/>
+        <link rel="next" title="pyracmon.config" href="pyracmon.config.html"/>
+        <link rel="prev" title="API documentation" href="../modules.html"/>
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="cache-control" content="public" />
+    <meta name="robots" content="follow, all" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Add jQuery library -->
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+  </head>
+
+  <body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="fa fa-home"> pyracmon </a>
+        <div role="search">
+	  <form id ="rtd-search-form" class="wy-form"
+		action="../search.html" method="get">
+	    <input type="text" name="q" placeholder="Search docs" />
+	    <input type="hidden" name="check_keywords" value="yes" />
+	    <input type="hidden" name="area" value="default" />
+	  </form>
+	</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide.html">Guides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules.html">API documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pyracmon</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.config.html">pyracmon.config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.html">pyracmon.dialect</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.html">pyracmon.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.marker.html">pyracmon.marker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.model_graph.html">pyracmon.model_graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.sql.html">pyracmon.sql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.html">pyracmon.testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+
+      </div>
+      &nbsp;
+    </nav>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      <nav class="wy-nav-top" id="barra-mobile" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">Porão do Juca</a>
+      </nav>
+
+      <div class="wy-nav-content">
+	<div class="fundo-claro">
+	</div>
+	<div class="fundo-escuro">
+	</div>
+
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+	    
+	    <!-- <ul class="wy-breadcrumbs"> -->
+	    <!--   <li><a href="#">Docs</a> &raquo;</li> -->
+
+	    <!--   <li>Features</li> -->
+	    <!--   <li class="wy-breadcrumbs-aside"> -->
+
+	    <!-- 	<a href="_sources/index.txt" rel="nofollow"> View page source</a> -->
+
+	    <!--   </li> -->
+	    <!-- </ul> -->
+	    <!-- <hr/> -->
+	  </div>
+
+          <div role="main" class="">
+
+	    <div id="content" class="hfeed entry-container hentry">
+  <section id="module-pyracmon">
+<span id="pyracmon"></span><h1>pyracmon<a class="headerlink" href="#module-pyracmon" title="Permalink to this headline">¶</a></h1>
+<p>Base module of pyracmon exporting commonly used objects.</p>
+<p>For simple use of the library, this module is designed to be imported Using <code class="docutils literal notranslate"><span class="pre">*</span></code> .</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyracmon</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyracmon.declare_models" title="pyracmon.declare_models"><code class="xref py py-obj docutils literal notranslate"><span class="pre">declare_models</span></code></a>(dialect, db[, module, ...])</p></td>
+<td><p>Declare model types read from database in the specified module.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyracmon.graph_dict" title="pyracmon.graph_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">graph_dict</span></code></a>(graph, **settings)</p></td>
+<td><p>Serialize a graph into a <code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code> under the default specification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyracmon.graph_schema" title="pyracmon.graph_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">graph_schema</span></code></a>(template, **settings)</p></td>
+<td><p>Creates <a class="reference internal" href="#pyracmon.GraphSchema" title="pyracmon.GraphSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphSchema</span></code></a> under the default specifications.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyracmon.graph_template" title="pyracmon.graph_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">graph_template</span></code></a>(*bases, **definitions)</p></td>
+<td><p>Create a graph template on the default <code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphSpec</span></code> predefined to handle model object in appropriate ways.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.pyracmon">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">pyracmon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/config.html#pyracmon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.pyracmon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts <code class="xref py py-obj docutils literal notranslate"><span class="pre">with</span></code> block to change global configurations.</p>
+<p>Returning object is not an instance of <code class="xref py py-obj docutils literal notranslate"><span class="pre">PyracmonConfiguration</span></code> but allows the access to equivalent attributes.
+Changes done in the block is activated after the block finished without error.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">default_config</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">pyracmon</span><span class="p">()</span> <span class="k">as</span> <span class="n">cfg</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">cfg</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;my_config&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">default_config</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;my_config&quot;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<em>Any</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="pyracmon.config.html#pyracmon.config.PyracmonConfiguration" title="pyracmon.config.PyracmonConfiguration">pyracmon.config.PyracmonConfiguration</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.connect">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/connection.html#connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connects to DB by passing arguments to DB-API 2.0 module.</p>
+<p>Every optional argument is passed to <code class="docutils literal notranslate"><span class="pre">api.connect()</span></code> and returns the <a class="reference internal" href="#pyracmon.Connection" title="pyracmon.Connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Connection</span></code></a> object which wraps obtained DB connection.</p>
+<p>Here shows an example connecting to database and executing query.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">psycopg2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyracmon</span> <span class="kn">import</span> <span class="n">connect</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span> <span class="o">=</span> <span class="n">connect</span><span class="p">(</span><span class="n">psycopg2</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">5432</span><span class="p">,</span> <span class="n">dbname</span><span class="o">=</span><span class="s2">&quot;pyracmon&quot;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s2">&quot;postgres&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;postgres&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT 1&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>api</strong> (<em>module</em>) – DB-API 2.0 module which exports <a class="reference internal" href="#pyracmon.connect" title="pyracmon.connect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">connect()</span></code></a> function.</p></li>
+<li><p><strong>args</strong> (<em>Any</em>) – Arguments passed to <code class="docutils literal notranslate"><span class="pre">api.connect()</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – Keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">api.connect()</span></code> .</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Wrapper of DB-API 2.0 connection.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection">pyracmon.connection.Connection</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.Connection">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">Connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context_factory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/connection.html#Connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper class of DB-API 2.0 Connection.</p>
+<p>Every instance works as the proxy object to original connection, therefore any attribute in it is still available.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyracmon.Connection.context">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">context</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="pyracmon.context.html#pyracmon.context.ConnectionContext" title="pyracmon.context.ConnectionContext"><span class="pre">pyracmon.context.ConnectionContext</span></a></em><a class="headerlink" href="#pyracmon.Connection.context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns context object used for this connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter</dt>
+<dd class="field-odd"><p>Context object used for this connection.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Connection.use">
+<span class="sig-name descname"><span class="pre">use</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/connection.html#Connection.use"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Connection.use" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set factory function of <a class="reference internal" href="#pyracmon.ConnectionContext" title="pyracmon.ConnectionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConnectionContext</span></code></a>.</p>
+<p>Use this method to use your custom context object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factory</strong> (<em>Callable</em><em>[</em><em>[</em><em>]</em><em>, </em><a class="reference internal" href="pyracmon.context.html#pyracmon.context.ConnectionContext" title="pyracmon.context.ConnectionContext"><em>pyracmon.context.ConnectionContext</em></a><em>]</em>) – Function returning custom context object.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection">pyracmon.connection.Connection</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Connection.stmt">
+<span class="sig-name descname"><span class="pre">stmt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/connection.html#Connection.stmt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Connection.stmt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates new statement which provides methods to execute query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>context</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="pyracmon.context.html#pyracmon.context.ConnectionContext" title="pyracmon.context.ConnectionContext"><em>pyracmon.context.ConnectionContext</em></a><em>]</em>) – Context object used in the statement. If <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, the context of this connection is used.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Created statement.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Statement" title="pyracmon.connection.Statement">pyracmon.connection.Statement</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyracmon.Connection.helper">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">helper</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="pyracmon.query.html#pyracmon.query.QueryHelper" title="pyracmon.query.QueryHelper"><span class="pre">pyracmon.query.QueryHelper</span></a></em><a class="headerlink" href="#pyracmon.Connection.helper" title="Permalink to this definition">¶</a></dt>
+<dd><div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 1.0.0.</span></p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.ConnectionContext">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">ConnectionContext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">configurations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/context.html#ConnectionContext"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.ConnectionContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class represents a context of query execution.</p>
+<p>You don’t need to care this object in most cases except for when you want to change the configuration at a query execution.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.ConnectionContext.configure">
+<span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">configurations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/context.html#ConnectionContext.configure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.ConnectionContext.configure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change configurations of this context.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>configurations</strong> (<em>Any</em>) – Configurations. See <a class="reference internal" href="pyracmon.config.html#module-pyracmon.config" title="pyracmon.config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.config</span></code></a> to knoe available keys.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>This instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.context.html#pyracmon.context.ConnectionContext" title="pyracmon.context.ConnectionContext">pyracmon.context.ConnectionContext</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.ConnectionContext.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cursor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/context.html#ConnectionContext.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.ConnectionContext.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes a query on a cursor.</p>
+<p>Query logging is also done in this method according to the configuration.</p>
+<p>This method is invoked from <a class="reference internal" href="#pyracmon.ConnectionContext.execute" title="pyracmon.ConnectionContext.execute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConnectionContext.execute</span></code></a> internally.
+When you intend to change behaviors of query executions,
+inherit this class, overwrite this method and set factory method for that class by <a class="reference internal" href="#pyracmon.Connection.use" title="pyracmon.Connection.use"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Connection.use</span></code></a> .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cursor</strong> (<em>Cursor</em>) – Cursor object.</p></li>
+<li><p><strong>sql</strong> (<em>str</em>) – Query string.</p></li>
+<li><p><strong>params</strong> (<em>List</em><em>[</em><em>Any</em><em>]</em>) – Query parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Given cursor object. Internal state may be changed by the execution of the query.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Cursor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.CRUDMixin">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">CRUDMixin</span></span><a class="reference internal" href="../_modules/pyracmon/mixin.html#CRUDMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.CRUDMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default mixin of every model type providing class methods available on all model types.</p>
+<p>Every method takes the DB connection object as its first argument.</p>
+<p>Following arguments are shared in some methods. Some of them have variations in their forms which are available commonly in every method.</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 20%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>name</p></td>
+<td><p>type</p></td>
+<td><p>description</p></td>
+</tr>
+<tr class="row-even"><td><p>pks</p></td>
+<td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">Any]</span></code></p></td>
+<td><p>Values of multiple primary keys. Key of <code class="docutils literal notranslate"><span class="pre">dict</span></code> corresponds to column name.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></p></td>
+<td><p>A value of primary key.</p></td>
+</tr>
+<tr class="row-even"><td><p>record</p></td>
+<td><p>Model type</p></td>
+<td><p>A model object representing a record. Only existing columns affects the operation.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">Any]</span></code></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">dict</span></code> where column name is mapped to its value. Only existing columns affects the operation.</p></td>
+</tr>
+<tr class="row-even"><td><p>condition</p></td>
+<td><p><a class="reference internal" href="#pyracmon.Conditional" title="pyracmon.Conditional"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Conditional</span></code></a></p></td>
+<td><p>Query condition to select rows to fetch, update or delete.</p></td>
+</tr>
+<tr class="row-odd"><td><p>lock</p></td>
+<td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></p></td>
+<td><p>Any type of object whose string representation is appended to the end of query.</p></td>
+</tr>
+<tr class="row-even"><td><p>qualifier</p></td>
+<td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Dict[str,</span> <span class="pre">Callable[[str],</span> <span class="pre">str]]</span></code></p></td>
+<td><p>Functions to convert query expressions for columns. Each function takes default expression and should return actual expression.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Lock is designed to create locking statement but currently it is simply a string appended to the query.
+The usage will be changed in future version.</p>
+<p>Qualifier is used typically to convert or replace placeholder marker in insert/update query.
+By default, those queries contain markers like <code class="docutils literal notranslate"><span class="pre">insert</span> <span class="pre">into</span> <span class="pre">t</span> <span class="pre">(c1,</span> <span class="pre">c2)</span> <span class="pre">values</span> <span class="pre">(?,</span> <span class="pre">?)</span></code> ( <code class="docutils literal notranslate"><span class="pre">Q</span></code> parameter style).
+We need sometimes qualify markers to apply DB function, calculation, type cast and so on. This feature enables them like below.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">c1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">c2</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">c1</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">+1&quot;</span><span class="p">,</span> <span class="n">c2</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;now()&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># SQL: INSERT INTO t (c1, c2) VALUES (?+1, now())</span>
+</pre></div>
+</div>
+<p>Be aware that when model object is used for the second argument, its column values may differ from actual values in DB after query.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.CRUDMixin.count">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">db</span></em>, <em class="sig-param"><span class="pre">condition=Condition:</span> <span class="pre">''</span> <span class="pre">--</span> <span class="pre">[]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/mixin.html#CRUDMixin.count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.CRUDMixin.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count rows which satisfies the condition.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">c1</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># SQL: SELECT COUNT(*) FROM t WHERE c1 = 1</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection"><em>pyracmon.connection.Connection</em></a>) – DB connection.</p></li>
+<li><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.query.html#pyracmon.query.Conditional" title="pyracmon.query.Conditional"><em>pyracmon.query.Conditional</em></a>) – Query condition.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The number of rows.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.CRUDMixin.fetch">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/mixin.html#CRUDMixin.fetch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.CRUDMixin.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch a record by primary key(s).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># SQL: SELECT * FROM t WHERE id = 1</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection"><em>pyracmon.connection.Connection</em></a>) – DB connection.</p></li>
+<li><p><strong>pks</strong> (<em>Union</em><em>[</em><em>Any</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – Primary key value(s).</p></li>
+<li><p><strong>lock</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – Locking statement.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A model object if exists, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code> .</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[Model]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.CRUDMixin.fetch_where">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">fetch_where</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">db</span></em>, <em class="sig-param"><span class="pre">condition=Condition:</span> <span class="pre">''</span> <span class="pre">--</span> <span class="pre">[]</span></em>, <em class="sig-param"><span class="pre">orders={}</span></em>, <em class="sig-param"><span class="pre">limit=None</span></em>, <em class="sig-param"><span class="pre">offset=None</span></em>, <em class="sig-param"><span class="pre">lock=None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/mixin.html#CRUDMixin.fetch_where"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.CRUDMixin.fetch_where" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch records which satisfy the condition.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">fetch_where</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">c1</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">c2</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># SQL: SELECT * FROM t WHERE c1 = 1 ORDER BY c2 ASC LIMIT 10 OFFSET 5</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection"><em>pyracmon.connection.Connection</em></a>) – DB connection.</p></li>
+<li><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.query.html#pyracmon.query.Conditional" title="pyracmon.query.Conditional"><em>pyracmon.query.Conditional</em></a>) – Query condition.</p></li>
+<li><p><strong>orders</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>bool</em><em>]</em>) – Ordering specification where key is column name and value denotes whether the order is ascending or not.</p></li>
+<li><p><strong>limit</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Maximum nuber of rows to fetch. If <code class="docutils literal notranslate"><span class="pre">None</span></code> , all rows are returned.</p></li>
+<li><p><strong>offset</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of rows to skip.</p></li>
+<li><p><strong>lock</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – Locking statement.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Model objects.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[Model]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.CRUDMixin.fetch_one">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">fetch_one</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">db</span></em>, <em class="sig-param"><span class="pre">condition=Condition:</span> <span class="pre">''</span> <span class="pre">--</span> <span class="pre">[]</span></em>, <em class="sig-param"><span class="pre">lock=None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/mixin.html#CRUDMixin.fetch_one"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.CRUDMixin.fetch_one" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch a record which satisfies the condition.</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code> raises When multiple records are found.
+Use this method for queries which certainly returns a single row, such as search by unique key.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">fetch_one</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">c1</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># SQL: SELECT * FROM t WHERE c1 = 1</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection"><em>pyracmon.connection.Connection</em></a>) – DB connection.</p></li>
+<li><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.query.html#pyracmon.query.Conditional" title="pyracmon.query.Conditional"><em>pyracmon.query.Conditional</em></a>) – Query condition.</p></li>
+<li><p><strong>lock</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – Locking statement.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Model objects If exists, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code> .</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[Model]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.CRUDMixin.insert">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/mixin.html#CRUDMixin.insert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.CRUDMixin.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a record.</p>
+<p>Returned model object contains auto incremental column even if they are not set beforehand.
+On the contrary, default value generated in database side is not set.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">c1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">c2</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># SQL: INSERT INTO t (c1, c2) VALUES (1, 2)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection"><em>pyracmon.connection.Connection</em></a>) – DB connection.</p></li>
+<li><p><strong>record</strong> (<em>Union</em><em>[</em><em>Model</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – Object contains column values.</p></li>
+<li><p><strong>qualifier</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Callable</em><em>[</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Functions qualifying placeholder markers.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Model of inserted record.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.CRUDMixin.update">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/mixin.html#CRUDMixin.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.CRUDMixin.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update a record by primary key(s).</p>
+<p>This method only updates columns which are found in <code class="docutils literal notranslate"><span class="pre">record</span></code> except for primary key(s).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">c1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">c2</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># SQL: UPDATE t SET c1 = 1, c2 = 2 WHERE id = 1</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection"><em>pyracmon.connection.Connection</em></a>) – DB connection.</p></li>
+<li><p><strong>pks</strong> (<em>Union</em><em>[</em><em>Any</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – Primary key value(s).</p></li>
+<li><p><strong>record</strong> (<em>Union</em><em>[</em><em>Model</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – Object contains column values.</p></li>
+<li><p><strong>qualifier</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Callable</em><em>[</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Functions qualifying placeholder markers.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether the record exists and updated.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.CRUDMixin.update_where">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">update_where</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/mixin.html#CRUDMixin.update_where"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.CRUDMixin.update_where" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update records which satisfy the condition.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">c2</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">c1</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># SQL: UPDATE t SET c2 = 2 WHERE c1 = 1</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection"><em>pyracmon.connection.Connection</em></a>) – DB connection.</p></li>
+<li><p><strong>record</strong> (<em>Union</em><em>[</em><em>Model</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – Object contains column values.</p></li>
+<li><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.query.html#pyracmon.query.Conditional" title="pyracmon.query.Conditional"><em>pyracmon.query.Conditional</em></a>) – Query condition.</p></li>
+<li><p><strong>qualifier</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Callable</em><em>[</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Functions qualifying placeholder markers.</p></li>
+<li><p><strong>allow_all</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code> , empty condition raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> .</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The number of affected rows.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.CRUDMixin.delete">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pks</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/mixin.html#CRUDMixin.delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.CRUDMixin.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a record by primary key(s).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># SQL: DELETE FROM t WHERE id = 1</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection"><em>pyracmon.connection.Connection</em></a>) – DB connection.</p></li>
+<li><p><strong>pks</strong> (<em>Union</em><em>[</em><em>Any</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – Primary key value(s).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether the record exists and deleted.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.CRUDMixin.delete_where">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">delete_where</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/mixin.html#CRUDMixin.delete_where"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.CRUDMixin.delete_where" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete records which satisfy the condition.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">c1</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># SQL: DELETE FROM t WHERE c1 = 1</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection"><em>pyracmon.connection.Connection</em></a>) – DB connection.</p></li>
+<li><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.query.html#pyracmon.query.Conditional" title="pyracmon.query.Conditional"><em>pyracmon.query.Conditional</em></a>) – Query condition.</p></li>
+<li><p><strong>allow_all</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code> , empty condition raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> .</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The number of affected rows.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.CRUDMixin.last_sequences">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">last_sequences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/mixin.html#CRUDMixin.last_sequences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.CRUDMixin.last_sequences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the sequential (auto incremental) values of a table generated by the latest insertion.</p>
+<p>Result contains every sequential columns and their values.
+When the latest query inserts multiple rows, only the last (= biggest) value is returned.</p>
+<p>This method should be overridden by another mixin class defined in dialect module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection"><em>pyracmon.connection.Connection</em></a>) – DB connection.</p></li>
+<li><p><strong>num</strong> (<em>int</em>) – The number of records inserted by the latest query.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of pairs of column and its values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[Tuple[<a class="reference internal" href="pyracmon.model.html#pyracmon.model.Column" title="pyracmon.model.Column">pyracmon.model.Column</a>, int]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.read_row">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">read_row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">selections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_redundancy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/select.html#read_row"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.read_row" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read values in a row according to given selections.</p>
+<p>This function returns <code class="xref py py-obj docutils literal notranslate"><span class="pre">RowValues</span></code> where each value is created by each selection respectively.
+The type of the selection determines how values in the row are handled:</p>
+<ul class="simple">
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Selection</span></code> consumes as many values as the number of columns in it and creates a model instance.</p></li>
+<li><p>Empty tuple or a string consumes a value, which is stored in <code class="xref py py-obj docutils literal notranslate"><span class="pre">RowValues</span></code> as it is.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>selections</strong> (<em>Union</em><em>[</em><a class="reference internal" href="pyracmon.select.html#pyracmon.select.Selection" title="pyracmon.select.Selection"><em>pyracmon.select.Selection</em></a><em>, </em><em>str</em><em>, </em><em>Tuple</em><em>[</em><em>(</em><em>)</em><em>]</em><em>]</em>) – List of selections.</p></li>
+<li><p><strong>allow_redundancy</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code> , <code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code> is thrown when not all values in a row are consumed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Values read from the row accoding to the selections.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.select.html#pyracmon.select.RowValues" title="pyracmon.select.RowValues">pyracmon.select.RowValues</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.define_model">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">define_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mixins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/model.html#define_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.define_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a model type representing a table.</p>
+<p>Model type inherits all types in <code class="docutils literal notranslate"><span class="pre">mixins</span></code> in order.
+When the same attribute is defined in multiple mixin types, the former overrides the latter.</p>
+<p>Every model type has following attributes:</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 20%" />
+<col style="width: 67%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>name</p></td>
+<td><p>type</p></td>
+<td><p>description</p></td>
+</tr>
+<tr class="row-even"><td><p>name</p></td>
+<td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>Name of the table.</p></td>
+</tr>
+<tr class="row-odd"><td><p>table</p></td>
+<td><p><a class="reference internal" href="#pyracmon.Table" title="pyracmon.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code></a></p></td>
+<td><p>Table schema.</p></td>
+</tr>
+<tr class="row-even"><td><p>columns</p></td>
+<td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">List[Column]</span></code></p></td>
+<td><p>List of column schemas.</p></td>
+</tr>
+<tr class="row-odd"><td><p>column</p></td>
+<td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></p></td>
+<td><p>An object exposing column schemas by attributes of their names.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Model instances are created by passing the constructor keyword arguments holding column names and values.
+The constructor does not require all of columns.
+Omitted columns don’t affect predefined operations such as <a class="reference internal" href="#pyracmon.CRUDMixin.insert" title="pyracmon.CRUDMixin.insert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CRUDMixin.insert</span></code></a> .
+If <code class="docutils literal notranslate"><span class="pre">not</span> <span class="pre">null</span></code> constraint exists on the column, it of course denies the insertion.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># CREATE TABLE t1 (col1 int, col2 text, col3 text);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">table</span> <span class="o">=</span> <span class="n">define_model</span><span class="p">(</span><span class="s2">&quot;t1&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">table</span><span class="p">(</span><span class="n">col1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">col2</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Attributes are also assignable by normal setter. If attribute name is not a valid column name, <code class="xref py py-obj docutils literal notranslate"><span class="pre">TypeError</span></code> raises.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">col3</span> <span class="o">=</span> <span class="s2">&quot;b&quot;</span>
+</pre></div>
+</div>
+<p>Model instance supports iteration which yields pairs of assigned column schema and its value.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">col1 = 1</span>
+<span class="go">col2 = a</span>
+<span class="go">col3 = b</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table</strong> – Table schema.</p></li>
+<li><p><strong>mixin</strong> – Mixin types providing class methods to the model type.</p></li>
+<li><p><strong>table_</strong> (<a class="reference internal" href="pyracmon.model.html#pyracmon.model.Table" title="pyracmon.model.Table"><em>pyracmon.model.Table</em></a>) – </p></li>
+<li><p><strong>mixins</strong> (<em>List</em><em>[</em><em>type</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Model type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.Table">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/model.html#Table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Table" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class represents a schema of a table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Table name.</p></li>
+<li><p><strong>columns</strong> (<em>List</em><em>[</em><a class="reference internal" href="pyracmon.model.html#pyracmon.model.Column" title="pyracmon.model.Column"><em>pyracmon.model.Column</em></a><em>]</em>) – Columns in the table.</p></li>
+<li><p><strong>comment</strong> (<em>str</em>) – Comment of the table.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Table.find">
+<span class="sig-name descname"><span class="pre">find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/model.html#Table.find"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Table.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a column by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – Column name.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The column if exists, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code> .</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[<a class="reference internal" href="pyracmon.model.html#pyracmon.model.Column" title="pyracmon.model.Column">pyracmon.model.Column</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.Column">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">Column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incremental</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nullable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/model.html#Column"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Column" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class represents a schema of a column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Column name.</p></li>
+<li><p><strong>ptype</strong> (<em>type</em>) – Data type in python.</p></li>
+<li><p><strong>type_info</strong> (<em>str</em>) – Type informations obtained from DB.</p></li>
+<li><p><strong>pk</strong> (<em>bool</em>) – Is this column a primary key?</p></li>
+<li><p><strong>fk</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="pyracmon.model.html#pyracmon.model.Relations" title="pyracmon.model.Relations"><em>pyracmon.model.Relations</em></a><em>]</em>) – An informative object if this column is a foreign key, otherwise a value evaluated as <code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code> in boolean context.</p></li>
+<li><p><strong>incremental</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – If this column is auto-incremental, this object contains the information of the feature, otherwise, None.</p></li>
+<li><p><strong>nullable</strong> (<em>bool</em>) – Can this column contain null?</p></li>
+<li><p><strong>comment</strong> (<em>str</em>) – Comment of the column.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.Q">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">Q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_include_none_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class provides utility class methods creating conditions.</p>
+<p>Using <a class="reference internal" href="#pyracmon.Q.of" title="pyracmon.Q.of"><code class="xref py py-obj docutils literal notranslate"><span class="pre">of()</span></code></a> is the most simple way to create a condition clause with parameters.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="s2">&quot;a = $_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">Condition: &#39;a = $_&#39; -- [1]</span>
+</pre></div>
+</div>
+<p>Other utility methods correspond to basic operators defined in SQL.
+They takes keyword arguments and create conditions by applying operator to each item respectively.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">Condition: &#39;a = %s&#39; -- [1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Q</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">Condition: &#39;a IN (%s, %s, %s)&#39; -- [1, 2, 3]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Q</span><span class="o">.</span><span class="n">like</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="s2">&quot;abc&quot;</span><span class="p">)</span>
+<span class="go">Condition: &#39;a LIKE %s&#39; -- [&quot;%abc%&quot;]</span>
+</pre></div>
+</div>
+<p>Multiple arguments generates a condition which concatenates conditions with logical operator, by default <code class="docutils literal notranslate"><span class="pre">AND</span></code> .</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">Condition: &#39;a = %s AND b = %s&#39; -- [1, 2]</span>
+</pre></div>
+</div>
+<p>Those methods also accept table alias which is prepended to columns.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Q</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">Condition: &#39;t.a = %s AND t.b = %s&#39;</span>
+</pre></div>
+</div>
+<p>Additionally, the instance of this class has its own functionality to generate condition.</p>
+<p>Each parameter passed to the constructor becomes an instance method of the instance,
+which takes a condition clause including placeholders which will take parameters in query execution phase.
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">Statement.execute</span></code> allows unified marker <code class="docutils literal notranslate"><span class="pre">$_</span></code> in spite of DB driver.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">a</span><span class="p">(</span><span class="s2">&quot;a = $_&quot;</span><span class="p">)</span>
+<span class="go">Condition: &#39;a = $_&#39; -- [1]</span>
+</pre></div>
+</div>
+<p>Method whose name is not passed to the constructor renders empty condition which has no effect on the query.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s2">&quot;b = $_&quot;</span><span class="p">)</span>
+<span class="go">Condition: &#39;&#39; -- []</span>
+</pre></div>
+</div>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">None</span></code> is equivalent to not being passed. Giving <code class="docutils literal notranslate"><span class="pre">True</span></code> at the first argument in constructor changes the behavior.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s2">&quot;b = $_&quot;</span><span class="p">)</span>
+<span class="go">Condition: &#39;&#39; -- []</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s2">&quot;b = $_&quot;</span><span class="p">)</span>
+<span class="go">Condition: &#39;b = $_&#39; -- [None]</span>
+</pre></div>
+</div>
+<p>This feature simplifies a query construction in cases some parameters are absent.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">w</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">a</span><span class="p">(</span><span class="s2">&quot;a = $_&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">q</span><span class="o">.</span><span class="n">b</span><span class="p">(</span><span class="s2">&quot;b = $_&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">db</span><span class="o">.</span><span class="n">stmt</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SELECT * FROM table </span><span class="si">{</span><span class="n">w</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Q</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>      <span class="c1"># SELECT * FROM table WHERE a = 1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Q</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span> <span class="c1"># SELECT * FROM table WHERE a = 1 AND b = 2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">Q</span><span class="p">())</span>         <span class="c1"># SELECT * FROM table</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_include_none_</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.of">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a condition directly from an expression and parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expression</strong> (<em>str</em>) – Condition expression.</p></li>
+<li><p><strong>params</strong> (<em>Any</em>) – Parameters used in the condition.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.query.html#pyracmon.query.Conditional" title="pyracmon.query.Conditional">pyracmon.query.Conditional</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.eq">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">eq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.eq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.eq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a condition applying <code class="docutils literal notranslate"><span class="pre">=</span></code> operator to columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.neq">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">neq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.neq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.neq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <a class="reference internal" href="#pyracmon.Q.eq" title="pyracmon.Q.eq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eq</span></code></a>, but applies <code class="docutils literal notranslate"><span class="pre">!=</span></code> .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.in_">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">in_</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.in_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.in_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <a class="reference internal" href="#pyracmon.Q.eq" title="pyracmon.Q.eq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eq</span></code></a>, but applies <code class="docutils literal notranslate"><span class="pre">IN</span></code> .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>List</em><em>[</em><em>Any</em><em>]</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.not_in">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">not_in</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.not_in"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.not_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <a class="reference internal" href="#pyracmon.Q.eq" title="pyracmon.Q.eq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eq</span></code></a>, but applies <code class="docutils literal notranslate"><span class="pre">NOT</span> <span class="pre">IN</span></code> .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>List</em><em>[</em><em>Any</em><em>]</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.match">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.match"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <a class="reference internal" href="#pyracmon.Q.eq" title="pyracmon.Q.eq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eq</span></code></a>, but applies <code class="docutils literal notranslate"><span class="pre">LIKE</span></code> . Given parameters will be passed to query without being modified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>str</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.like">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">like</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.like"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.like" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <a class="reference internal" href="#pyracmon.Q.eq" title="pyracmon.Q.eq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eq</span></code></a>, but applies <code class="docutils literal notranslate"><span class="pre">LIKE</span></code> . Given parameters will be escaped and enclosed with wildcards (%) to execute partial match.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>str</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.startswith">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">startswith</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.startswith"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.startswith" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <a class="reference internal" href="#pyracmon.Q.eq" title="pyracmon.Q.eq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eq</span></code></a>, but applies <code class="docutils literal notranslate"><span class="pre">LIKE</span></code> . Given parameters will be escaped and appended with wildcards (%) to execute prefix match.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>str</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.endswith">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">endswith</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.endswith"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.endswith" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <a class="reference internal" href="#pyracmon.Q.eq" title="pyracmon.Q.eq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eq</span></code></a>, but applies <code class="docutils literal notranslate"><span class="pre">LIKE</span></code> . Given parameters will be escaped and prepended with wildcards (%) to execute backward match.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>str</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.lt">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">lt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.lt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.lt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <a class="reference internal" href="#pyracmon.Q.eq" title="pyracmon.Q.eq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eq</span></code></a>, but applies <code class="xref py py-obj docutils literal notranslate"><span class="pre">'&lt;</span></code>’ .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.le">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">le</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.le"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.le" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <a class="reference internal" href="#pyracmon.Q.eq" title="pyracmon.Q.eq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eq</span></code></a>, but applies <code class="docutils literal notranslate"><span class="pre">&lt;=</span></code> .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.gt">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">gt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.gt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.gt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <a class="reference internal" href="#pyracmon.Q.eq" title="pyracmon.Q.eq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eq</span></code></a>, but applies <code class="docutils literal notranslate"><span class="pre">&gt;</span></code> .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Q.ge">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">ge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_alias_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_and_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Q.ge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Q.ge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Works like <a class="reference internal" href="#pyracmon.Q.eq" title="pyracmon.Q.eq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eq</span></code></a>, but applies <code class="docutils literal notranslate"><span class="pre">&gt;=</span></code> .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_alias_</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Table alias.</p></li>
+<li><p><strong>_and_</strong> (<em>bool</em>) – Specifies concatenating logical operator is <code class="docutils literal notranslate"><span class="pre">AND</span></code> or <code class="docutils literal notranslate"><span class="pre">OR</span></code> .</p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – Column names and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Condition object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.Conditional">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">Conditional</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Conditional"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Conditional" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a query condition composed of an expression and parameters.</p>
+<p>Parameters must be a list where the index of each parameter matches the index of placeholder for it.
+The expression accepts only the automatic numbering template parameter <code class="xref py py-obj docutils literal notranslate"><span class="pre">$_</span></code>.</p>
+<p>Applying logical operators such as <code class="xref py py-obj docutils literal notranslate"><span class="pre">&amp;</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">|</span></code> and <code class="xref py py-obj docutils literal notranslate"></code> generates new condition.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="s2">&quot;a = $_&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c2</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="s2">&quot;b &lt; $_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c3</span> <span class="o">=</span> <span class="n">Q</span><span class="o">.</span><span class="n">of</span><span class="p">(</span><span class="s2">&quot;c &gt; $_&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="o">~</span><span class="p">(</span><span class="n">c1</span> <span class="o">&amp;</span> <span class="n">c2</span> <span class="o">|</span> <span class="n">c3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span>
+<span class="go">Condition: NOT (((a = $_) AND (b &lt; $_)) OR (c &gt; $_)) -- [0, 1, 2]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Conditional.all">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conditionals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Conditional.all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Conditional.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenates conditional objects with <code class="xref py py-obj docutils literal notranslate"><span class="pre">AND</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>conditionals</strong> (<em>Iterable</em><em>[</em><a class="reference internal" href="pyracmon.query.html#pyracmon.query.Conditional" title="pyracmon.query.Conditional"><em>pyracmon.query.Conditional</em></a><em>]</em>) – Condition objects.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Concatenated condition object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.query.html#pyracmon.query.Conditional" title="pyracmon.query.Conditional">pyracmon.query.Conditional</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Conditional.any">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">any</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conditionals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#Conditional.any"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Conditional.any" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenates conditional objects with <code class="xref py py-obj docutils literal notranslate"><span class="pre">OR</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>conditionals</strong> (<em>Iterable</em><em>[</em><a class="reference internal" href="pyracmon.query.html#pyracmon.query.Conditional" title="pyracmon.query.Conditional"><em>pyracmon.query.Conditional</em></a><em>]</em>) – Condition objects.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Concatenated condition object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.query.html#pyracmon.query.Conditional" title="pyracmon.query.Conditional">pyracmon.query.Conditional</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.where">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">where</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">condition</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/query.html#where"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.where" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a <code class="docutils literal notranslate"><span class="pre">WHERE</span></code> clause and parameters representing given condition.</p>
+<p>If the condition is empty, returned clause is an empty string which does not contain <code class="docutils literal notranslate"><span class="pre">WHERE</span></code> keyword.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>condition</strong> (<a class="reference internal" href="pyracmon.query.html#pyracmon.query.Conditional" title="pyracmon.query.Conditional"><em>pyracmon.query.Conditional</em></a>) – Condition object.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple of <code class="docutils literal notranslate"><span class="pre">WHERE</span></code> clause and parameters.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[str, List[Any]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.new_graph">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">new_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">bases</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/graph.html#new_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.new_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a graph from a template.</p>
+<p>Use this function instead of invoking constructor directly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template</strong> (<a class="reference internal" href="pyracmon.graph.template.html#pyracmon.graph.template.GraphTemplate" title="pyracmon.graph.template.GraphTemplate"><em>pyracmon.graph.template.GraphTemplate</em></a>) – A template of a graph.</p></li>
+<li><p><strong>bases</strong> (<a class="reference internal" href="pyracmon.graph.template.html#pyracmon.graph.template.GraphTemplate" title="pyracmon.graph.template.GraphTemplate"><em>pyracmon.graph.template.GraphTemplate</em></a>) – Other graphs whose nodes are appended to created graph.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Created graph.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.S">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">S</span></span><a class="reference internal" href="../_modules/pyracmon/graph/serialize.html#S"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.S" title="Permalink to this definition">¶</a></dt>
+<dd><p>An utility class to build <code class="xref py py-obj docutils literal notranslate"><span class="pre">NodeSerializer</span></code>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.S.of">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">namer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">serializers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/serialize.html#S.of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.S.of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an instance of <code class="xref py py-obj docutils literal notranslate"><span class="pre">NodeSerializer</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>namer</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>str</em><em>, </em><em>Callable</em><em>[</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em><em>]</em>) – A string or naming function.</p></li>
+<li><p><strong>aggregator</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="pyracmon.graph.graph.html#pyracmon.graph.graph.Node" title="pyracmon.graph.graph.Node"><em>pyracmon.graph.graph.Node</em></a><em>]</em><em>, </em><a class="reference internal" href="pyracmon.graph.graph.html#pyracmon.graph.graph.Node" title="pyracmon.graph.graph.Node"><em>pyracmon.graph.graph.Node</em></a><em>]</em><em>, </em><em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="pyracmon.graph.graph.html#pyracmon.graph.graph.Node" title="pyracmon.graph.graph.Node"><em>pyracmon.graph.graph.Node</em></a><em>]</em><em>, </em><em>List</em><em>[</em><a class="reference internal" href="pyracmon.graph.graph.html#pyracmon.graph.graph.Node" title="pyracmon.graph.graph.Node"><em>pyracmon.graph.graph.Node</em></a><em>]</em><em>]</em><em>, </em><em>int</em><em>]</em><em>]</em>) – An aggregation function or an index of node to select in node container.</p></li>
+<li><p><strong>serializer</strong> – A list of <em>serializer</em> s.</p></li>
+<li><p><strong>serializers</strong> (<em>Union</em><em>[</em><em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="pyracmon.graph.serialize.html#pyracmon.graph.serialize.SerializationContext" title="pyracmon.graph.serialize.SerializationContext"><em>pyracmon.graph.serialize.SerializationContext</em></a><em>, </em><a class="reference internal" href="pyracmon.graph.graph.html#pyracmon.graph.graph.Node" title="pyracmon.graph.graph.Node"><em>pyracmon.graph.graph.Node</em></a><em>, </em><em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="pyracmon.graph.graph.html#pyracmon.graph.graph.Node" title="pyracmon.graph.graph.Node"><em>pyracmon.graph.graph.Node</em></a><em>, </em><em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Callable</em><em>[</em><em>[</em><em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Created <code class="xref py py-obj docutils literal notranslate"><span class="pre">NodeSerializer</span></code> .</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.graph.serialize.html#pyracmon.graph.serialize.NodeSerializer" title="pyracmon.graph.serialize.NodeSerializer">pyracmon.graph.serialize.NodeSerializer</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.S.builder">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/serialize.html#S.builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.S.builder" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is used as decorator to put decorating target to <a class="reference internal" href="#pyracmon.S" title="pyracmon.S"><code class="xref py py-obj docutils literal notranslate"><span class="pre">S</span></code></a> builder methods.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@S</span><span class="o">.</span><span class="n">builder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">some_func</span><span class="p">():</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">S</span><span class="o">.</span><span class="n">some_func</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>builder</strong> (<em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em>) – Decorating target.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Decorated builder.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.TypedDict">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">TypedDict</span></span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#TypedDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.TypedDict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.document_type">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">document_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#document_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.document_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a <code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentedType</span></code> for given type and documentation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>type</em>) – A type to give the documentaion.</p></li>
+<li><p><strong>doc</strong> (<em>str</em>) – The documentation string.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Created <code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentedType</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="pyracmon.graph.schema.html#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType">pyracmon.graph.schema.DocumentedType</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.Typeable">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">Typeable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Typeable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Typeable" title="Permalink to this definition">¶</a></dt>
+<dd><p>An interface for generic type which is resolved into a concrete type by a type parameter.</p>
+<p>Inherit this class and declare static method whose signature is <code class="docutils literal notranslate"><span class="pre">resolve(me,</span> <span class="pre">bound,</span> <span class="pre">arg,</span> <span class="pre">spec)</span> <span class="pre">-&gt;</span> <span class="pre">type</span></code> .</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">(</span><span class="n">Typeable</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nd">@staticmethod</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">me</span><span class="p">,</span> <span class="n">bound</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="k">return</span> <span class="n">some_type</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Typeable</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="nb">int</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Type resolution starts from <a class="reference internal" href="#pyracmon.Typeable.resolve" title="pyracmon.Typeable.resolve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable.resolve</span></code></a> which invokes the static method with following arguments.</p>
+<ul class="simple">
+<li><p>Type to resolve itself, in this case, <code class="docutils literal notranslate"><span class="pre">A[T]</span></code> .</p></li>
+<li><dl class="simple">
+<dt>A resolved type which replace <code class="docutils literal notranslate"><span class="pre">T</span></code> .</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">arg</span></code> is the first candidate.</p></li>
+<li><p>When <code class="docutils literal notranslate"><span class="pre">arg</span></code> is also <a class="reference internal" href="#pyracmon.Typeable" title="pyracmon.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> , this resolution flow is applied to it recursively until concrete type if determined.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">arg</span></code> is passed through as it is.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">spec</span></code> is passed through as it is.</p></li>
+</ul>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Typeable.resolve">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">resolve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">typeable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Typeable.resolve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Typeable.resolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve a <a class="reference internal" href="#pyracmon.Typeable" title="pyracmon.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> type into a concrete type by a type for its type parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>typeable</strong> (<em>Type</em><em>[</em><a class="reference internal" href="#pyracmon.Typeable" title="pyracmon.Typeable"><em>Typeable</em></a><em>]</em>) – <a class="reference internal" href="#pyracmon.Typeable" title="pyracmon.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> type having a generic type parameter.</p></li>
+<li><p><strong>arg</strong> (<em>type</em>) – Type to replace a type parameter.</p></li>
+<li><p><strong>spec</strong> (<a class="reference internal" href="pyracmon.graph.html#pyracmon.graph.GraphSpec" title="pyracmon.graph.GraphSpec"><em>GraphSpec</em></a>) – <code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphSpec</span></code> used for schema generation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Resolved type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.Typeable.is_resolved">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">is_resolved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">typeable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Typeable.is_resolved"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.Typeable.is_resolved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks a type parameter of given <a class="reference internal" href="#pyracmon.Typeable" title="pyracmon.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> is alredy resolved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>typeable</strong> (<em>Type</em><em>[</em><a class="reference internal" href="pyracmon.graph.schema.html#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><em>pyracmon.graph.schema.Typeable</em></a><em>]</em>) – <a class="reference internal" href="#pyracmon.Typeable" title="pyracmon.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> type having a generic type parameter.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether the type parameter is already resolved or not.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.walk_schema">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">walk_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">td</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_doc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#walk_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.walk_schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary as a result of walking a schema object from its root.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>td</strong> – A schema represented by <a class="reference internal" href="#pyracmon.TypedDict" title="pyracmon.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a>.</p></li>
+<li><p><strong>with_doc</strong> – Flag to include documentations into result.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Key value representation of the schema. If <code class="docutils literal notranslate"><span class="pre">with_doc</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, each value is <code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentedType</span></code> .</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[str, Union[type, <a class="reference internal" href="pyracmon.graph.schema.html#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType">pyracmon.graph.schema.DocumentedType</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.GraphSchema">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">GraphSchema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">serializers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#GraphSchema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.GraphSchema" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class exposes a property to get the schema of serialization result of a graph.</p>
+<p>Schema generation also depends on <code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphSpec</span></code> , on which <a class="reference internal" href="#pyracmon.GraphSchema.serialize" title="pyracmon.GraphSchema.serialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">serialize</span></code></a> serializes a graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> (<a class="reference internal" href="pyracmon.graph.html#pyracmon.graph.GraphSpec" title="pyracmon.graph.GraphSpec"><em>GraphSpec</em></a>) – Specification of graph operations.</p></li>
+<li><p><strong>template</strong> (<a class="reference internal" href="pyracmon.graph.template.html#pyracmon.graph.template.GraphTemplate" title="pyracmon.graph.template.GraphTemplate"><em>pyracmon.graph.template.GraphTemplate</em></a>) – Graph template to serialize.</p></li>
+<li><p><strong>serializers</strong> (<a class="reference internal" href="pyracmon.graph.serialize.html#pyracmon.graph.serialize.NodeSerializer" title="pyracmon.graph.serialize.NodeSerializer"><em>NodeSerializer</em></a>) – <code class="xref py py-obj docutils literal notranslate"><span class="pre">NodeSerializer</span></code> s used for the serialization.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.GraphSchema.schema_of">
+<span class="sig-name descname"><span class="pre">schema_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#GraphSchema.schema_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.GraphSchema.schema_of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates structured and documented schema for a template property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prop</strong> (<a class="reference internal" href="pyracmon.graph.template.html#pyracmon.graph.template.GraphTemplate.Property" title="pyracmon.graph.template.GraphTemplate.Property"><em>pyracmon.graph.template.GraphTemplate.Property</em></a>) – A template property.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Schema with documentation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="pyracmon.graph.schema.html#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType">pyracmon.graph.schema.DocumentedType</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyracmon.GraphSchema.schema">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">schema</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="pyracmon.graph.schema.html#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><span class="pre">pyracmon.graph.schema.TypedDict</span></a></em><a class="headerlink" href="#pyracmon.GraphSchema.schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates <a class="reference internal" href="#pyracmon.TypedDict" title="pyracmon.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> which represents the schema of serialized graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter</dt>
+<dd class="field-odd"><p>Representation of the schema of serialized graph.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.GraphSchema.serialize">
+<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">node_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#GraphSchema.serialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.GraphSchema.serialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize graph into a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>graph</strong> (<em>GraphView</em>) – A view of a graph.</p></li>
+<li><p><strong>node_params</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Parma node_params</dt>
+<dd class="field-even"><p>Parameters passed to <code class="xref py py-obj docutils literal notranslate"><span class="pre">SerializationContext</span></code> and used by <em>serializer</em> s.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Serialization result.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.declare_models">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">declare_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dialect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pyracmon'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mixins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">excludes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">includes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon.html#declare_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.declare_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Declare model types read from database in the specified module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dialect</strong> (<em>module</em>) – A module exporting <code class="docutils literal notranslate"><span class="pre">read_schema</span></code> function and <code class="docutils literal notranslate"><span class="pre">mixins</span></code> classes.
+<a class="reference internal" href="pyracmon.dialect.postgresql.html#module-pyracmon.dialect.postgresql" title="pyracmon.dialect.postgresql"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.dialect.postgresql</span></code></a> and <a class="reference internal" href="pyracmon.dialect.mysql.html#module-pyracmon.dialect.mysql" title="pyracmon.dialect.mysql"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.dialect.mysql</span></code></a> are available.</p></li>
+<li><p><strong>db</strong> (<a class="reference internal" href="pyracmon.connection.html#pyracmon.connection.Connection" title="pyracmon.connection.Connection"><em>pyracmon.connection.Connection</em></a>) – Connection already connected to database.</p></li>
+<li><p><strong>module</strong> (<em>Union</em><em>[</em><em>module</em><em>, </em><em>str</em><em>]</em>) – A module or module name where the declarations are located.</p></li>
+<li><p><strong>mixins</strong> (<em>List</em><em>[</em><em>type</em><em>]</em>) – Additional mixin classes for declaring model types.</p></li>
+<li><p><strong>excludes</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – Excluding table names.</p></li>
+<li><p><strong>includes</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – Including table names. When this argument is omitted, all tables except for specified in <code class="xref py py-obj docutils literal notranslate"><span class="pre">excludes</span></code> are declared.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Declared model types.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[Type[Model]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.graph_template">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">graph_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">definitions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon.html#graph_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a graph template on the default <code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphSpec</span></code> predefined to handle model object in appropriate ways.</p>
+<p>See <a class="reference internal" href="pyracmon.graph.html#pyracmon.graph.GraphSpec.new_template" title="pyracmon.graph.GraphSpec.new_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.graph.GraphSpec.new_template</span></code></a> for the detail of definitions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bases</strong> (<a class="reference internal" href="pyracmon.graph.template.html#pyracmon.graph.template.GraphTemplate" title="pyracmon.graph.template.GraphTemplate"><em>pyracmon.graph.template.GraphTemplate</em></a>) – Base templates whose properties and relations are merged into new template.</p></li>
+<li><p><strong>definitions</strong> (<em>type</em>) – Definitions of template properties.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Graph template.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.graph.template.html#pyracmon.graph.template.GraphTemplate" title="pyracmon.graph.template.GraphTemplate">pyracmon.graph.template.GraphTemplate</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.graph_dict">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">graph_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon.html#graph_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize a graph into a <code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code> under the default specification.</p>
+<p>See <a class="reference internal" href="pyracmon.graph.html#pyracmon.graph.GraphSpec.to_dict" title="pyracmon.graph.GraphSpec.to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.graph.GraphSpec.to_dict</span></code></a> for the detail of serialization settings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>graph</strong> (<em>GraphView</em>) – A view of the graph.</p></li>
+<li><p><strong>settings</strong> (<a class="reference internal" href="pyracmon.graph.serialize.html#pyracmon.graph.serialize.NodeSerializer" title="pyracmon.graph.serialize.NodeSerializer"><em>pyracmon.graph.serialize.NodeSerializer</em></a>) – Serialization settings.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Serialization result.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.graph_schema">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.</span></span><span class="sig-name descname"><span class="pre">graph_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">settings</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon.html#graph_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph_schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates <a class="reference internal" href="#pyracmon.GraphSchema" title="pyracmon.GraphSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphSchema</span></code></a> under the default specifications.</p>
+<p><a class="reference internal" href="#pyracmon.GraphSchema" title="pyracmon.GraphSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphSchema</span></code></a> represents the structure of <code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code> serialized a graph of the template with given serialization settings.
+Use this, for example, to document REST API which responds serialized graph in JSON format.</p>
+<p>See <a class="reference internal" href="pyracmon.graph.html#pyracmon.graph.GraphSpec.to_dict" title="pyracmon.graph.GraphSpec.to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.graph.GraphSpec.to_dict</span></code></a> for the detail of serialization settings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template</strong> (<a class="reference internal" href="pyracmon.graph.template.html#pyracmon.graph.template.GraphTemplate" title="pyracmon.graph.template.GraphTemplate"><em>pyracmon.graph.template.GraphTemplate</em></a>) – A template of serializing graph.</p></li>
+<li><p><strong>settings</strong> (<a class="reference internal" href="pyracmon.graph.serialize.html#pyracmon.graph.serialize.NodeSerializer" title="pyracmon.graph.serialize.NodeSerializer"><em>pyracmon.graph.serialize.NodeSerializer</em></a>) – Serialization settings.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Schema of serialization result.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="pyracmon.graph.schema.html#pyracmon.graph.schema.GraphSchema" title="pyracmon.graph.schema.GraphSchema">pyracmon.graph.schema.GraphSchema</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Modules</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyracmon.config.html#module-pyracmon.config" title="pyracmon.config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.config</span></code></a></p></td>
+<td><p>This module exports types and functions for configurations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pyracmon.connection.html#module-pyracmon.connection" title="pyracmon.connection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.connection</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyracmon.context.html#module-pyracmon.context" title="pyracmon.context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.context</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pyracmon.dialect.html#module-pyracmon.dialect" title="pyracmon.dialect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.dialect</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyracmon.graph.html#module-pyracmon.graph" title="pyracmon.graph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.graph</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pyracmon.marker.html#module-pyracmon.marker" title="pyracmon.marker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.marker</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyracmon.mixin.html#module-pyracmon.mixin" title="pyracmon.mixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.mixin</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pyracmon.model.html#module-pyracmon.model" title="pyracmon.model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.model</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyracmon.model_graph.html#module-pyracmon.model_graph" title="pyracmon.model_graph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.model_graph</span></code></a></p></td>
+<td><p>This module provides graph specifications to deal with model types.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pyracmon.query.html#module-pyracmon.query" title="pyracmon.query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.query</span></code></a></p></td>
+<td><p>This module exports types and functions for query construction.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyracmon.select.html#module-pyracmon.select" title="pyracmon.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.select</span></code></a></p></td>
+<td><p>This module exports types and functions used for <code class="docutils literal notranslate"><span class="pre">SELECT</span></code> queries.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pyracmon.sql.html#module-pyracmon.sql" title="pyracmon.sql"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.sql</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="pyracmon.testing.html#module-pyracmon.testing" title="pyracmon.testing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.testing</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="pyracmon.util.html#module-pyracmon.util" title="pyracmon.util"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon.util</span></code></a></p></td>
+<td><p>Utility types and functions for internal use.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+	    </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pyracmon.config.html" class="btn btn-neutral float-right" title="pyracmon.config">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../modules.html" class="btn btn-neutral" title="API documentation"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, sozu.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/jucacrispim/sphinx_pdj_theme">theme</a> provided by <a href="http://poraodojuca.net">Porão do Juca</a>.
+
+</footer>
+	</div>
+	</div>
+	  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/underscore.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/doctools.js">
+
+    </script>
+
+  
+
+   <script type="text/javascript"
+           src="../_static/js/theme.js"></script>
+
+   <script type="text/javascript"
+           src="../_static/js/pdj.js"></script>
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+  </body>
+</html>

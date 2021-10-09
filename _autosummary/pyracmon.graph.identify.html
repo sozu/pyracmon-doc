@@ -1,0 +1,397 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xml:lang="" lang="" version="-//W3C//DTD XHTML 1.1//EN" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>pyracmon.graph.identify &mdash; pyracmon  documentation</title>
+  
+
+  
+
+  
+
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'/>
+    <link rel="stylesheet" href="../_static/css/pdj.css" type="text/css" />
+
+  
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../_static/css/pdj.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../_static/pyracmon.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="pyracmon  documentation" href="../index.html"/>
+        <link rel="up" title="pyracmon.graph" href="pyracmon.graph.html"/>
+        <link rel="next" title="pyracmon.graph.schema" href="pyracmon.graph.schema.html"/>
+        <link rel="prev" title="pyracmon.graph.graph" href="pyracmon.graph.graph.html"/>
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="cache-control" content="public" />
+    <meta name="robots" content="follow, all" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Add jQuery library -->
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+  </head>
+
+  <body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="fa fa-home"> pyracmon </a>
+        <div role="search">
+	  <form id ="rtd-search-form" class="wy-form"
+		action="../search.html" method="get">
+	    <input type="text" name="q" placeholder="Search docs" />
+	    <input type="hidden" name="check_keywords" value="yes" />
+	    <input type="hidden" name="area" value="default" />
+	  </form>
+	</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide.html">Guides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules.html">API documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyracmon.html">pyracmon</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.config.html">pyracmon.config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.html">pyracmon.dialect</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="pyracmon.graph.html">pyracmon.graph</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pyracmon.graph.identify</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.schema.html">pyracmon.graph.schema</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.util.html">pyracmon.graph.util</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.marker.html">pyracmon.marker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.model_graph.html">pyracmon.model_graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.sql.html">pyracmon.sql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.html">pyracmon.testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+
+      </div>
+      &nbsp;
+    </nav>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      <nav class="wy-nav-top" id="barra-mobile" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">Porão do Juca</a>
+      </nav>
+
+      <div class="wy-nav-content">
+	<div class="fundo-claro">
+	</div>
+	<div class="fundo-escuro">
+	</div>
+
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+	    
+	    <!-- <ul class="wy-breadcrumbs"> -->
+	    <!--   <li><a href="#">Docs</a> &raquo;</li> -->
+
+	    <!--   <li>Features</li> -->
+	    <!--   <li class="wy-breadcrumbs-aside"> -->
+
+	    <!-- 	<a href="_sources/index.txt" rel="nofollow"> View page source</a> -->
+
+	    <!--   </li> -->
+	    <!-- </ul> -->
+	    <!-- <hr/> -->
+	  </div>
+
+          <div role="main" class="">
+
+	    <div id="content" class="hfeed entry-container hentry">
+  <section id="module-pyracmon.graph.identify">
+<span id="pyracmon-graph-identify"></span><h1>pyracmon.graph.identify<a class="headerlink" href="#module-pyracmon.graph.identify" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">neverPolicy</span></code>([instance])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyracmon.graph.identify.AlwaysPolicy" title="pyracmon.graph.identify.AlwaysPolicy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AlwaysPolicy</span></code></a>(identifier)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyracmon.graph.identify.HierarchicalPolicy" title="pyracmon.graph.identify.HierarchicalPolicy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HierarchicalPolicy</span></code></a>(identifier)</p></td>
+<td><p>Default identification policy used in a container where identification function is defined.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyracmon.graph.identify.IdentifyPolicy" title="pyracmon.graph.identify.IdentifyPolicy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IdentifyPolicy</span></code></a>(identifier)</p></td>
+<td><p>Provides entity identification functionalities used during appending entities to a graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyracmon.graph.identify.NeverPolicy" title="pyracmon.graph.identify.NeverPolicy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NeverPolicy</span></code></a>(identifier)</p></td>
+<td><p>Identification policy which never identifies nodes.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.graph.identify.IdentifyPolicy">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.graph.identify.</span></span><span class="sig-name descname"><span class="pre">IdentifyPolicy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/identify.html#IdentifyPolicy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.identify.IdentifyPolicy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides entity identification functionalities used during appending entities to a graph.</p>
+<p>Identification mechanism is based on the equality of identification keys extracted by entities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>identifier</strong> (<em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em>) – A function to extract the identification key from an entity.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.identify.IdentifyPolicy.get_identifier">
+<span class="sig-name descname"><span class="pre">get_identifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/identify.html#IdentifyPolicy.get_identifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.identify.IdentifyPolicy.get_identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns identification key from an entity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – An entity.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Identification key.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.identify.IdentifyPolicy.identify">
+<span class="sig-name descname"><span class="pre">identify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ancestors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/identify.html#IdentifyPolicy.identify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.identify.IdentifyPolicy.identify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select parent nodes and identical nodes of a new entity.</p>
+<p>This method is called during appending an entity to a graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prop</strong> (<a class="reference internal" href="pyracmon.graph.html#pyracmon.graph.GraphTemplate.Property" title="pyracmon.graph.GraphTemplate.Property"><em>GraphTemplate.Property</em></a>) – Template property for new entity.</p></li>
+<li><p><strong>candidates</strong> (<em>List</em><em>[</em><a class="reference internal" href="pyracmon.graph.graph.html#pyracmon.graph.graph.Node" title="pyracmon.graph.graph.Node"><em>Node</em></a><em>]</em>) – Nodes having the same identification key as the key of new entity.</p></li>
+<li><p><strong>ancestors</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>List</em><em>[</em><a class="reference internal" href="pyracmon.graph.graph.html#pyracmon.graph.graph.Node" title="pyracmon.graph.graph.Node"><em>Node</em></a><em>]</em><em>]</em>) – Parent nodes mapped by property names.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The first item is a list of Parent nodes which the node of new entity should be appended newly.
+<code class="docutils literal notranslate"><span class="pre">None</span></code> means to append a new node without parent. The second item is a list of identical nodes,
+which will be merged into ancestors and used in subsequent identifications of child entities.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[List[Optional[<a class="reference internal" href="pyracmon.graph.graph.html#pyracmon.graph.graph.Node" title="pyracmon.graph.graph.Node">Node</a>]], List[<a class="reference internal" href="pyracmon.graph.graph.html#pyracmon.graph.graph.Node" title="pyracmon.graph.graph.Node">Node</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.graph.identify.HierarchicalPolicy">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.graph.identify.</span></span><span class="sig-name descname"><span class="pre">HierarchicalPolicy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/identify.html#HierarchicalPolicy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.identify.HierarchicalPolicy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default identification policy used in a container where identification function is defined.</p>
+<p>This policy identifies nodes whose entity has the same identification key as the key of appending entity
+and whose parent is also identical to the parent of the entity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>identifier</strong> (<em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.identify.HierarchicalPolicy.identify">
+<span class="sig-name descname"><span class="pre">identify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ancestors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/identify.html#HierarchicalPolicy.identify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.identify.HierarchicalPolicy.identify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select parent nodes and identical nodes of a new entity.</p>
+<p>This method is called during appending an entity to a graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prop</strong> – Template property for new entity.</p></li>
+<li><p><strong>candidates</strong> – Nodes having the same identification key as the key of new entity.</p></li>
+<li><p><strong>ancestors</strong> – Parent nodes mapped by property names.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The first item is a list of Parent nodes which the node of new entity should be appended newly.
+<code class="docutils literal notranslate"><span class="pre">None</span></code> means to append a new node without parent. The second item is a list of identical nodes,
+which will be merged into ancestors and used in subsequent identifications of child entities.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.graph.identify.NeverPolicy">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.graph.identify.</span></span><span class="sig-name descname"><span class="pre">NeverPolicy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/identify.html#NeverPolicy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.identify.NeverPolicy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identification policy which never identifies nodes.</p>
+<p>This policy is used in a container where identification function is not defined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>identifier</strong> (<em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.identify.NeverPolicy.identify">
+<span class="sig-name descname"><span class="pre">identify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ancestors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/identify.html#NeverPolicy.identify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.identify.NeverPolicy.identify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select parent nodes and identical nodes of a new entity.</p>
+<p>This method is called during appending an entity to a graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prop</strong> – Template property for new entity.</p></li>
+<li><p><strong>candidates</strong> – Nodes having the same identification key as the key of new entity.</p></li>
+<li><p><strong>ancestors</strong> – Parent nodes mapped by property names.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The first item is a list of Parent nodes which the node of new entity should be appended newly.
+<code class="docutils literal notranslate"><span class="pre">None</span></code> means to append a new node without parent. The second item is a list of identical nodes,
+which will be merged into ancestors and used in subsequent identifications of child entities.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.graph.identify.AlwaysPolicy">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.graph.identify.</span></span><span class="sig-name descname"><span class="pre">AlwaysPolicy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identifier</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/identify.html#AlwaysPolicy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.identify.AlwaysPolicy" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>identifier</strong> (<em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>Any</em><em>]</em>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.identify.AlwaysPolicy.identify">
+<span class="sig-name descname"><span class="pre">identify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ancestors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/identify.html#AlwaysPolicy.identify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.identify.AlwaysPolicy.identify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select parent nodes and identical nodes of a new entity.</p>
+<p>This method is called during appending an entity to a graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prop</strong> – Template property for new entity.</p></li>
+<li><p><strong>candidates</strong> – Nodes having the same identification key as the key of new entity.</p></li>
+<li><p><strong>ancestors</strong> – Parent nodes mapped by property names.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The first item is a list of Parent nodes which the node of new entity should be appended newly.
+<code class="docutils literal notranslate"><span class="pre">None</span></code> means to append a new node without parent. The second item is a list of identical nodes,
+which will be merged into ancestors and used in subsequent identifications of child entities.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+	    </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pyracmon.graph.schema.html" class="btn btn-neutral float-right" title="pyracmon.graph.schema">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pyracmon.graph.graph.html" class="btn btn-neutral" title="pyracmon.graph.graph"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, sozu.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/jucacrispim/sphinx_pdj_theme">theme</a> provided by <a href="http://poraodojuca.net">Porão do Juca</a>.
+
+</footer>
+	</div>
+	</div>
+	  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/underscore.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/doctools.js">
+
+    </script>
+
+  
+
+   <script type="text/javascript"
+           src="../_static/js/theme.js"></script>
+
+   <script type="text/javascript"
+           src="../_static/js/pdj.js"></script>
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+  </body>
+</html>

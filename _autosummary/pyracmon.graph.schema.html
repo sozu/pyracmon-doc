@@ -1,0 +1,641 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xml:lang="" lang="" version="-//W3C//DTD XHTML 1.1//EN" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>pyracmon.graph.schema &mdash; pyracmon  documentation</title>
+  
+
+  
+
+  
+
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'/>
+    <link rel="stylesheet" href="../_static/css/pdj.css" type="text/css" />
+
+  
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../_static/css/pdj.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../_static/pyracmon.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="pyracmon  documentation" href="../index.html"/>
+        <link rel="up" title="pyracmon.graph" href="pyracmon.graph.html"/>
+        <link rel="next" title="pyracmon.graph.serialize" href="pyracmon.graph.serialize.html"/>
+        <link rel="prev" title="pyracmon.graph.identify" href="pyracmon.graph.identify.html"/>
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="cache-control" content="public" />
+    <meta name="robots" content="follow, all" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Add jQuery library -->
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+  </head>
+
+  <body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="fa fa-home"> pyracmon </a>
+        <div role="search">
+	  <form id ="rtd-search-form" class="wy-form"
+		action="../search.html" method="get">
+	    <input type="text" name="q" placeholder="Search docs" />
+	    <input type="hidden" name="check_keywords" value="yes" />
+	    <input type="hidden" name="area" value="default" />
+	  </form>
+	</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide.html">Guides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules.html">API documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyracmon.html">pyracmon</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.config.html">pyracmon.config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.html">pyracmon.dialect</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="pyracmon.graph.html">pyracmon.graph</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.graph.html">pyracmon.graph.graph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.identify.html">pyracmon.graph.identify</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">pyracmon.graph.schema</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.serialize.html">pyracmon.graph.serialize</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.spec.html">pyracmon.graph.spec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.template.html">pyracmon.graph.template</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyracmon.graph.util.html">pyracmon.graph.util</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.marker.html">pyracmon.marker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.model_graph.html">pyracmon.model_graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.sql.html">pyracmon.sql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.html">pyracmon.testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+
+      </div>
+      &nbsp;
+    </nav>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      <nav class="wy-nav-top" id="barra-mobile" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">Porão do Juca</a>
+      </nav>
+
+      <div class="wy-nav-content">
+	<div class="fundo-claro">
+	</div>
+	<div class="fundo-escuro">
+	</div>
+
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+	    
+	    <!-- <ul class="wy-breadcrumbs"> -->
+	    <!--   <li><a href="#">Docs</a> &raquo;</li> -->
+
+	    <!--   <li>Features</li> -->
+	    <!--   <li class="wy-breadcrumbs-aside"> -->
+
+	    <!-- 	<a href="_sources/index.txt" rel="nofollow"> View page source</a> -->
+
+	    <!--   </li> -->
+	    <!-- </ul> -->
+	    <!-- <hr/> -->
+	  </div>
+
+          <div role="main" class="">
+
+	    <div id="content" class="hfeed entry-container hentry">
+  <section id="module-pyracmon.graph.schema">
+<span id="pyracmon-graph-schema"></span><h1>pyracmon.graph.schema<a class="headerlink" href="#module-pyracmon.graph.schema" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyracmon.graph.schema.document_type" title="pyracmon.graph.schema.document_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">document_type</span></code></a>(t, doc)</p></td>
+<td><p>Creates a <a class="reference internal" href="#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentedType</span></code></a> for given type and documentation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_args</span></code>(tp)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_origin</span></code>(tp)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyracmon.graph.schema.issubgeneric" title="pyracmon.graph.schema.issubgeneric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">issubgeneric</span></code></a>(t, p)</p></td>
+<td><p>Check whether a type is subclass of a generic type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">templateType</span></code>(t)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyracmon.graph.schema.walk_schema" title="pyracmon.graph.schema.walk_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">walk_schema</span></code></a>(td[, with_doc])</p></td>
+<td><p>Returns a dictionary as a result of walking a schema object from its root.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentedType</span></code></a>(*args, **kwds)</p></td>
+<td><p>Represents a type having documentation as doc-string.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyracmon.graph.schema.DynamicType" title="pyracmon.graph.schema.DynamicType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DynamicType</span></code></a>(*args, **kwds)</p></td>
+<td><p>A <a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> type which can be resolved dynamically with resolved type parameter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyracmon.graph.schema.Extend" title="pyracmon.graph.schema.Extend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Extend</span></code></a>(*args, **kwds)</p></td>
+<td><p>A type to add keys to <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> bound to the type parameter <code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyracmon.graph.schema.GraphSchema" title="pyracmon.graph.schema.GraphSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphSchema</span></code></a>(spec, template, **serializers)</p></td>
+<td><p>This class exposes a property to get the schema of serialization result of a graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyracmon.graph.schema.Shrink" title="pyracmon.graph.schema.Shrink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Shrink</span></code></a>(*args, **kwds)</p></td>
+<td><p>A type to remove keys from <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> bound to the type parameter <code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a>(*args, **kwds)</p></td>
+<td><p>An interface for generic type which is resolved into a concrete type by a type parameter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.TypedDict">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.graph.schema.</span></span><span class="sig-name descname"><span class="pre">TypedDict</span></span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#TypedDict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.TypedDict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.issubgeneric">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.graph.schema.</span></span><span class="sig-name descname"><span class="pre">issubgeneric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#issubgeneric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.issubgeneric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether a type is subclass of a generic type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>type</em>) – A type to check.</p></li>
+<li><p><strong>p</strong> (<em>type</em>) – A generic type.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether the type in subclass of the generic type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.DocumentedType">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.graph.schema.</span></span><span class="sig-name descname"><span class="pre">DocumentedType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#DocumentedType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.DocumentedType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a type having documentation as doc-string.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.DocumentedType.unpack">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">unpack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#DocumentedType.unpack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.DocumentedType.unpack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unpack a <a class="reference internal" href="#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentedType</span></code></a> into type and documentation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dt</strong> (<em>Type</em><em>[</em><a class="reference internal" href="#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType"><em>pyracmon.graph.schema.DocumentedType</em></a><em>]</em>) – A type of <a class="reference internal" href="#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentedType</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Unpacked type and documentation of given type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[type, str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.document_type">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.graph.schema.</span></span><span class="sig-name descname"><span class="pre">document_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#document_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.document_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a <a class="reference internal" href="#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentedType</span></code></a> for given type and documentation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>type</em>) – A type to give the documentaion.</p></li>
+<li><p><strong>doc</strong> (<em>str</em>) – The documentation string.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Created <a class="reference internal" href="#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentedType</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType">pyracmon.graph.schema.DocumentedType</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.Typeable">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.graph.schema.</span></span><span class="sig-name descname"><span class="pre">Typeable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Typeable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.Typeable" title="Permalink to this definition">¶</a></dt>
+<dd><p>An interface for generic type which is resolved into a concrete type by a type parameter.</p>
+<p>Inherit this class and declare static method whose signature is <code class="docutils literal notranslate"><span class="pre">resolve(me,</span> <span class="pre">bound,</span> <span class="pre">arg,</span> <span class="pre">spec)</span> <span class="pre">-&gt;</span> <span class="pre">type</span></code> .</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">A</span><span class="p">(</span><span class="n">Typeable</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="nd">@staticmethod</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">me</span><span class="p">,</span> <span class="n">bound</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="k">return</span> <span class="n">some_type</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Typeable</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="nb">int</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Type resolution starts from <a class="reference internal" href="#pyracmon.graph.schema.Typeable.resolve" title="pyracmon.graph.schema.Typeable.resolve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable.resolve</span></code></a> which invokes the static method with following arguments.</p>
+<ul class="simple">
+<li><p>Type to resolve itself, in this case, <code class="docutils literal notranslate"><span class="pre">A[T]</span></code> .</p></li>
+<li><dl class="simple">
+<dt>A resolved type which replace <code class="docutils literal notranslate"><span class="pre">T</span></code> .</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">arg</span></code> is the first candidate.</p></li>
+<li><p>When <code class="docutils literal notranslate"><span class="pre">arg</span></code> is also <a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> , this resolution flow is applied to it recursively until concrete type if determined.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">arg</span></code> is passed through as it is.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">spec</span></code> is passed through as it is.</p></li>
+</ul>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.Typeable.resolve">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">resolve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">typeable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Typeable.resolve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.Typeable.resolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve a <a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> type into a concrete type by a type for its type parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>typeable</strong> (<em>Type</em><em>[</em><a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><em>Typeable</em></a><em>]</em>) – <a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> type having a generic type parameter.</p></li>
+<li><p><strong>arg</strong> (<em>type</em>) – Type to replace a type parameter.</p></li>
+<li><p><strong>spec</strong> (<a class="reference internal" href="pyracmon.graph.html#pyracmon.graph.GraphSpec" title="pyracmon.graph.GraphSpec"><em>GraphSpec</em></a>) – <code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphSpec</span></code> used for schema generation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Resolved type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.Typeable.is_resolved">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">is_resolved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">typeable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Typeable.is_resolved"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.Typeable.is_resolved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks a type parameter of given <a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> is alredy resolved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>typeable</strong> (<em>Type</em><em>[</em><a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><em>pyracmon.graph.schema.Typeable</em></a><em>]</em>) – <a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> type having a generic type parameter.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether the type parameter is already resolved or not.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.DynamicType">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.graph.schema.</span></span><span class="sig-name descname"><span class="pre">DynamicType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#DynamicType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.DynamicType" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> type which can be resolved dynamically with resolved type parameter.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.DynamicType.resolve">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">resolve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dynamic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#DynamicType.resolve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.DynamicType.resolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve a <a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> type into a concrete type by a type for its type parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>typeable</strong> – <a class="reference internal" href="#pyracmon.graph.schema.Typeable" title="pyracmon.graph.schema.Typeable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Typeable</span></code></a> type having a generic type parameter.</p></li>
+<li><p><strong>arg</strong> (<em>type</em>) – Type to replace a type parameter.</p></li>
+<li><p><strong>spec</strong> (<a class="reference internal" href="pyracmon.graph.html#pyracmon.graph.GraphSpec" title="pyracmon.graph.GraphSpec"><em>GraphSpec</em></a>) – <code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphSpec</span></code> used for schema generation.</p></li>
+<li><p><strong>dynamic</strong> (<em>Type</em><em>[</em><a class="reference internal" href="#pyracmon.graph.schema.DynamicType" title="pyracmon.graph.schema.DynamicType"><em>DynamicType</em></a><em>]</em>) – </p></li>
+<li><p><strong>bound</strong> (<em>type</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Resolved type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.DynamicType.fix">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">fix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#DynamicType.fix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.DynamicType.fix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve a resolved type into another type.</p>
+<p>Override this method to apply specific logic of the inheriting type to resolved type.
+ex) Convert resolved model type into <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> for serialization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bound</strong> (<em>type</em>) – Resolved type of <code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code>.</p></li>
+<li><p><strong>arg</strong> (<em>type</em>) – A type used for the resolution of <code class="xref py py-obj docutils literal notranslate"><span class="pre">bound</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Another type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>type</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.Shrink">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.graph.schema.</span></span><span class="sig-name descname"><span class="pre">Shrink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Shrink"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.Shrink" title="Permalink to this definition">¶</a></dt>
+<dd><p>A type to remove keys from <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> bound to the type parameter <code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code>.</p>
+<p>This class only works when <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> parameter is set, otherwise <code class="xref py py-obj docutils literal notranslate"><span class="pre">TypeError</span></code> is raised.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.Shrink.resolve">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">resolve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shrink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Shrink.resolve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.Shrink.resolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve a <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> into another <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> by removing some keys defined by <a class="reference internal" href="#pyracmon.graph.schema.Shrink.select" title="pyracmon.graph.schema.Shrink.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a> .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shrink</strong> (<em>Type</em><em>[</em><a class="reference internal" href="#pyracmon.graph.schema.Shrink" title="pyracmon.graph.schema.Shrink"><em>Shrink</em></a><em>]</em>) – </p></li>
+<li><p><strong>bound</strong> (<em>type</em>) – </p></li>
+<li><p><strong>arg</strong> (<em>type</em>) – </p></li>
+<li><p><strong>spec</strong> (<a class="reference internal" href="pyracmon.graph.html#pyracmon.graph.GraphSpec" title="pyracmon.graph.GraphSpec"><em>GraphSpec</em></a>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.Shrink.select">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Shrink.select"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.Shrink.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select excluding and including keys from <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a>.</p>
+<p>Subclass should consider the case when the <code class="docutils literal notranslate"><span class="pre">bound</span></code> is <code class="xref py py-obj docutils literal notranslate"><span class="pre">Signautre.empty</span></code> .</p>
+<p>This method should return excluding and including keys.
+Excluding key is always excluded if it is contained in including keys.
+Empty including keys specify that all keys are used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bound</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><em>pyracmon.graph.schema.TypedDict</em></a><em>, </em><em>inspect.Signature</em><em>]</em>) – <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> to be shrinked.</p></li>
+<li><p><strong>arg</strong> (<em>type</em>) – A type used for the resolution of <code class="xref py py-obj docutils literal notranslate"><span class="pre">bound</span></code> .</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Keys to exclude and include.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[List[str], List[str]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.Extend">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.graph.schema.</span></span><span class="sig-name descname"><span class="pre">Extend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Extend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.Extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>A type to add keys to <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> bound to the type parameter <code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code>.</p>
+<p>This class only works when <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> parameter is set, otherwise <code class="xref py py-obj docutils literal notranslate"><span class="pre">TypeError</span></code> is raised.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.Extend.resolve">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">resolve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Extend.resolve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.Extend.resolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve a <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> into another <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> by adding some keys retrieved by <a class="reference internal" href="#pyracmon.graph.schema.Extend.schema" title="pyracmon.graph.schema.Extend.schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">schema</span></code></a> .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>extend</strong> (<em>Type</em><em>[</em><a class="reference internal" href="#pyracmon.graph.schema.Extend" title="pyracmon.graph.schema.Extend"><em>Extend</em></a><em>]</em>) – </p></li>
+<li><p><strong>bound</strong> (<em>type</em>) – </p></li>
+<li><p><strong>arg</strong> (<em>type</em>) – </p></li>
+<li><p><strong>spec</strong> (<a class="reference internal" href="pyracmon.graph.html#pyracmon.graph.GraphSpec" title="pyracmon.graph.GraphSpec"><em>GraphSpec</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.Extend.schema">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#Extend.schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.Extend.schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> representing a schema of adding keys and their types.</p>
+<p>Subclass should consider the case when the <code class="docutils literal notranslate"><span class="pre">bound</span></code> is <code class="xref py py-obj docutils literal notranslate"><span class="pre">Signautre.empty</span></code> .</p>
+<p>:param :
+:type : param bound: <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> to be extended.
+:param :
+:type : param arg: A type used for the resolution of <code class="xref py py-obj docutils literal notranslate"><span class="pre">bound</span></code>.
+:param :
+:type : returns: <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> extending schema of base <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bound</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><em>pyracmon.graph.schema.TypedDict</em></a><em>, </em><em>inspect.Signature</em><em>]</em>) – </p></li>
+<li><p><strong>arg</strong> (<em>type</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict">pyracmon.graph.schema.TypedDict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.walk_schema">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.graph.schema.</span></span><span class="sig-name descname"><span class="pre">walk_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">td</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_doc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#walk_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.walk_schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary as a result of walking a schema object from its root.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>td</strong> – A schema represented by <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a>.</p></li>
+<li><p><strong>with_doc</strong> – Flag to include documentations into result.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Key value representation of the schema. If <code class="docutils literal notranslate"><span class="pre">with_doc</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, each value is <a class="reference internal" href="#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentedType</span></code></a> .</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[str, Union[type, <a class="reference internal" href="#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType">pyracmon.graph.schema.DocumentedType</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.GraphSchema">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.graph.schema.</span></span><span class="sig-name descname"><span class="pre">GraphSchema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">serializers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#GraphSchema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.GraphSchema" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class exposes a property to get the schema of serialization result of a graph.</p>
+<p>Schema generation also depends on <code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphSpec</span></code> , on which <a class="reference internal" href="#pyracmon.graph.schema.GraphSchema.serialize" title="pyracmon.graph.schema.GraphSchema.serialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">serialize</span></code></a> serializes a graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> (<a class="reference internal" href="pyracmon.graph.html#pyracmon.graph.GraphSpec" title="pyracmon.graph.GraphSpec"><em>GraphSpec</em></a>) – Specification of graph operations.</p></li>
+<li><p><strong>template</strong> (<a class="reference internal" href="pyracmon.graph.template.html#pyracmon.graph.template.GraphTemplate" title="pyracmon.graph.template.GraphTemplate"><em>pyracmon.graph.template.GraphTemplate</em></a>) – Graph template to serialize.</p></li>
+<li><p><strong>serializers</strong> (<a class="reference internal" href="pyracmon.graph.serialize.html#pyracmon.graph.serialize.NodeSerializer" title="pyracmon.graph.serialize.NodeSerializer"><em>NodeSerializer</em></a>) – <code class="xref py py-obj docutils literal notranslate"><span class="pre">NodeSerializer</span></code> s used for the serialization.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.GraphSchema.schema_of">
+<span class="sig-name descname"><span class="pre">schema_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#GraphSchema.schema_of"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.GraphSchema.schema_of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates structured and documented schema for a template property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prop</strong> (<a class="reference internal" href="pyracmon.graph.template.html#pyracmon.graph.template.GraphTemplate.Property" title="pyracmon.graph.template.GraphTemplate.Property"><em>pyracmon.graph.template.GraphTemplate.Property</em></a>) – A template property.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Schema with documentation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Type[<a class="reference internal" href="#pyracmon.graph.schema.DocumentedType" title="pyracmon.graph.schema.DocumentedType">pyracmon.graph.schema.DocumentedType</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.GraphSchema.schema">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">schema</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><span class="pre">pyracmon.graph.schema.TypedDict</span></a></em><a class="headerlink" href="#pyracmon.graph.schema.GraphSchema.schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates <a class="reference internal" href="#pyracmon.graph.schema.TypedDict" title="pyracmon.graph.schema.TypedDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TypedDict</span></code></a> which represents the schema of serialized graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter</dt>
+<dd class="field-odd"><p>Representation of the schema of serialized graph.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.graph.schema.GraphSchema.serialize">
+<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">node_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/graph/schema.html#GraphSchema.serialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.graph.schema.GraphSchema.serialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize graph into a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>graph</strong> (<em>GraphView</em>) – A view of a graph.</p></li>
+<li><p><strong>node_params</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Parma node_params</dt>
+<dd class="field-even"><p>Parameters passed to <code class="xref py py-obj docutils literal notranslate"><span class="pre">SerializationContext</span></code> and used by <em>serializer</em> s.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Serialization result.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+	    </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pyracmon.graph.serialize.html" class="btn btn-neutral float-right" title="pyracmon.graph.serialize">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pyracmon.graph.identify.html" class="btn btn-neutral" title="pyracmon.graph.identify"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, sozu.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/jucacrispim/sphinx_pdj_theme">theme</a> provided by <a href="http://poraodojuca.net">Porão do Juca</a>.
+
+</footer>
+	</div>
+	</div>
+	  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/underscore.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/doctools.js">
+
+    </script>
+
+  
+
+   <script type="text/javascript"
+           src="../_static/js/theme.js"></script>
+
+   <script type="text/javascript"
+           src="../_static/js/pdj.js"></script>
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+  </body>
+</html>

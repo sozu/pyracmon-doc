@@ -1,0 +1,313 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xml:lang="" lang="" version="-//W3C//DTD XHTML 1.1//EN" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <title>pyracmon.config &mdash; pyracmon  documentation</title>
+  
+
+  
+
+  
+
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'/>
+    <link rel="stylesheet" href="../_static/css/pdj.css" type="text/css" />
+
+  
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../_static/css/pdj.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../_static/pyracmon.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="pyracmon  documentation" href="../index.html"/>
+        <link rel="up" title="pyracmon" href="pyracmon.html"/>
+        <link rel="next" title="pyracmon.connection" href="pyracmon.connection.html"/>
+        <link rel="prev" title="pyracmon" href="pyracmon.html"/>
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="cache-control" content="public" />
+    <meta name="robots" content="follow, all" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Add jQuery library -->
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+  </head>
+
+  <body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="fa fa-home"> pyracmon </a>
+        <div role="search">
+	  <form id ="rtd-search-form" class="wy-form"
+		action="../search.html" method="get">
+	    <input type="text" name="q" placeholder="Search docs" />
+	    <input type="hidden" name="check_keywords" value="yes" />
+	    <input type="hidden" name="area" value="default" />
+	  </form>
+	</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide.html">Guides</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../modules.html">API documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyracmon.html">pyracmon</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">pyracmon.config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.connection.html">pyracmon.connection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.context.html">pyracmon.context</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.dialect.html">pyracmon.dialect</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.graph.html">pyracmon.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.marker.html">pyracmon.marker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.mixin.html">pyracmon.mixin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.model.html">pyracmon.model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.model_graph.html">pyracmon.model_graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.query.html">pyracmon.query</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.select.html">pyracmon.select</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.sql.html">pyracmon.sql</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.testing.html">pyracmon.testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyracmon.util.html">pyracmon.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+
+      </div>
+      &nbsp;
+    </nav>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      <nav class="wy-nav-top" id="barra-mobile" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">Porão do Juca</a>
+      </nav>
+
+      <div class="wy-nav-content">
+	<div class="fundo-claro">
+	</div>
+	<div class="fundo-escuro">
+	</div>
+
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+	    
+	    <!-- <ul class="wy-breadcrumbs"> -->
+	    <!--   <li><a href="#">Docs</a> &raquo;</li> -->
+
+	    <!--   <li>Features</li> -->
+	    <!--   <li class="wy-breadcrumbs-aside"> -->
+
+	    <!-- 	<a href="_sources/index.txt" rel="nofollow"> View page source</a> -->
+
+	    <!--   </li> -->
+	    <!-- </ul> -->
+	    <!-- <hr/> -->
+	  </div>
+
+          <div role="main" class="">
+
+	    <div id="content" class="hfeed entry-container hentry">
+  <section id="module-pyracmon.config">
+<span id="pyracmon-config"></span><h1>pyracmon.config<a class="headerlink" href="#module-pyracmon.config" title="Permalink to this headline">¶</a></h1>
+<p>This module exports types and functions for configurations.</p>
+<p><a class="reference internal" href="#pyracmon.config.PyracmonConfiguration" title="pyracmon.config.PyracmonConfiguration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PyracmonConfiguration</span></code></a> is a class exposing configurable attributes.
+An instance of the class held in this module is treated as global configuration.  <a class="reference internal" href="pyracmon.html#module-pyracmon" title="pyracmon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon</span></code></a> is an only awy to change it.
+Changes done in <code class="docutils literal notranslate"><span class="pre">with</span></code> block is activated after the block finished without error.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">default_config</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">pyracmon</span><span class="p">()</span> <span class="k">as</span> <span class="n">cfg</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">cfg</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;my_config&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">default_config</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;my_config&quot;</span>
+</pre></div>
+</div>
+<p>See the attributes of <a class="reference internal" href="#pyracmon.config.PyracmonConfiguration" title="pyracmon.config.PyracmonConfiguration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PyracmonConfiguration</span></code></a> to know all configuration keys and their effects.</p>
+<p class="rubric">Functions</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_config</span></code>([config])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyracmon.config.pyracmon" title="pyracmon.config.pyracmon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyracmon</span></code></a>(**kwargs)</p></td>
+<td><p>Starts <code class="xref py py-obj docutils literal notranslate"><span class="pre">with</span></code> block to change global configurations.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">DerivingConfiguration</span></code>(base, **kwargs)</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">meta private</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyracmon.config.PyracmonConfiguration" title="pyracmon.config.PyracmonConfiguration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PyracmonConfiguration</span></code></a>([name, logger, ...])</p></td>
+<td><p>A class to hold all configurable values in attributes.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyracmon.config.PyracmonConfiguration">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pyracmon.config.</span></span><span class="sig-name descname"><span class="pre">PyracmonConfiguration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_log_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramstyle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_mapping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixture_mapping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixture_tz_aware</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixture_ignore_fk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixture_ignore_nullable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timedelta_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/config.html#PyracmonConfiguration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class to hold all configurable values in attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of this configuration. This value has no effect on any behavior of modules. Default is <code class="docutils literal notranslate"><span class="pre">default</span></code> .</p></li>
+<li><p><strong>logger</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>logging.Logger</em><em>]</em>) – Logger or the name of logger used for internal logs such as query logging. Defalut is <code class="docutils literal notranslate"><span class="pre">None</span></code> .</p></li>
+<li><p><strong>log_level</strong> (<em>int</em>) – Logging level of internal logs. Default is <code class="xref py py-obj docutils literal notranslate"><span class="pre">logging.DEBUG</span></code> .</p></li>
+<li><p><strong>sql_log_length</strong> (<em>int</em>) – Maximum length of query log. Queries longer than this value are output being trimmed. Default is <code class="docutils literal notranslate"><span class="pre">4096</span></code> .</p></li>
+<li><p><strong>parameter_log</strong> (<em>bool</em>) – Flag to log query parameters also. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code> .</p></li>
+<li><p><strong>paramstyle</strong> (<em>str</em>) – Parameter style defined in DB-API 2.0. This value overwrites the style obtained via DB module. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code> .</p></li>
+<li><p><strong>type_mapping</strong> (<em>Callable</em><em>[</em><em>[</em><em>str</em><em>]</em><em>, </em><em>type</em><em>]</em>) – Function estimating python type from type name in database and optional DBMS dependent keys. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code> .</p></li>
+<li><p><strong>graph_spec</strong> (<a class="reference internal" href="pyracmon.model_graph.html#pyracmon.model_graph.ConfigurableSpec" title="pyracmon.model_graph.ConfigurableSpec"><em>pyracmon.model_graph.ConfigurableSpec</em></a>) – Graph specification used as default. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code> .</p></li>
+<li><p><strong>fixture_mapping</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="pyracmon.model.html#pyracmon.model.Table" title="pyracmon.model.Table"><em>pyracmon.model.Table</em></a><em>, </em><a class="reference internal" href="pyracmon.model.html#pyracmon.model.Column" title="pyracmon.model.Column"><em>pyracmon.model.Column</em></a><em>, </em><em>int</em><em>]</em><em>, </em><em>Any</em><em>]</em>) – Function generating fixture value for a column and an index. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code> .</p></li>
+<li><p><strong>fixture_tz_aware</strong> (<em>bool</em>) – Flag to make fixture datetime being aware of timezone. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code> .</p></li>
+<li><p><strong>fixture_ignore_fk</strong> (<em>bool</em>) – Flag not to generate fixuture value on foreign key columns. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code> .</p></li>
+<li><p><strong>fixture_ignore_nullable</strong> (<em>bool</em>) – Flag not to generate fixuture value on nullable columns. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code> .</p></li>
+<li><p><strong>timedelta_unit</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Default keyword arguments to pass <code class="docutils literal notranslate"><span class="pre">datetime.timedelta()</span></code> used in <code class="xref py py-obj docutils literal notranslate"><span class="pre">near</span></code> matcher.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyracmon.config.PyracmonConfiguration.derive">
+<span class="sig-name descname"><span class="pre">derive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/config.html#PyracmonConfiguration.derive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.config.PyracmonConfiguration.derive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates new configuration instance deriving this configuration.</p>
+<p>Keys of arguments are attribute names of this class.
+You don’t need to supply value to every key. Values beging untouched or set to <code class="docutils literal notranslate"><span class="pre">None</span></code> inherit deriving configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<em>Any</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyracmon.config.PyracmonConfiguration" title="pyracmon.config.PyracmonConfiguration">pyracmon.config.PyracmonConfiguration</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyracmon.config.pyracmon">
+<span class="sig-prename descclassname"><span class="pre">pyracmon.config.</span></span><span class="sig-name descname"><span class="pre">pyracmon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyracmon/config.html#pyracmon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyracmon.config.pyracmon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts <code class="xref py py-obj docutils literal notranslate"><span class="pre">with</span></code> block to change global configurations.</p>
+<p>Returning object is not an instance of <a class="reference internal" href="#pyracmon.config.PyracmonConfiguration" title="pyracmon.config.PyracmonConfiguration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PyracmonConfiguration</span></code></a> but allows the access to equivalent attributes.
+Changes done in the block is activated after the block finished without error.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">default_config</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">pyracmon</span><span class="p">()</span> <span class="k">as</span> <span class="n">cfg</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">cfg</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;my_config&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">default_config</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;my_config&quot;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<em>Any</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyracmon.config.PyracmonConfiguration" title="pyracmon.config.PyracmonConfiguration">pyracmon.config.PyracmonConfiguration</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+	    </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pyracmon.connection.html" class="btn btn-neutral float-right" title="pyracmon.connection">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pyracmon.html" class="btn btn-neutral" title="pyracmon"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, sozu.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/jucacrispim/sphinx_pdj_theme">theme</a> provided by <a href="http://poraodojuca.net">Porão do Juca</a>.
+
+</footer>
+	</div>
+	</div>
+	  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/underscore.js">
+
+    </script>
+    <script type="text/javascript" src="../_static/doctools.js">
+
+    </script>
+
+  
+
+   <script type="text/javascript"
+           src="../_static/js/theme.js"></script>
+
+   <script type="text/javascript"
+           src="../_static/js/pdj.js"></script>
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+  </body>
+</html>
