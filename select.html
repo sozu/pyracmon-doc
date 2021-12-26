@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>pyracmon.select API documentation</title>
+<meta name="description" content="This module exports types and functions used for `SELECT` queries …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>pyracmon.select</code></h1>
+</header>
+<section id="section-intro">
+<p>This module exports types and functions used for <code>SELECT</code> queries.</p>
+<p>Main purpose is providing a type which contains information of selecting columns,
+i.e. which columns are selected and how they are expressed in the query.
+Using the same instance of the type in both of query genration and reading results enables consistent reconstruction of model objects.</p>
+<p>In most cases, classes of this module should not be used directly.
+The use of <code><a title="pyracmon.select.SelectMixin.select" href="#pyracmon.select.SelectMixin.select">SelectMixin.select()</a></code> and <code><a title="pyracmon.select.read_row" href="#pyracmon.select.read_row">read_row()</a></code> is sufficient way to benefit from this module.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+This module exports types and functions used for `SELECT` queries.
+
+Main purpose is providing a type which contains information of selecting columns,
+i.e. which columns are selected and how they are expressed in the query.
+Using the same instance of the type in both of query genration and reading results enables consistent reconstruction of model objects.
+
+In most cases, classes of this module should not be used directly.
+The use of `SelectMixin.select` and `read_row` is sufficient way to benefit from this module.
+&#34;&#34;&#34;
+from typing import *
+from .model import Model
+
+
+class Selection:
+    &#34;&#34;&#34;
+    A representation of table and its columns used in query.
+
+    This class is designed to be a bridge from query generation to reading results.
+    String expression of the instance is comma-separated column names prepended with alias, which can be embedded in the select query.
+
+    Due to `SelectMixin`, factory method is available on every model type.
+
+    &gt;&gt;&gt; s1 = table1.select(&#34;t1&#34;, includes = [&#34;col11&#34;, &#34;col12&#34;])
+    &gt;&gt;&gt; s2 = table2.select(&#34;t2&#34;)
+    &gt;&gt;&gt; str(s1)
+    &#39;t1.col11, t1.col12&#39;
+    &gt;&gt;&gt; str(s2)
+    &#39;t2.col21, t2.col22, t2.col23&#39;
+
+    The instances of this class are used in `read_row` to reconstruct model objects from each obtained row.
+
+    &gt;&gt;&gt; c.execute(f&#34;SELECT {s1}, {s2} FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&#34;)
+    &gt;&gt;&gt; for row in c.fetchall():
+    &gt;&gt;&gt;     r = read_row(row, s1, s2)
+    &gt;&gt;&gt;     assert isinstance(r.t1, table1)
+    &gt;&gt;&gt;     assert isinstance(r.t2, table2)
+
+    Args:
+        table: Model type.
+        alias: An alias string of this table.
+    Returns:
+        columns: Names of columns to select.
+    &#34;&#34;&#34;
+    def __init__(self, table: Model, alias: str, columns: List[str]):
+        self.table = table
+        self.alias = alias
+        self.columns = columns
+
+    @property
+    def name(self) -&gt; str:
+        &#34;&#34;&#34;
+        Returns alias or name of the table.
+        &#34;&#34;&#34;
+        return self.alias if self.alias else self.table.name
+
+    def __len__(self):
+        return len(self.columns)
+
+    def __repr__(self):
+        a = f&#34;{self.alias}.&#34; if self.alias else &#34;&#34;
+        return &#39;, &#39;.join([f&#34;{a}{c.name}&#34; for c in self.columns])
+
+    def __add__(self, other):
+        return FieldExpressions() + self + other
+
+    def __iter__(self):
+        return iter([self])
+
+    def consume(self, values: List[Any]) -&gt; &#39;Model&#39;:
+        &#34;&#34;&#34;
+        Construct a model object from a row.
+
+        Args:
+            values: Values of row. The length must be equal to the number of columns in this.
+        Returns:
+            Model object where column values obtained from the row are set. 
+        &#34;&#34;&#34;
+        return self.table(**dict([(c.name, v) for c, v in zip(self.columns, values)]))
+
+
+class FieldExpressions:
+    &#34;&#34;&#34;
+    The instance of this class works as the composition of selections.
+
+    `+` operation on `Selection` s creates an instance of `FieldExpressions`. Each selection is available via attributes of its name.
+    Also, `FieldExpression` can be extended by `+=`.
+
+    &gt;&gt;&gt; exp = table1.select(&#34;t1&#34;, includes=[&#34;col11&#34;, &#34;col12&#34;]) + table2.select(&#34;t2&#34;)
+    &gt;&gt;&gt; c.execute(f&#34;SELECT {exp} FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&#34;)
+    &gt;&gt;&gt; for row in c.fetchall():
+    &gt;&gt;&gt;     r = read_row(row, *exp)
+    &gt;&gt;&gt;     assert isinstance(r.t1, table1)
+    &gt;&gt;&gt;     assert isinstance(r.t2, table2)
+
+    Here, selection means not only `Selection` instance but empty tuple and string.
+    They are replaced with index arguments (tuple) or keywords arguments (string) each other by the direct invocation of the instance.
+
+    &gt;&gt;&gt; exp = table1.select(&#34;t1&#34;, includes=[&#34;col11&#34;, &#34;col12&#34;]) + () + &#34;a&#34; + () + &#34;b&#34;
+    &gt;&gt;&gt; f&#34;{exp(&#34;t2.col21&#34;, &#34;t2.col23&#34;, a=&#34;t2.col22&#34;, b=&#34;t2.col24&#34;)}&#34;
+    t1.col11, t1.col12, t2.col21, t2.col22, t2.col23, t2.col24
+    &#34;&#34;&#34;
+    def __init__(self):
+        self.__selections = []
+        self.__keys = {}
+
+    def __add__(self, other):
+        exp = FieldExpressions()
+        exp += self
+        exp += other
+        return exp
+
+    def __iadd__(self, other):
+        if isinstance(other, Selection):
+            self.__selections.append(other)
+            self.__keys[other.name] = other
+        elif isinstance(other, FieldExpressions):
+            self.__selections += other.__selections
+            self.__keys.update(other.__keys)
+        elif isinstance(other, str):
+            self.__selections.append(other)
+            self.__keys[other] = other
+        elif other is ():
+            self.__selections.append(other)
+        else:
+            raise ValueError(f&#34;Operand of + for FieldExpressions must be a Selection or FieldExpressions but {type(other)} is given.&#34;)
+        return self
+
+    def __getattr__(self, key):
+        return self.__keys[key]
+
+    def __iter__(self):
+        return iter(self.__selections)
+
+    class Instance:
+        def __init__(self, exp, *args, **kwargs):
+            self.exp = exp
+            self.args = args
+            self.kwargs = kwargs
+
+        def __repr__(self):
+            args = list(self.args)
+            def _repr(s):
+                if isinstance(s, Selection):
+                    return s.__repr__()
+                elif isinstance(s, str):
+                    return self.kwargs.get(s, s)
+                elif s == ():
+                    return args.pop(0)
+            return &#39;, &#39;.join(map(_repr, self.exp))
+
+    def __call__(self, *args, **kwargs):
+        return FieldExpressions.Instance(self, *args, **kwargs)
+
+    def __repr__(self):
+        return self().__repr__()
+
+
+class RowValues:
+    &#34;&#34;&#34;
+    This class provides attribute access to each row in query result.
+
+    Each instance behaves as if it is a list of values created by holding `Selection` s.
+    Index access returns the value at the index and iteration yields values in order.
+
+    &gt;&gt;&gt; exp = table1.select(&#34;t1&#34;), table2.select()
+    &gt;&gt;&gt; r = read_row(row, *exp)
+    &gt;&gt;&gt; r[0]
+    ...
+    &gt;&gt;&gt; [v for v in r]
+    ...
+
+    It also exposes attributes whose name is the alias (if exists) or the table name.
+
+    &gt;&gt;&gt; r.t1
+    ...
+    &gt;&gt;&gt; r.table2
+    ...
+
+    Args:
+        selections: List of selections which assign each value in row to a column.
+    &#34;&#34;&#34;
+    def __init__(self, selections: List[Union[Selection, str, Tuple[()]]]):
+        self.key_map = dict([(s, i) for i, s in enumerate(map(self._key_of, selections)) if s is not None])
+        self.values = []
+
+    def _key_of(self, s):
+        if isinstance(s, Selection):
+            return s.name
+        elif isinstance(s, str):
+            return s
+        else:
+            return None
+
+    def __len__(self):
+        return len(self.values)
+
+    def __iter__(self):
+        return iter(self.values)
+
+    def __getitem__(self, index):
+        return self.values[index]
+
+    def __getattr__(self, key):
+        index = self.key_map.get(key, None)
+        if index is None:
+            raise AttributeError(f&#34;No selection is found whose table name or alias is &#39;{key}&#39;&#34;)
+        return self.values[index]
+
+    def append(self, value: Any):
+        &#34;&#34;&#34;
+        Appends a value in the row.
+
+        Args:
+            value: A value in the row.
+        &#34;&#34;&#34;
+        self.values.append(value)
+
+
+def read_row(row, *selections: Union[Selection, str, Tuple[()]], allow_redundancy: bool = False) -&gt; RowValues:
+    &#34;&#34;&#34;
+    Read values in a row according to given selections.
+
+    This function returns `RowValues` where each value is created by each selection respectively.
+    The type of the selection determines how values in the row are handled:
+
+    - `Selection` consumes as many values as the number of columns in it and creates a model instance.
+    - Empty tuple or a string consumes a value, which is stored in `RowValues` as it is.
+
+    Args:
+        selections: List of selections.
+        allow_redundancy: If `False`, `ValueError` is thrown when not all values in a row are consumed.
+    Returns:
+        Values read from the row accoding to the selections.
+    &#34;&#34;&#34;
+    result = RowValues(selections)
+
+    for s in selections:
+        if isinstance(s, Selection):
+            result.append(s.consume(row))
+            row = row[len(s):]
+        elif callable(s):
+            result.append(s(row[0]))
+            row = row[1:]
+        elif s == () or isinstance(s, str):
+            result.append(row[0])
+            row = row[1:]
+        else:
+            raise ValueError(&#34;Unavailable value is given to read_row().&#34;)
+
+    if not allow_redundancy and len(row) &gt; 0:
+        raise ValueError(&#34;Not all elements in row is consumed.&#34;)
+
+    return result
+
+
+class SelectMixin:
+    @classmethod
+    def select(cls, alias: str = &#34;&#34;, includes: List[str] = [], excludes: List[str] = []) -&gt; Selection:
+        &#34;&#34;&#34;
+        Default mixin class of every model type providing method to generate `Selection` by Selecting columns with alias.
+
+        Args:
+            alias: An alias string of this table.
+            includes: Column names to use. All columns are selected if empty.
+            excludes: Column names not to use.
+        Returns:
+            Selection object.
+        &#34;&#34;&#34;
+        columns = [c for c in cls.columns if c.name not in excludes] \
+            if not bool(includes) else \
+                [c for c in cls.columns if c.name not in excludes and c.name in includes]
+        return Selection(cls, alias, columns)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pyracmon.select.read_row"><code class="name flex">
+<span>def <span class="ident">read_row</span></span>(<span>row, *selections: Union[<a title="pyracmon.select.Selection" href="#pyracmon.select.Selection">Selection</a>, str, Tuple[()]], allow_redundancy: bool = False) ‑> <a title="pyracmon.select.RowValues" href="#pyracmon.select.RowValues">RowValues</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read values in a row according to given selections.</p>
+<p>This function returns <code><a title="pyracmon.select.RowValues" href="#pyracmon.select.RowValues">RowValues</a></code> where each value is created by each selection respectively.
+The type of the selection determines how values in the row are handled:</p>
+<ul>
+<li><code><a title="pyracmon.select.Selection" href="#pyracmon.select.Selection">Selection</a></code> consumes as many values as the number of columns in it and creates a model instance.</li>
+<li>Empty tuple or a string consumes a value, which is stored in <code><a title="pyracmon.select.RowValues" href="#pyracmon.select.RowValues">RowValues</a></code> as it is.</li>
+</ul>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>selections</code></strong></dt>
+<dd>List of selections.</dd>
+<dt><strong><code>allow_redundancy</code></strong></dt>
+<dd>If <code>False</code>, <code>ValueError</code> is thrown when not all values in a row are consumed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Values read from the row accoding to the selections.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_row(row, *selections: Union[Selection, str, Tuple[()]], allow_redundancy: bool = False) -&gt; RowValues:
+    &#34;&#34;&#34;
+    Read values in a row according to given selections.
+
+    This function returns `RowValues` where each value is created by each selection respectively.
+    The type of the selection determines how values in the row are handled:
+
+    - `Selection` consumes as many values as the number of columns in it and creates a model instance.
+    - Empty tuple or a string consumes a value, which is stored in `RowValues` as it is.
+
+    Args:
+        selections: List of selections.
+        allow_redundancy: If `False`, `ValueError` is thrown when not all values in a row are consumed.
+    Returns:
+        Values read from the row accoding to the selections.
+    &#34;&#34;&#34;
+    result = RowValues(selections)
+
+    for s in selections:
+        if isinstance(s, Selection):
+            result.append(s.consume(row))
+            row = row[len(s):]
+        elif callable(s):
+            result.append(s(row[0]))
+            row = row[1:]
+        elif s == () or isinstance(s, str):
+            result.append(row[0])
+            row = row[1:]
+        else:
+            raise ValueError(&#34;Unavailable value is given to read_row().&#34;)
+
+    if not allow_redundancy and len(row) &gt; 0:
+        raise ValueError(&#34;Not all elements in row is consumed.&#34;)
+
+    return result</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="pyracmon.select.FieldExpressions"><code class="flex name class">
+<span>class <span class="ident">FieldExpressions</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>The instance of this class works as the composition of selections.</p>
+<p><code>+</code> operation on <code><a title="pyracmon.select.Selection" href="#pyracmon.select.Selection">Selection</a></code> s creates an instance of <code><a title="pyracmon.select.FieldExpressions" href="#pyracmon.select.FieldExpressions">FieldExpressions</a></code>. Each selection is available via attributes of its name.
+Also, <code>FieldExpression</code> can be extended by <code>+=</code>.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; exp = table1.select(&quot;t1&quot;, includes=[&quot;col11&quot;, &quot;col12&quot;]) + table2.select(&quot;t2&quot;)
+&gt;&gt;&gt; c.execute(f&quot;SELECT {exp} FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&quot;)
+&gt;&gt;&gt; for row in c.fetchall():
+&gt;&gt;&gt;     r = read_row(row, *exp)
+&gt;&gt;&gt;     assert isinstance(r.t1, table1)
+&gt;&gt;&gt;     assert isinstance(r.t2, table2)
+</code></pre>
+<p>Here, selection means not only <code><a title="pyracmon.select.Selection" href="#pyracmon.select.Selection">Selection</a></code> instance but empty tuple and string.
+They are replaced with index arguments (tuple) or keywords arguments (string) each other by the direct invocation of the instance.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; exp = table1.select(&quot;t1&quot;, includes=[&quot;col11&quot;, &quot;col12&quot;]) + () + &quot;a&quot; + () + &quot;b&quot;
+&gt;&gt;&gt; f&quot;{exp(&quot;t2.col21&quot;, &quot;t2.col23&quot;, a=&quot;t2.col22&quot;, b=&quot;t2.col24&quot;)}&quot;
+t1.col11, t1.col12, t2.col21, t2.col22, t2.col23, t2.col24
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FieldExpressions:
+    &#34;&#34;&#34;
+    The instance of this class works as the composition of selections.
+
+    `+` operation on `Selection` s creates an instance of `FieldExpressions`. Each selection is available via attributes of its name.
+    Also, `FieldExpression` can be extended by `+=`.
+
+    &gt;&gt;&gt; exp = table1.select(&#34;t1&#34;, includes=[&#34;col11&#34;, &#34;col12&#34;]) + table2.select(&#34;t2&#34;)
+    &gt;&gt;&gt; c.execute(f&#34;SELECT {exp} FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&#34;)
+    &gt;&gt;&gt; for row in c.fetchall():
+    &gt;&gt;&gt;     r = read_row(row, *exp)
+    &gt;&gt;&gt;     assert isinstance(r.t1, table1)
+    &gt;&gt;&gt;     assert isinstance(r.t2, table2)
+
+    Here, selection means not only `Selection` instance but empty tuple and string.
+    They are replaced with index arguments (tuple) or keywords arguments (string) each other by the direct invocation of the instance.
+
+    &gt;&gt;&gt; exp = table1.select(&#34;t1&#34;, includes=[&#34;col11&#34;, &#34;col12&#34;]) + () + &#34;a&#34; + () + &#34;b&#34;
+    &gt;&gt;&gt; f&#34;{exp(&#34;t2.col21&#34;, &#34;t2.col23&#34;, a=&#34;t2.col22&#34;, b=&#34;t2.col24&#34;)}&#34;
+    t1.col11, t1.col12, t2.col21, t2.col22, t2.col23, t2.col24
+    &#34;&#34;&#34;
+    def __init__(self):
+        self.__selections = []
+        self.__keys = {}
+
+    def __add__(self, other):
+        exp = FieldExpressions()
+        exp += self
+        exp += other
+        return exp
+
+    def __iadd__(self, other):
+        if isinstance(other, Selection):
+            self.__selections.append(other)
+            self.__keys[other.name] = other
+        elif isinstance(other, FieldExpressions):
+            self.__selections += other.__selections
+            self.__keys.update(other.__keys)
+        elif isinstance(other, str):
+            self.__selections.append(other)
+            self.__keys[other] = other
+        elif other is ():
+            self.__selections.append(other)
+        else:
+            raise ValueError(f&#34;Operand of + for FieldExpressions must be a Selection or FieldExpressions but {type(other)} is given.&#34;)
+        return self
+
+    def __getattr__(self, key):
+        return self.__keys[key]
+
+    def __iter__(self):
+        return iter(self.__selections)
+
+    class Instance:
+        def __init__(self, exp, *args, **kwargs):
+            self.exp = exp
+            self.args = args
+            self.kwargs = kwargs
+
+        def __repr__(self):
+            args = list(self.args)
+            def _repr(s):
+                if isinstance(s, Selection):
+                    return s.__repr__()
+                elif isinstance(s, str):
+                    return self.kwargs.get(s, s)
+                elif s == ():
+                    return args.pop(0)
+            return &#39;, &#39;.join(map(_repr, self.exp))
+
+    def __call__(self, *args, **kwargs):
+        return FieldExpressions.Instance(self, *args, **kwargs)
+
+    def __repr__(self):
+        return self().__repr__()</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="pyracmon.select.FieldExpressions.Instance"><code class="name">var <span class="ident">Instance</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="pyracmon.select.RowValues"><code class="flex name class">
+<span>class <span class="ident">RowValues</span></span>
+<span>(</span><span>selections: List[Union[<a title="pyracmon.select.Selection" href="#pyracmon.select.Selection">Selection</a>, str, Tuple[()]]])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This class provides attribute access to each row in query result.</p>
+<p>Each instance behaves as if it is a list of values created by holding <code><a title="pyracmon.select.Selection" href="#pyracmon.select.Selection">Selection</a></code> s.
+Index access returns the value at the index and iteration yields values in order.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; exp = table1.select(&quot;t1&quot;), table2.select()
+&gt;&gt;&gt; r = read_row(row, *exp)
+&gt;&gt;&gt; r[0]
+...
+&gt;&gt;&gt; [v for v in r]
+...
+</code></pre>
+<p>It also exposes attributes whose name is the alias (if exists) or the table name.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; r.t1
+...
+&gt;&gt;&gt; r.table2
+...
+</code></pre>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>selections</code></strong></dt>
+<dd>List of selections which assign each value in row to a column.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RowValues:
+    &#34;&#34;&#34;
+    This class provides attribute access to each row in query result.
+
+    Each instance behaves as if it is a list of values created by holding `Selection` s.
+    Index access returns the value at the index and iteration yields values in order.
+
+    &gt;&gt;&gt; exp = table1.select(&#34;t1&#34;), table2.select()
+    &gt;&gt;&gt; r = read_row(row, *exp)
+    &gt;&gt;&gt; r[0]
+    ...
+    &gt;&gt;&gt; [v for v in r]
+    ...
+
+    It also exposes attributes whose name is the alias (if exists) or the table name.
+
+    &gt;&gt;&gt; r.t1
+    ...
+    &gt;&gt;&gt; r.table2
+    ...
+
+    Args:
+        selections: List of selections which assign each value in row to a column.
+    &#34;&#34;&#34;
+    def __init__(self, selections: List[Union[Selection, str, Tuple[()]]]):
+        self.key_map = dict([(s, i) for i, s in enumerate(map(self._key_of, selections)) if s is not None])
+        self.values = []
+
+    def _key_of(self, s):
+        if isinstance(s, Selection):
+            return s.name
+        elif isinstance(s, str):
+            return s
+        else:
+            return None
+
+    def __len__(self):
+        return len(self.values)
+
+    def __iter__(self):
+        return iter(self.values)
+
+    def __getitem__(self, index):
+        return self.values[index]
+
+    def __getattr__(self, key):
+        index = self.key_map.get(key, None)
+        if index is None:
+            raise AttributeError(f&#34;No selection is found whose table name or alias is &#39;{key}&#39;&#34;)
+        return self.values[index]
+
+    def append(self, value: Any):
+        &#34;&#34;&#34;
+        Appends a value in the row.
+
+        Args:
+            value: A value in the row.
+        &#34;&#34;&#34;
+        self.values.append(value)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="pyracmon.select.RowValues.append"><code class="name flex">
+<span>def <span class="ident">append</span></span>(<span>self, value: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Appends a value in the row.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong></dt>
+<dd>A value in the row.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def append(self, value: Any):
+    &#34;&#34;&#34;
+    Appends a value in the row.
+
+    Args:
+        value: A value in the row.
+    &#34;&#34;&#34;
+    self.values.append(value)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="pyracmon.select.SelectMixin"><code class="flex name class">
+<span>class <span class="ident">SelectMixin</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SelectMixin:
+    @classmethod
+    def select(cls, alias: str = &#34;&#34;, includes: List[str] = [], excludes: List[str] = []) -&gt; Selection:
+        &#34;&#34;&#34;
+        Default mixin class of every model type providing method to generate `Selection` by Selecting columns with alias.
+
+        Args:
+            alias: An alias string of this table.
+            includes: Column names to use. All columns are selected if empty.
+            excludes: Column names not to use.
+        Returns:
+            Selection object.
+        &#34;&#34;&#34;
+        columns = [c for c in cls.columns if c.name not in excludes] \
+            if not bool(includes) else \
+                [c for c in cls.columns if c.name not in excludes and c.name in includes]
+        return Selection(cls, alias, columns)</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="pyracmon.mixin.CRUDMixin" href="mixin.html#pyracmon.mixin.CRUDMixin">CRUDMixin</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="pyracmon.select.SelectMixin.select"><code class="name flex">
+<span>def <span class="ident">select</span></span>(<span>alias: str = '', includes: List[str] = [], excludes: List[str] = []) ‑> <a title="pyracmon.select.Selection" href="#pyracmon.select.Selection">Selection</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Default mixin class of every model type providing method to generate <code><a title="pyracmon.select.Selection" href="#pyracmon.select.Selection">Selection</a></code> by Selecting columns with alias.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>alias</code></strong></dt>
+<dd>An alias string of this table.</dd>
+<dt><strong><code>includes</code></strong></dt>
+<dd>Column names to use. All columns are selected if empty.</dd>
+<dt><strong><code>excludes</code></strong></dt>
+<dd>Column names not to use.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Selection object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def select(cls, alias: str = &#34;&#34;, includes: List[str] = [], excludes: List[str] = []) -&gt; Selection:
+    &#34;&#34;&#34;
+    Default mixin class of every model type providing method to generate `Selection` by Selecting columns with alias.
+
+    Args:
+        alias: An alias string of this table.
+        includes: Column names to use. All columns are selected if empty.
+        excludes: Column names not to use.
+    Returns:
+        Selection object.
+    &#34;&#34;&#34;
+    columns = [c for c in cls.columns if c.name not in excludes] \
+        if not bool(includes) else \
+            [c for c in cls.columns if c.name not in excludes and c.name in includes]
+    return Selection(cls, alias, columns)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="pyracmon.select.Selection"><code class="flex name class">
+<span>class <span class="ident">Selection</span></span>
+<span>(</span><span>table: <a title="pyracmon.model.Model" href="model.html#pyracmon.model.Model">Model</a>, alias: str, columns: List[str])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A representation of table and its columns used in query.</p>
+<p>This class is designed to be a bridge from query generation to reading results.
+String expression of the instance is comma-separated column names prepended with alias, which can be embedded in the select query.</p>
+<p>Due to <code><a title="pyracmon.select.SelectMixin" href="#pyracmon.select.SelectMixin">SelectMixin</a></code>, factory method is available on every model type.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; s1 = table1.select(&quot;t1&quot;, includes = [&quot;col11&quot;, &quot;col12&quot;])
+&gt;&gt;&gt; s2 = table2.select(&quot;t2&quot;)
+&gt;&gt;&gt; str(s1)
+'t1.col11, t1.col12'
+&gt;&gt;&gt; str(s2)
+'t2.col21, t2.col22, t2.col23'
+</code></pre>
+<p>The instances of this class are used in <code><a title="pyracmon.select.read_row" href="#pyracmon.select.read_row">read_row()</a></code> to reconstruct model objects from each obtained row.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; c.execute(f&quot;SELECT {s1}, {s2} FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&quot;)
+&gt;&gt;&gt; for row in c.fetchall():
+&gt;&gt;&gt;     r = read_row(row, s1, s2)
+&gt;&gt;&gt;     assert isinstance(r.t1, table1)
+&gt;&gt;&gt;     assert isinstance(r.t2, table2)
+</code></pre>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>table</code></strong></dt>
+<dd>Model type.</dd>
+<dt><strong><code>alias</code></strong></dt>
+<dd>An alias string of this table.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>columns</code></dt>
+<dd>Names of columns to select.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Selection:
+    &#34;&#34;&#34;
+    A representation of table and its columns used in query.
+
+    This class is designed to be a bridge from query generation to reading results.
+    String expression of the instance is comma-separated column names prepended with alias, which can be embedded in the select query.
+
+    Due to `SelectMixin`, factory method is available on every model type.
+
+    &gt;&gt;&gt; s1 = table1.select(&#34;t1&#34;, includes = [&#34;col11&#34;, &#34;col12&#34;])
+    &gt;&gt;&gt; s2 = table2.select(&#34;t2&#34;)
+    &gt;&gt;&gt; str(s1)
+    &#39;t1.col11, t1.col12&#39;
+    &gt;&gt;&gt; str(s2)
+    &#39;t2.col21, t2.col22, t2.col23&#39;
+
+    The instances of this class are used in `read_row` to reconstruct model objects from each obtained row.
+
+    &gt;&gt;&gt; c.execute(f&#34;SELECT {s1}, {s2} FROM table1 AS t1 INNER JOIN table2 AS t2 ON ...&#34;)
+    &gt;&gt;&gt; for row in c.fetchall():
+    &gt;&gt;&gt;     r = read_row(row, s1, s2)
+    &gt;&gt;&gt;     assert isinstance(r.t1, table1)
+    &gt;&gt;&gt;     assert isinstance(r.t2, table2)
+
+    Args:
+        table: Model type.
+        alias: An alias string of this table.
+    Returns:
+        columns: Names of columns to select.
+    &#34;&#34;&#34;
+    def __init__(self, table: Model, alias: str, columns: List[str]):
+        self.table = table
+        self.alias = alias
+        self.columns = columns
+
+    @property
+    def name(self) -&gt; str:
+        &#34;&#34;&#34;
+        Returns alias or name of the table.
+        &#34;&#34;&#34;
+        return self.alias if self.alias else self.table.name
+
+    def __len__(self):
+        return len(self.columns)
+
+    def __repr__(self):
+        a = f&#34;{self.alias}.&#34; if self.alias else &#34;&#34;
+        return &#39;, &#39;.join([f&#34;{a}{c.name}&#34; for c in self.columns])
+
+    def __add__(self, other):
+        return FieldExpressions() + self + other
+
+    def __iter__(self):
+        return iter([self])
+
+    def consume(self, values: List[Any]) -&gt; &#39;Model&#39;:
+        &#34;&#34;&#34;
+        Construct a model object from a row.
+
+        Args:
+            values: Values of row. The length must be equal to the number of columns in this.
+        Returns:
+            Model object where column values obtained from the row are set. 
+        &#34;&#34;&#34;
+        return self.table(**dict([(c.name, v) for c, v in zip(self.columns, values)]))</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="pyracmon.select.Selection.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dd>
+<div class="desc"><p>Returns alias or name of the table.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def name(self) -&gt; str:
+    &#34;&#34;&#34;
+    Returns alias or name of the table.
+    &#34;&#34;&#34;
+    return self.alias if self.alias else self.table.name</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="pyracmon.select.Selection.consume"><code class="name flex">
+<span>def <span class="ident">consume</span></span>(<span>self, values: List[Any]) ‑> <a title="pyracmon.model.Model" href="model.html#pyracmon.model.Model">Model</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Construct a model object from a row.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>values</code></strong></dt>
+<dd>Values of row. The length must be equal to the number of columns in this.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Model object where column values obtained from the row are set.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def consume(self, values: List[Any]) -&gt; &#39;Model&#39;:
+    &#34;&#34;&#34;
+    Construct a model object from a row.
+
+    Args:
+        values: Values of row. The length must be equal to the number of columns in this.
+    Returns:
+        Model object where column values obtained from the row are set. 
+    &#34;&#34;&#34;
+    return self.table(**dict([(c.name, v) for c, v in zip(self.columns, values)]))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="pyracmon" href="index.html">pyracmon</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pyracmon.select.read_row" href="#pyracmon.select.read_row">read_row</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="pyracmon.select.FieldExpressions" href="#pyracmon.select.FieldExpressions">FieldExpressions</a></code></h4>
+<ul class="">
+<li><code><a title="pyracmon.select.FieldExpressions.Instance" href="#pyracmon.select.FieldExpressions.Instance">Instance</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pyracmon.select.RowValues" href="#pyracmon.select.RowValues">RowValues</a></code></h4>
+<ul class="">
+<li><code><a title="pyracmon.select.RowValues.append" href="#pyracmon.select.RowValues.append">append</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pyracmon.select.SelectMixin" href="#pyracmon.select.SelectMixin">SelectMixin</a></code></h4>
+<ul class="">
+<li><code><a title="pyracmon.select.SelectMixin.select" href="#pyracmon.select.SelectMixin.select">select</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pyracmon.select.Selection" href="#pyracmon.select.Selection">Selection</a></code></h4>
+<ul class="">
+<li><code><a title="pyracmon.select.Selection.consume" href="#pyracmon.select.Selection.consume">consume</a></code></li>
+<li><code><a title="pyracmon.select.Selection.name" href="#pyracmon.select.Selection.name">name</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

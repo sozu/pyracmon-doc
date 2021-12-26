@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>pyracmon.graph.typing API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>pyracmon.graph.typing</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import sys
+from functools import partial
+from typing import Any, Dict, Optional, Type
+import typing
+
+
+try:
+    import typing_extensions
+except ImportError:
+    typing_extensions = None
+
+
+__all__ = [
+    &#34;get_args&#34;,
+    &#34;get_origin&#34;,
+    &#34;TypedDict&#34;,
+    &#34;is_typed_dict&#34;,
+    &#34;Annotated&#34;,
+    &#34;annotate&#34;,
+    &#34;get_annotated_hints&#34;,
+    &#34;issubgeneric&#34;,
+    &#34;issubtype&#34;,
+    &#34;generate_schema&#34;,
+]
+
+
+_ge39 = sys.version_info[0:2] &gt;= (3, 9)
+_ge38 = sys.version_info[0:2] &gt;= (3, 8)
+_ge37 = sys.version_info[0:2] &gt;= (3, 7)
+
+
+# get_args, get_origin
+if _ge38 or typing_extensions:
+    if _ge38:
+        from typing import get_args, get_origin
+    else:
+        from typing_extensions import get_args, get_origin
+elif _ge37:
+    def get_args(tp):
+        return getattr(tp, &#34;__args__&#34;, [])
+    def get_origin(tp):
+        return getattr(tp, &#34;__origin__&#34;, None)
+else:
+    def get_args(tp):
+        def bind(base, args):
+            if isinstance(args, tuple):
+                t, subs = args
+                return base[bind(t, subs)]
+            else:
+                return base[args]
+        
+        _, args = tp._subs_tree()
+        if isinstance(args, tuple):
+            b, a = args
+            return [bind(b, a)]
+        else:
+            return [args]
+    def get_origin(tp):
+        return getattr(tp, &#34;__origin__&#34;, None)
+
+
+# TypedDict
+if _ge38 or typing_extensions:
+    if _ge38:
+        from typing import TypedDict, _TypedDictMeta
+    else:
+        from typing_extensions import TypedDict, _TypedDictMeta
+
+    # In cpython &lt;= 3.9, TypedDict has not yet supported subclass check by issubclass().
+    def is_typed_dict(t: type) -&gt; bool:
+        return isinstance(t, _TypedDictMeta)
+else:
+    class TypedDict(dict):
+        pass
+
+    def is_typed_dict(t: type) -&gt; bool:
+        return issubclass(t, TypedDict)
+
+
+# Annotated
+if _ge39 or typing_extensions:
+    if _ge39:
+        from typing import Annotated, get_type_hints
+    else:
+        from typing_extensions import Annotated, get_type_hints
+
+    get_annotated_hints = partial(get_type_hints, include_extras=True)
+
+    def annotate(t: type, doc: str):
+        if get_origin(t) == Annotated:
+            return Annotated[get_args(t)[0], doc]
+        else:
+            return Annotated[t, doc]
+else:
+    from typing import TypeVar, Generic
+
+    T = TypeVar(&#39;T&#39;)
+
+    class Annotated(Generic[T]):
+        pass
+
+    def annotate(t: type, doc: str):
+        if get_origin(t) == Annotated:
+            return Annotated[get_args(t)[0], doc]
+        else:
+            a = Annotated[t]
+            a.__args__ += (doc,)
+            return a
+
+    def get_annotated_hints(t):
+        hints = {}
+        for u in t.__mro__:
+            for k, v in getattr(u, &#34;__annotations__&#34;, {}).items():
+                if k not in hints:
+                    hints[k] = v
+        return hints
+
+
+def issubgeneric(t: type, p: type) -&gt; bool:
+    &#34;&#34;&#34;
+    Checks whether a type is subclass of a generic type.
+
+    Args:
+        t: A type to check.
+        p: A generic type.
+    Returns:
+        Whether the type in subclass of the generic type.
+    &#34;&#34;&#34;
+    if type(t) is type:
+        return issubclass(t, p)
+    else:
+        return hasattr(t, &#39;__origin__&#39;) and issubclass(get_origin(t), p)
+
+
+def issubtype(t: type, p: type) -&gt; bool:
+    &#34;&#34;&#34;
+    Checks whether a type is subclass of another type.
+
+    Args:
+        t: A type to check.
+        p: Another type.
+    Returns:
+        Whether the type in subclass of another type.
+    &#34;&#34;&#34;
+    if is_typed_dict(p):
+        return is_typed_dict(t) and set(t.__annotations__.items()) &gt;= set(p.__annotations__.items())
+    else:
+        return issubclass(t, p)
+
+
+def generate_schema(annotations: Dict[str, Any], base: Optional[Type[TypedDict]] = None) -&gt; Type[TypedDict]:
+    &#34;&#34;&#34;
+    Generate schema as `TypedDict` by extending base schema.
+
+    Args:
+        annotations: Annotations to be set to new schema.
+        base: Base schema if necessary.
+    Returns:
+        Generated schema.
+    &#34;&#34;&#34;
+    class Schema(base or TypedDict):
+        pass
+
+    # In python3.6, &#34;__annotations__&#34; does not exist in &#34;__dict__&#34;
+    # In python3.8, it exists even the class does not have any field.
+    if &#34;__annotations__&#34; not in Schema.__dict__:
+        setattr(Schema, &#34;__annotations__&#34;, annotations)
+    else:
+        Schema.__annotations__.update(**annotations)
+
+    return Schema</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pyracmon.graph.typing.annotate"><code class="name flex">
+<span>def <span class="ident">annotate</span></span>(<span>t: type, doc: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def annotate(t: type, doc: str):
+    if get_origin(t) == Annotated:
+        return Annotated[get_args(t)[0], doc]
+    else:
+        return Annotated[t, doc]</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.typing.generate_schema"><code class="name flex">
+<span>def <span class="ident">generate_schema</span></span>(<span>annotations: Dict[str, Any], base: Optional[Type[typing_extensions.TypedDict]] = None) ‑> Type[typing_extensions.TypedDict]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate schema as <code><a title="pyracmon.graph.typing.TypedDict" href="#pyracmon.graph.typing.TypedDict">TypedDict</a></code> by extending base schema.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>annotations</code></strong></dt>
+<dd>Annotations to be set to new schema.</dd>
+<dt><strong><code>base</code></strong></dt>
+<dd>Base schema if necessary.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Generated schema.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_schema(annotations: Dict[str, Any], base: Optional[Type[TypedDict]] = None) -&gt; Type[TypedDict]:
+    &#34;&#34;&#34;
+    Generate schema as `TypedDict` by extending base schema.
+
+    Args:
+        annotations: Annotations to be set to new schema.
+        base: Base schema if necessary.
+    Returns:
+        Generated schema.
+    &#34;&#34;&#34;
+    class Schema(base or TypedDict):
+        pass
+
+    # In python3.6, &#34;__annotations__&#34; does not exist in &#34;__dict__&#34;
+    # In python3.8, it exists even the class does not have any field.
+    if &#34;__annotations__&#34; not in Schema.__dict__:
+        setattr(Schema, &#34;__annotations__&#34;, annotations)
+    else:
+        Schema.__annotations__.update(**annotations)
+
+    return Schema</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.typing.get_args"><code class="name flex">
+<span>def <span class="ident">get_args</span></span>(<span>tp)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get type arguments with all substitutions performed.</p>
+<p>For unions, basic simplifications used by Union constructor are performed.
+Examples::
+get_args(Dict[str, int]) == (str, int)
+get_args(int) == ()
+get_args(Union[int, Union[T, int], str][int]) == (int, str)
+get_args(Union[int, Tuple[T, int]][str]) == (int, Tuple[str, int])
+get_args(Callable[[], T][int]) == ([], int)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_args(tp):
+    &#34;&#34;&#34;Get type arguments with all substitutions performed.
+
+    For unions, basic simplifications used by Union constructor are performed.
+    Examples::
+        get_args(Dict[str, int]) == (str, int)
+        get_args(int) == ()
+        get_args(Union[int, Union[T, int], str][int]) == (int, str)
+        get_args(Union[int, Tuple[T, int]][str]) == (int, Tuple[str, int])
+        get_args(Callable[[], T][int]) == ([], int)
+    &#34;&#34;&#34;
+    if isinstance(tp, _AnnotatedAlias):
+        return (tp.__origin__,) + tp.__metadata__
+    if isinstance(tp, (typing._GenericAlias, GenericAlias)):
+        if getattr(tp, &#34;_special&#34;, False):
+            return ()
+        res = tp.__args__
+        if get_origin(tp) is collections.abc.Callable and res[0] is not Ellipsis:
+            res = (list(res[:-1]), res[-1])
+        return res
+    return ()</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.typing.get_origin"><code class="name flex">
+<span>def <span class="ident">get_origin</span></span>(<span>tp)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get the unsubscripted version of a type.</p>
+<p>This supports generic types, Callable, Tuple, Union, Literal, Final, ClassVar
+and Annotated. Return None for unsupported types. Examples::</p>
+<pre><code>get_origin(Literal[42]) is Literal
+get_origin(int) is None
+get_origin(ClassVar[int]) is ClassVar
+get_origin(Generic) is Generic
+get_origin(Generic[T]) is Generic
+get_origin(Union[T, int]) is Union
+get_origin(List[Tuple[T, T]][int]) == list
+get_origin(P.args) is P
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_origin(tp):
+    &#34;&#34;&#34;Get the unsubscripted version of a type.
+
+    This supports generic types, Callable, Tuple, Union, Literal, Final, ClassVar
+    and Annotated. Return None for unsupported types. Examples::
+
+        get_origin(Literal[42]) is Literal
+        get_origin(int) is None
+        get_origin(ClassVar[int]) is ClassVar
+        get_origin(Generic) is Generic
+        get_origin(Generic[T]) is Generic
+        get_origin(Union[T, int]) is Union
+        get_origin(List[Tuple[T, T]][int]) == list
+        get_origin(P.args) is P
+    &#34;&#34;&#34;
+    if isinstance(tp, _AnnotatedAlias):
+        return Annotated
+    if isinstance(tp, (typing._GenericAlias, GenericAlias, _BaseGenericAlias,
+                       ParamSpecArgs, ParamSpecKwargs)):
+        return tp.__origin__
+    if tp is typing.Generic:
+        return typing.Generic
+    return None</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.typing.is_typed_dict"><code class="name flex">
+<span>def <span class="ident">is_typed_dict</span></span>(<span>t: type) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_typed_dict(t: type) -&gt; bool:
+    return isinstance(t, _TypedDictMeta)</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.typing.issubgeneric"><code class="name flex">
+<span>def <span class="ident">issubgeneric</span></span>(<span>t: type, p: type) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Checks whether a type is subclass of a generic type.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>t</code></strong></dt>
+<dd>A type to check.</dd>
+<dt><strong><code>p</code></strong></dt>
+<dd>A generic type.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Whether the type in subclass of the generic type.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def issubgeneric(t: type, p: type) -&gt; bool:
+    &#34;&#34;&#34;
+    Checks whether a type is subclass of a generic type.
+
+    Args:
+        t: A type to check.
+        p: A generic type.
+    Returns:
+        Whether the type in subclass of the generic type.
+    &#34;&#34;&#34;
+    if type(t) is type:
+        return issubclass(t, p)
+    else:
+        return hasattr(t, &#39;__origin__&#39;) and issubclass(get_origin(t), p)</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.typing.issubtype"><code class="name flex">
+<span>def <span class="ident">issubtype</span></span>(<span>t: type, p: type) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Checks whether a type is subclass of another type.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>t</code></strong></dt>
+<dd>A type to check.</dd>
+<dt><strong><code>p</code></strong></dt>
+<dd>Another type.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Whether the type in subclass of another type.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def issubtype(t: type, p: type) -&gt; bool:
+    &#34;&#34;&#34;
+    Checks whether a type is subclass of another type.
+
+    Args:
+        t: A type to check.
+        p: Another type.
+    Returns:
+        Whether the type in subclass of another type.
+    &#34;&#34;&#34;
+    if is_typed_dict(p):
+        return is_typed_dict(t) and set(t.__annotations__.items()) &gt;= set(p.__annotations__.items())
+    else:
+        return issubclass(t, p)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="pyracmon.graph.typing.Annotated"><code class="flex name class">
+<span>class <span class="ident">Annotated</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add context specific metadata to a type.</p>
+<p>Example: Annotated[int, runtime_check.Unsigned] indicates to the
+hypothetical runtime_check module that this type is an unsigned int.
+Every other consumer of this type can ignore this metadata and treat
+this type as int.</p>
+<p>The first argument to Annotated must be a valid type (and will be in
+the <strong>origin</strong> field), the remaining arguments are kept as a tuple in
+the <strong>extra</strong> field.</p>
+<p>Details:</p>
+<ul>
+<li>It's an error to call <code><a title="pyracmon.graph.typing.Annotated" href="#pyracmon.graph.typing.Annotated">Annotated</a></code> with less than two arguments.</li>
+<li>
+<p>Nested Annotated are flattened::</p>
+<p>Annotated[Annotated[T, Ann1, Ann2], Ann3] == Annotated[T, Ann1, Ann2, Ann3]</p>
+</li>
+<li>
+<p>Instantiating an annotated type is equivalent to instantiating the
+underlying type::</p>
+<p>Annotated<a href="5">C, Ann1</a> == C(5)</p>
+</li>
+<li>
+<p>Annotated can be used as a generic type alias::</p>
+<p>Optimized = Annotated[T, runtime.Optimize()]
+Optimized[int] == Annotated[int, runtime.Optimize()]</p>
+<p>OptimizedList = Annotated[List[T], runtime.Optimize()]
+OptimizedList[int] == Annotated[List[int], runtime.Optimize()]</p>
+</li>
+</ul></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Annotated:
+    &#34;&#34;&#34;Add context specific metadata to a type.
+
+    Example: Annotated[int, runtime_check.Unsigned] indicates to the
+    hypothetical runtime_check module that this type is an unsigned int.
+    Every other consumer of this type can ignore this metadata and treat
+    this type as int.
+
+    The first argument to Annotated must be a valid type (and will be in
+    the __origin__ field), the remaining arguments are kept as a tuple in
+    the __extra__ field.
+
+    Details:
+
+    - It&#39;s an error to call `Annotated` with less than two arguments.
+    - Nested Annotated are flattened::
+
+        Annotated[Annotated[T, Ann1, Ann2], Ann3] == Annotated[T, Ann1, Ann2, Ann3]
+
+    - Instantiating an annotated type is equivalent to instantiating the
+    underlying type::
+
+        Annotated[C, Ann1](5) == C(5)
+
+    - Annotated can be used as a generic type alias::
+
+        Optimized = Annotated[T, runtime.Optimize()]
+        Optimized[int] == Annotated[int, runtime.Optimize()]
+
+        OptimizedList = Annotated[List[T], runtime.Optimize()]
+        OptimizedList[int] == Annotated[List[int], runtime.Optimize()]
+    &#34;&#34;&#34;
+
+    __slots__ = ()
+
+    def __new__(cls, *args, **kwargs):
+        raise TypeError(&#34;Type Annotated cannot be instantiated.&#34;)
+
+    @typing._tp_cache
+    def __class_getitem__(cls, params):
+        if not isinstance(params, tuple) or len(params) &lt; 2:
+            raise TypeError(&#34;Annotated[...] should be used &#34;
+                            &#34;with at least two arguments (a type and an &#34;
+                            &#34;annotation).&#34;)
+        msg = &#34;Annotated[t, ...]: t must be a type.&#34;
+        origin = typing._type_check(params[0], msg)
+        metadata = tuple(params[1:])
+        return _AnnotatedAlias(origin, metadata)
+
+    def __init_subclass__(cls, *args, **kwargs):
+        raise TypeError(
+            f&#34;Cannot subclass {cls.__module__}.Annotated&#34;
+        )</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.typing.TypedDict"><code class="flex name class">
+<span>class <span class="ident">TypedDict</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A simple typed name space. At runtime it is equivalent to a plain dict.</p>
+<p>TypedDict creates a dictionary type that expects all of its
+instances to have a certain set of keys, with each key
+associated with a value of a consistent type. This expectation
+is not checked at runtime but is only enforced by type checkers.
+Usage::</p>
+<pre><code>class Point2D(TypedDict):
+    x: int
+    y: int
+    label: str
+
+a: Point2D = {'x': 1, 'y': 2, 'label': 'good'}  # OK
+b: Point2D = {'z': 3, 'label': 'bad'}           # Fails type check
+
+assert Point2D(x=1, y=2, label='first') == dict(x=1, y=2, label='first')
+</code></pre>
+<p>The type info can be accessed via the Point2D.<strong>annotations</strong> dict, and
+the Point2D.<strong>required_keys</strong> and Point2D.<strong>optional_keys</strong> frozensets.
+TypedDict supports two additional equivalent forms::</p>
+<pre><code>Point2D = TypedDict('Point2D', x=int, y=int, label=str)
+Point2D = TypedDict('Point2D', {'x': int, 'y': int, 'label': str})
+</code></pre>
+<p>The class syntax is only supported in Python 3.6+, while two other
+syntax forms work for Python 2.7 and 3.2+</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.dict</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="pyracmon.graph" href="index.html">pyracmon.graph</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="pyracmon.graph.typing.annotate" href="#pyracmon.graph.typing.annotate">annotate</a></code></li>
+<li><code><a title="pyracmon.graph.typing.generate_schema" href="#pyracmon.graph.typing.generate_schema">generate_schema</a></code></li>
+<li><code><a title="pyracmon.graph.typing.get_args" href="#pyracmon.graph.typing.get_args">get_args</a></code></li>
+<li><code><a title="pyracmon.graph.typing.get_origin" href="#pyracmon.graph.typing.get_origin">get_origin</a></code></li>
+<li><code><a title="pyracmon.graph.typing.is_typed_dict" href="#pyracmon.graph.typing.is_typed_dict">is_typed_dict</a></code></li>
+<li><code><a title="pyracmon.graph.typing.issubgeneric" href="#pyracmon.graph.typing.issubgeneric">issubgeneric</a></code></li>
+<li><code><a title="pyracmon.graph.typing.issubtype" href="#pyracmon.graph.typing.issubtype">issubtype</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="pyracmon.graph.typing.Annotated" href="#pyracmon.graph.typing.Annotated">Annotated</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pyracmon.graph.typing.TypedDict" href="#pyracmon.graph.typing.TypedDict">TypedDict</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
