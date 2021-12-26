@@ -47,7 +47,8 @@ def document_type(t: type, doc: str) -&gt; Type[Annotated]:
 
 def _decompose_document(t: type) -&gt; Tuple[type, str]:
     if get_origin(t) == Annotated:
-        return get_args(t)
+        t, d = get_args(t)
+        return t, d if isinstance(d, str) else d.__doc__
     else:
         return t, &#34;&#34;
 

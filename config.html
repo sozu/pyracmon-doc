@@ -63,6 +63,7 @@ from .util import Configurable
 
 __all__ = [
     &#34;pyracmon&#34;,
+    &#34;default_config&#34;,
     &#34;PyracmonConfiguration&#34;,
 ]
 
@@ -214,6 +215,33 @@ def pyracmon(**kwargs: Any) -&gt; PyracmonConfiguration:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="pyracmon.config.default_config"><code class="name flex">
+<span>def <span class="ident">default_config</span></span>(<span>config=&lt;pyracmon.config.PyracmonConfiguration object&gt;)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def default_config(config=PyracmonConfiguration(
+    name = &#34;default&#34;,
+    logger = None,
+    log_level = logging.DEBUG,
+    sql_log_length = 4096,
+    parameter_log = False,
+    paramstyle = None,
+    type_mapping = None,
+    graph_spec = None,
+    fixture_mapping = None,
+    fixture_tz_aware = True,
+    fixture_ignore_fk = True,
+    fixture_ignore_nullable = True,
+    timedelta_unit = dict(seconds=1),
+)):
+    return config</code></pre>
+</details>
+</dd>
 <dt id="pyracmon.config.pyracmon"><code class="name flex">
 <span>def <span class="ident">pyracmon</span></span>(<span>**kwargs: Any) ‑> <a title="pyracmon.config.PyracmonConfiguration" href="#pyracmon.config.PyracmonConfiguration">PyracmonConfiguration</a></span>
 </code></dt>
@@ -433,6 +461,7 @@ def pyracmon(**kwargs: Any) -&gt; PyracmonConfiguration:
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="pyracmon.config.default_config" href="#pyracmon.config.default_config">default_config</a></code></li>
 <li><code><a title="pyracmon.config.pyracmon" href="#pyracmon.config.pyracmon">pyracmon</a></code></li>
 </ul>
 </li>

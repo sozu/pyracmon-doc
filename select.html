@@ -154,7 +154,7 @@ class FieldExpressions:
         elif isinstance(other, str):
             self.__selections.append(other)
             self.__keys[other] = other
-        elif other is ():
+        elif other == ():
             self.__selections.append(other)
         else:
             raise ValueError(f&#34;Operand of + for FieldExpressions must be a Selection or FieldExpressions but {type(other)} is given.&#34;)
@@ -445,7 +445,7 @@ t1.col11, t1.col12, t2.col21, t2.col22, t2.col23, t2.col24
         elif isinstance(other, str):
             self.__selections.append(other)
             self.__keys[other] = other
-        elif other is ():
+        elif other == ():
             self.__selections.append(other)
         else:
             raise ValueError(f&#34;Operand of + for FieldExpressions must be a Selection or FieldExpressions but {type(other)} is given.&#34;)

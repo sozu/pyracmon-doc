@@ -49,10 +49,12 @@ class S:
         &#34;&#34;&#34;
         Create an instance of `NodeSerializer`.
 
-        :param namer: A string or naming function.
-        :param aggregator: An aggregation function or an index of node to select in node container.
-        :param serializer: A list of *serializer* s.
-        :returns: Created `NodeSerializer` .
+        Args:
+            namer: A string or naming function.
+            aggregator: An aggregation function or an index of node to select in node container.
+            serializer: A list of *serializer* s.
+        Returns:
+            Created `NodeSerializer` .
         &#34;&#34;&#34;
         return NodeSerializer(namer, aggregator, *serializers)
 
@@ -66,8 +68,10 @@ class S:
         &gt;&gt;&gt;     ...
         &gt;&gt;&gt; S.some_func()
 
-        :param builder: Decorating target.
-        :returns: Decorated builder.
+        Args:
+            builder: Decorating target.
+        Returns:
+            Decorated builder.
         &#34;&#34;&#34;
         def f(*args, **kwargs):
             return builder(S.of(), *args, **kwargs)
@@ -81,9 +85,9 @@ class NodeSerializer:
 
     The conversion is composed of 3 phases.
 
-    1. If ``aggregator`` is set, aggregate the list of nodes into a node or shrinked list of nodes.
+    1. If `aggregator` is set, aggregate the list of nodes into a node or shrinked list of nodes.
     2. Convert the entity of each node into a serializable value by *serializer* .
-    3. Put the converted value(s) into the dictionary converted from the parent node with a key determined by ``namer``.
+    3. Put the converted value(s) into the dictionary converted from the parent node with a key determined by `namer`.
 
     These phases are applied from the roots of graph to their descendants as long as the entity is converted to `dict`.
     Children of the entity which is not converted to `dict` are simply ignored.
@@ -98,13 +102,14 @@ class NodeSerializer:
     &gt;&gt;&gt; )
     {&#34;a&#34;: [{&#34;a1&#34;:1, &#34;a2&#34;:2, &#34;__b1__&#34;:3, &#34;__b2__&#34;:4}]}
 
-    In this case, the property name ``b`` is ignored and `head` aggregation is implicitly applied to the property if no aggregator is set.
-    As shown in the example, the converted value on ``b`` must be a `dict` in order to being expanded to key-value pairs.
+    In this case, the property name `b` is ignored and `head` aggregation is implicitly applied to the property if no aggregator is set.
+    As shown in the example, the converted value on `b` must be a `dict` in order to being expanded to key-value pairs.
     Exception raises when the value of another type is obtained.
 
-    :param namer: Key in the dictionary or naming funciton.
-    :param aggregator: Function to select node(s) from the node container.
-    :param serializers: List of *serializer* s.
+    Args:
+        namer: Key in the dictionary or naming funciton.
+        aggregator: Function to select node(s) from the node container.
+        serializers: List of *serializer* s.
     &#34;&#34;&#34;
     def __init__(
         self,
@@ -122,8 +127,6 @@ class NodeSerializer:
     def namer(self) -&gt; Callable[[str], str]:
         &#34;&#34;&#34;
         Returns naming function which determines the key of the property even when `namer` is set to a string.
-
-        :getter: Naming function.
         &#34;&#34;&#34;
         if not self._namer:
             return lambda n: n
@@ -136,8 +139,6 @@ class NodeSerializer:
     def aggregator(self) -&gt; Callable[[List[Node]], Union[List[Node], Node, Any]]:
         &#34;&#34;&#34;
         Returns aggregation function which selects node(s) from nodes in the container.
-
-        :getter: Aggregation function.
         &#34;&#34;&#34;
         if self._aggregator is None:
             def agg(values: List[T]) -&gt; List[T]:
@@ -154,8 +155,6 @@ class NodeSerializer:
     def serializer(self) -&gt; Serializer:
         &#34;&#34;&#34;
         Returns serialization function which converts an entity into a serializable value.
-
-        :getter: Serialization function.
         &#34;&#34;&#34;
         return chain_serializers(self._serializers)
 
@@ -163,8 +162,6 @@ class NodeSerializer:
     def be_merged(self) -&gt; bool:
         &#34;&#34;&#34;
         Returns whether the converted value will be merged into parent.
-
-        :getter: ``True`` if converted value will be merged into parent.
         &#34;&#34;&#34;
         return callable(self._namer)
 
@@ -173,10 +170,8 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Returns whether the converted value will be a singular object, not a list.
 
-        This is estimated by annotation of aggregation function. If its returning type is not annotated, this property always returns ``False`` .
+        This is estimated by annotation of aggregation function. If its returning type is not annotated, this property always returns `False` .
         `S` builder methods adds appropriate annotation to given function when it does not have the annotation.
-
-        :getter: ``True`` if converted value will be a singular object. ``False`` means that it will be a list.
         &#34;&#34;&#34;
         rt = signature(self.aggregator).return_annotation
         return not issubgeneric(rt, list)
@@ -206,8 +201,11 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Set the documentation for this node.
 
-        :param document: A documentation string.
-        :returns: This instance.
+        Args:
+            document: A documentation string.
+            options: Documentation options.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         self._doc = document
         self._doc_options = options
@@ -221,8 +219,10 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Set a key in parent dictionary.
 
-        :param name: A key string.
-        :returns: This instance.
+        Args:
+            name: A key string.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         if not isinstance(name, str):
             raise ValueError(f&#34;The name of node must be a string but {type(name)} is given.&#34;)
@@ -234,13 +234,15 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Set a naming function taking a property name and returning a key in parent `dict`.
 
-        `NodeSerializer` built with this methods merges the converted `dict` into parent `dict` and its `be_merged` property becomes ``True`` .
+        `NodeSerializer` built with this methods merges the converted `dict` into parent `dict` and its `be_merged` property becomes `True`.
 
         Because merging needs folding, this method overrides the aggregation function by invoking `head()` internally
         if this *serializer* is not configured to fold nodes into a single node.
 
-        :param namer: The naming function. If ``None`` , the property name is returned as it is.
-        :returns: This instance.
+        Args:
+            namer: The naming function. If `None`, the property name is returned as it is.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         if namer and not callable(namer):
             raise ValueError(f&#34;The method merging a node into its parent node must be callable or None.&#34;)
@@ -257,9 +259,11 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Set an aggregator which picks up the node at the index.
 
-        :param index: An index of the element.
-        :param alt: A value used when no node is found at the index.
-        :returns: This instance.
+        Args:
+            index: An index of the element.
+            alt: A value used when no node is found at the index.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         return self.fold(lambda vs: vs[index] if len(vs) &gt; index else alt)
 
@@ -268,8 +272,10 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Set an aggregator which picks up the first node.
 
-        :param alt: A value used when there exists no nodes.
-        :returns: This instance.
+        Args:
+            alt: A value used when there exists no nodes.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         return self.at(0, alt)
 
@@ -278,8 +284,10 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Set an aggregator which picks up the last node.
 
-        :param alt: A value used when there exists no nodes.
-        :returns: This instance.
+        Args:
+            alt: A value used when there exists no nodes.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         return self.fold(lambda vs: vs[-1] if len(vs) &gt; 0 else alt)
 
@@ -288,8 +296,10 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Set an aggregation function converting a list of nodes into a single node or any value.
 
-        :param aggregator: An aggregation function.
-        :returns: This instance.
+        Args:
+            aggregator: An aggregation function.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         return self._set_aggregator(aggregator, True)
 
@@ -298,8 +308,10 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Set an aggregation function chooding a list of nodes from all nodes in `NodeContainer` .
 
-        :param aggregator: An aggregation function.
-        :returns: This instance.
+        Args:
+            aggregator: An aggregation function.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         return self._set_aggregator(aggregator, False)
 
@@ -321,10 +333,12 @@ class NodeSerializer:
         - An entity value to convert.
 
         When the number of arguments in signature of the function is less than 4, former arguments are omitted.
-        For example, ``def func(c, n, b, v):`` is invoked with all arguments, while ``def func(b, v):`` is invoked with only 3rd and 4th arguments.
+        For example, `def func(c, n, b, v):` is invoked with all arguments, while `def func(b, v):` is invoked with only 3rd and 4th arguments.
 
-        :param func: A function converting a node entity into a serializable value.
-        :returns: This instance.
+        Args:
+            func: A function converting a node entity into a serializable value.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         self._serializers.append(func)
         return self
@@ -334,11 +348,13 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Set serialization settings for sub graph.
 
-        This method is used for the property whose kind is `GraphTemplate` .
-        The form of ``settings`` is same as keyword arguments of `GraphSpec.to_dict` .
+        This method is used for the property whose kind is `GraphTemplate`.
+        The form of `settings` is same as keyword arguments of `GraphSpec.to_dict`.
 
-        :param settings: Serialization settings used to serialize sub graph.
-        :returns: This instance.
+        Args:
+            settings: Serialization settings used to serialize sub graph.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         class SubGraph(Typeable[T]):
             serializers = settings.copy()
@@ -364,13 +380,15 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Extends and shrinks the dictionary.
 
-        ``generator`` is a kind of *serializer* returning `dict` which will be merged into serialization result.
-        ``excludes`` and ``includes`` are used to select keys in the result.
+        `generator` is a kind of *serializer* returning `dict` which will be merged into serialization result.
+        `excludes` and `includes` are used to select keys in the result.
 
-        :param generator: A function generating dictionary to be merged.
-        :param excludes: Keys to exclude.
-        :param includes: Keys to keep.
-        :returns: This instance.
+        Args:
+            generator: A function generating dictionary to be merged.
+            excludes: Keys to exclude.
+            includes: Keys to keep.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         excludes = excludes or []
 
@@ -467,9 +485,10 @@ class SerializationContext:
     &gt;&gt;&gt;     dict(a={&#34;value&#34;: 10})
     &gt;&gt;&gt; )
 
-    :param settings: Mapping of node name to `NodeSerializer` .
-    :param finder: A function to find base *serializer* s by a `type` .
-    :param node_params: Parameters bound to node name. This context works as this `dict` on index access.
+    Args:
+        settings: Mapping of node name to `NodeSerializer` .
+        finder: A function to find base *serializer* s by a `type` .
+        node_params: Parameters bound to node name. This context works as this `dict` on index access.
     &#34;&#34;&#34;
     def __init__(
         self,
@@ -486,8 +505,10 @@ class SerializationContext:
         &#34;&#34;&#34;
         Returns an accessor to parameters for given node.
 
-        :param node: Node or node name.
-        :returns: An object exposing parameters for the node as attributes.
+        Args:
+            node: Node or node name.
+        Returns:
+            An object exposing parameters for the node as attributes.
         &#34;&#34;&#34;
         name = node.name if isinstance(node, Node) else node
         params = self.node_params.get(name, {})
@@ -508,8 +529,10 @@ class SerializationContext:
         &#34;&#34;&#34;
         Serializes a graph.
 
-        :param graph: The view of graph to serialize.
-        :returns: Serialization result.
+        Args:
+            graph: The view of graph to serialize.
+        Returns:
+            Serialization result.
         &#34;&#34;&#34;
         result = {}
 
@@ -522,9 +545,10 @@ class SerializationContext:
         &#34;&#34;&#34;
         Serialize nodes and appends them into the dictionary.
 
-        :param name: Name of the template property associated with the nodes.
-        :param container: Container of nodes. 
-        :param parent: A parent dictionary to which serialized values will be appended.
+        Args:
+            name: Name of the template property associated with the nodes.
+            container: Container of nodes. 
+            parent: A parent dictionary to which serialized values will be appended.
         &#34;&#34;&#34;
         ns = self.serializer_map.get(name, None)
 
@@ -780,9 +804,15 @@ Children of the entity which is not converted to <code>dict</code> are simply ig
 <p>In this case, the property name <code>b</code> is ignored and <code>head</code> aggregation is implicitly applied to the property if no aggregator is set.
 As shown in the example, the converted value on <code>b</code> must be a <code>dict</code> in order to being expanded to key-value pairs.
 Exception raises when the value of another type is obtained.</p>
-<p>:param namer: Key in the dictionary or naming funciton.
-:param aggregator: Function to select node(s) from the node container.
-:param serializers: List of <em>serializer</em> s.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>namer</code></strong></dt>
+<dd>Key in the dictionary or naming funciton.</dd>
+<dt><strong><code>aggregator</code></strong></dt>
+<dd>Function to select node(s) from the node container.</dd>
+<dt><strong><code>serializers</code></strong></dt>
+<dd>List of <em>serializer</em> s.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -793,9 +823,9 @@ Exception raises when the value of another type is obtained.</p>
 
     The conversion is composed of 3 phases.
 
-    1. If ``aggregator`` is set, aggregate the list of nodes into a node or shrinked list of nodes.
+    1. If `aggregator` is set, aggregate the list of nodes into a node or shrinked list of nodes.
     2. Convert the entity of each node into a serializable value by *serializer* .
-    3. Put the converted value(s) into the dictionary converted from the parent node with a key determined by ``namer``.
+    3. Put the converted value(s) into the dictionary converted from the parent node with a key determined by `namer`.
 
     These phases are applied from the roots of graph to their descendants as long as the entity is converted to `dict`.
     Children of the entity which is not converted to `dict` are simply ignored.
@@ -810,13 +840,14 @@ Exception raises when the value of another type is obtained.</p>
     &gt;&gt;&gt; )
     {&#34;a&#34;: [{&#34;a1&#34;:1, &#34;a2&#34;:2, &#34;__b1__&#34;:3, &#34;__b2__&#34;:4}]}
 
-    In this case, the property name ``b`` is ignored and `head` aggregation is implicitly applied to the property if no aggregator is set.
-    As shown in the example, the converted value on ``b`` must be a `dict` in order to being expanded to key-value pairs.
+    In this case, the property name `b` is ignored and `head` aggregation is implicitly applied to the property if no aggregator is set.
+    As shown in the example, the converted value on `b` must be a `dict` in order to being expanded to key-value pairs.
     Exception raises when the value of another type is obtained.
 
-    :param namer: Key in the dictionary or naming funciton.
-    :param aggregator: Function to select node(s) from the node container.
-    :param serializers: List of *serializer* s.
+    Args:
+        namer: Key in the dictionary or naming funciton.
+        aggregator: Function to select node(s) from the node container.
+        serializers: List of *serializer* s.
     &#34;&#34;&#34;
     def __init__(
         self,
@@ -834,8 +865,6 @@ Exception raises when the value of another type is obtained.</p>
     def namer(self) -&gt; Callable[[str], str]:
         &#34;&#34;&#34;
         Returns naming function which determines the key of the property even when `namer` is set to a string.
-
-        :getter: Naming function.
         &#34;&#34;&#34;
         if not self._namer:
             return lambda n: n
@@ -848,8 +877,6 @@ Exception raises when the value of another type is obtained.</p>
     def aggregator(self) -&gt; Callable[[List[Node]], Union[List[Node], Node, Any]]:
         &#34;&#34;&#34;
         Returns aggregation function which selects node(s) from nodes in the container.
-
-        :getter: Aggregation function.
         &#34;&#34;&#34;
         if self._aggregator is None:
             def agg(values: List[T]) -&gt; List[T]:
@@ -866,8 +893,6 @@ Exception raises when the value of another type is obtained.</p>
     def serializer(self) -&gt; Serializer:
         &#34;&#34;&#34;
         Returns serialization function which converts an entity into a serializable value.
-
-        :getter: Serialization function.
         &#34;&#34;&#34;
         return chain_serializers(self._serializers)
 
@@ -875,8 +900,6 @@ Exception raises when the value of another type is obtained.</p>
     def be_merged(self) -&gt; bool:
         &#34;&#34;&#34;
         Returns whether the converted value will be merged into parent.
-
-        :getter: ``True`` if converted value will be merged into parent.
         &#34;&#34;&#34;
         return callable(self._namer)
 
@@ -885,10 +908,8 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Returns whether the converted value will be a singular object, not a list.
 
-        This is estimated by annotation of aggregation function. If its returning type is not annotated, this property always returns ``False`` .
+        This is estimated by annotation of aggregation function. If its returning type is not annotated, this property always returns `False` .
         `S` builder methods adds appropriate annotation to given function when it does not have the annotation.
-
-        :getter: ``True`` if converted value will be a singular object. ``False`` means that it will be a list.
         &#34;&#34;&#34;
         rt = signature(self.aggregator).return_annotation
         return not issubgeneric(rt, list)
@@ -918,8 +939,11 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Set the documentation for this node.
 
-        :param document: A documentation string.
-        :returns: This instance.
+        Args:
+            document: A documentation string.
+            options: Documentation options.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         self._doc = document
         self._doc_options = options
@@ -933,8 +957,10 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Set a key in parent dictionary.
 
-        :param name: A key string.
-        :returns: This instance.
+        Args:
+            name: A key string.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         if not isinstance(name, str):
             raise ValueError(f&#34;The name of node must be a string but {type(name)} is given.&#34;)
@@ -946,13 +972,15 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Set a naming function taking a property name and returning a key in parent `dict`.
 
-        `NodeSerializer` built with this methods merges the converted `dict` into parent `dict` and its `be_merged` property becomes ``True`` .
+        `NodeSerializer` built with this methods merges the converted `dict` into parent `dict` and its `be_merged` property becomes `True`.
 
         Because merging needs folding, this method overrides the aggregation function by invoking `head()` internally
         if this *serializer* is not configured to fold nodes into a single node.
 
-        :param namer: The naming function. If ``None`` , the property name is returned as it is.
-        :returns: This instance.
+        Args:
+            namer: The naming function. If `None`, the property name is returned as it is.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         if namer and not callable(namer):
             raise ValueError(f&#34;The method merging a node into its parent node must be callable or None.&#34;)
@@ -969,9 +997,11 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Set an aggregator which picks up the node at the index.
 
-        :param index: An index of the element.
-        :param alt: A value used when no node is found at the index.
-        :returns: This instance.
+        Args:
+            index: An index of the element.
+            alt: A value used when no node is found at the index.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         return self.fold(lambda vs: vs[index] if len(vs) &gt; index else alt)
 
@@ -980,8 +1010,10 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Set an aggregator which picks up the first node.
 
-        :param alt: A value used when there exists no nodes.
-        :returns: This instance.
+        Args:
+            alt: A value used when there exists no nodes.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         return self.at(0, alt)
 
@@ -990,8 +1022,10 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Set an aggregator which picks up the last node.
 
-        :param alt: A value used when there exists no nodes.
-        :returns: This instance.
+        Args:
+            alt: A value used when there exists no nodes.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         return self.fold(lambda vs: vs[-1] if len(vs) &gt; 0 else alt)
 
@@ -1000,8 +1034,10 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Set an aggregation function converting a list of nodes into a single node or any value.
 
-        :param aggregator: An aggregation function.
-        :returns: This instance.
+        Args:
+            aggregator: An aggregation function.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         return self._set_aggregator(aggregator, True)
 
@@ -1010,8 +1046,10 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Set an aggregation function chooding a list of nodes from all nodes in `NodeContainer` .
 
-        :param aggregator: An aggregation function.
-        :returns: This instance.
+        Args:
+            aggregator: An aggregation function.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         return self._set_aggregator(aggregator, False)
 
@@ -1033,10 +1071,12 @@ Exception raises when the value of another type is obtained.</p>
         - An entity value to convert.
 
         When the number of arguments in signature of the function is less than 4, former arguments are omitted.
-        For example, ``def func(c, n, b, v):`` is invoked with all arguments, while ``def func(b, v):`` is invoked with only 3rd and 4th arguments.
+        For example, `def func(c, n, b, v):` is invoked with all arguments, while `def func(b, v):` is invoked with only 3rd and 4th arguments.
 
-        :param func: A function converting a node entity into a serializable value.
-        :returns: This instance.
+        Args:
+            func: A function converting a node entity into a serializable value.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         self._serializers.append(func)
         return self
@@ -1046,11 +1086,13 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Set serialization settings for sub graph.
 
-        This method is used for the property whose kind is `GraphTemplate` .
-        The form of ``settings`` is same as keyword arguments of `GraphSpec.to_dict` .
+        This method is used for the property whose kind is `GraphTemplate`.
+        The form of `settings` is same as keyword arguments of `GraphSpec.to_dict`.
 
-        :param settings: Serialization settings used to serialize sub graph.
-        :returns: This instance.
+        Args:
+            settings: Serialization settings used to serialize sub graph.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         class SubGraph(Typeable[T]):
             serializers = settings.copy()
@@ -1076,13 +1118,15 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Extends and shrinks the dictionary.
 
-        ``generator`` is a kind of *serializer* returning `dict` which will be merged into serialization result.
-        ``excludes`` and ``includes`` are used to select keys in the result.
+        `generator` is a kind of *serializer* returning `dict` which will be merged into serialization result.
+        `excludes` and `includes` are used to select keys in the result.
 
-        :param generator: A function generating dictionary to be merged.
-        :param excludes: Keys to exclude.
-        :param includes: Keys to keep.
-        :returns: This instance.
+        Args:
+            generator: A function generating dictionary to be merged.
+            excludes: Keys to exclude.
+            includes: Keys to keep.
+        Returns:
+            This instance.
         &#34;&#34;&#34;
         excludes = excludes or []
 
@@ -1109,8 +1153,7 @@ Exception raises when the value of another type is obtained.</p>
 <dl>
 <dt id="pyracmon.graph.serialize.NodeSerializer.aggregator"><code class="name">var <span class="ident">aggregator</span> : Callable[[List[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], Union[List[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>], <a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>, Any]]</code></dt>
 <dd>
-<div class="desc"><p>Returns aggregation function which selects node(s) from nodes in the container.</p>
-<p>:getter: Aggregation function.</p></div>
+<div class="desc"><p>Returns aggregation function which selects node(s) from nodes in the container.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1119,8 +1162,6 @@ Exception raises when the value of another type is obtained.</p>
 def aggregator(self) -&gt; Callable[[List[Node]], Union[List[Node], Node, Any]]:
     &#34;&#34;&#34;
     Returns aggregation function which selects node(s) from nodes in the container.
-
-    :getter: Aggregation function.
     &#34;&#34;&#34;
     if self._aggregator is None:
         def agg(values: List[T]) -&gt; List[T]:
@@ -1136,8 +1177,7 @@ def aggregator(self) -&gt; Callable[[List[Node]], Union[List[Node], Node, Any]]:
 </dd>
 <dt id="pyracmon.graph.serialize.NodeSerializer.be_merged"><code class="name">var <span class="ident">be_merged</span> : bool</code></dt>
 <dd>
-<div class="desc"><p>Returns whether the converted value will be merged into parent.</p>
-<p>:getter: <code>True</code> if converted value will be merged into parent.</p></div>
+<div class="desc"><p>Returns whether the converted value will be merged into parent.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1146,8 +1186,6 @@ def aggregator(self) -&gt; Callable[[List[Node]], Union[List[Node], Node, Any]]:
 def be_merged(self) -&gt; bool:
     &#34;&#34;&#34;
     Returns whether the converted value will be merged into parent.
-
-    :getter: ``True`` if converted value will be merged into parent.
     &#34;&#34;&#34;
     return callable(self._namer)</code></pre>
 </details>
@@ -1156,8 +1194,7 @@ def be_merged(self) -&gt; bool:
 <dd>
 <div class="desc"><p>Returns whether the converted value will be a singular object, not a list.</p>
 <p>This is estimated by annotation of aggregation function. If its returning type is not annotated, this property always returns <code>False</code> .
-<code><a title="pyracmon.graph.serialize.S" href="#pyracmon.graph.serialize.S">S</a></code> builder methods adds appropriate annotation to given function when it does not have the annotation.</p>
-<p>:getter: <code>True</code> if converted value will be a singular object. <code>False</code> means that it will be a list.</p></div>
+<code><a title="pyracmon.graph.serialize.S" href="#pyracmon.graph.serialize.S">S</a></code> builder methods adds appropriate annotation to given function when it does not have the annotation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1167,10 +1204,8 @@ def be_singular(self) -&gt; bool:
     &#34;&#34;&#34;
     Returns whether the converted value will be a singular object, not a list.
 
-    This is estimated by annotation of aggregation function. If its returning type is not annotated, this property always returns ``False`` .
+    This is estimated by annotation of aggregation function. If its returning type is not annotated, this property always returns `False` .
     `S` builder methods adds appropriate annotation to given function when it does not have the annotation.
-
-    :getter: ``True`` if converted value will be a singular object. ``False`` means that it will be a list.
     &#34;&#34;&#34;
     rt = signature(self.aggregator).return_annotation
     return not issubgeneric(rt, list)</code></pre>
@@ -1178,8 +1213,7 @@ def be_singular(self) -&gt; bool:
 </dd>
 <dt id="pyracmon.graph.serialize.NodeSerializer.namer"><code class="name">var <span class="ident">namer</span> : Callable[[str], str]</code></dt>
 <dd>
-<div class="desc"><p>Returns naming function which determines the key of the property even when <code>namer</code> is set to a string.</p>
-<p>:getter: Naming function.</p></div>
+<div class="desc"><p>Returns naming function which determines the key of the property even when <code>namer</code> is set to a string.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1188,8 +1222,6 @@ def be_singular(self) -&gt; bool:
 def namer(self) -&gt; Callable[[str], str]:
     &#34;&#34;&#34;
     Returns naming function which determines the key of the property even when `namer` is set to a string.
-
-    :getter: Naming function.
     &#34;&#34;&#34;
     if not self._namer:
         return lambda n: n
@@ -1201,8 +1233,7 @@ def namer(self) -&gt; Callable[[str], str]:
 </dd>
 <dt id="pyracmon.graph.serialize.NodeSerializer.serializer"><code class="name">var <span class="ident">serializer</span> : Callable[[<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>], Any]</code></dt>
 <dd>
-<div class="desc"><p>Returns serialization function which converts an entity into a serializable value.</p>
-<p>:getter: Serialization function.</p></div>
+<div class="desc"><p>Returns serialization function which converts an entity into a serializable value.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1211,8 +1242,6 @@ def namer(self) -&gt; Callable[[str], str]:
 def serializer(self) -&gt; Serializer:
     &#34;&#34;&#34;
     Returns serialization function which converts an entity into a serializable value.
-
-    :getter: Serialization function.
     &#34;&#34;&#34;
     return chain_serializers(self._serializers)</code></pre>
 </details>
@@ -1227,10 +1256,17 @@ def serializer(self) -&gt; Serializer:
 <div class="desc"><p>Extends and shrinks the dictionary.</p>
 <p><code>generator</code> is a kind of <em>serializer</em> returning <code>dict</code> which will be merged into serialization result.
 <code>excludes</code> and <code>includes</code> are used to select keys in the result.</p>
-<p>:param generator: A function generating dictionary to be merged.
-:param excludes: Keys to exclude.
-:param includes: Keys to keep.
-:returns: This instance.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>generator</code></strong></dt>
+<dd>A function generating dictionary to be merged.</dd>
+<dt><strong><code>excludes</code></strong></dt>
+<dd>Keys to exclude.</dd>
+<dt><strong><code>includes</code></strong></dt>
+<dd>Keys to keep.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>This instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1245,13 +1281,15 @@ def alter(
     &#34;&#34;&#34;
     Extends and shrinks the dictionary.
 
-    ``generator`` is a kind of *serializer* returning `dict` which will be merged into serialization result.
-    ``excludes`` and ``includes`` are used to select keys in the result.
+    `generator` is a kind of *serializer* returning `dict` which will be merged into serialization result.
+    `excludes` and `includes` are used to select keys in the result.
 
-    :param generator: A function generating dictionary to be merged.
-    :param excludes: Keys to exclude.
-    :param includes: Keys to keep.
-    :returns: This instance.
+    Args:
+        generator: A function generating dictionary to be merged.
+        excludes: Keys to exclude.
+        includes: Keys to keep.
+    Returns:
+        This instance.
     &#34;&#34;&#34;
     excludes = excludes or []
 
@@ -1280,9 +1318,15 @@ def alter(
 </code></dt>
 <dd>
 <div class="desc"><p>Set an aggregator which picks up the node at the index.</p>
-<p>:param index: An index of the element.
-:param alt: A value used when no node is found at the index.
-:returns: This instance.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>index</code></strong></dt>
+<dd>An index of the element.</dd>
+<dt><strong><code>alt</code></strong></dt>
+<dd>A value used when no node is found at the index.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>This instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1292,9 +1336,11 @@ def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
     Set an aggregator which picks up the node at the index.
 
-    :param index: An index of the element.
-    :param alt: A value used when no node is found at the index.
-    :returns: This instance.
+    Args:
+        index: An index of the element.
+        alt: A value used when no node is found at the index.
+    Returns:
+        This instance.
     &#34;&#34;&#34;
     return self.fold(lambda vs: vs[index] if len(vs) &gt; index else alt)</code></pre>
 </details>
@@ -1304,8 +1350,15 @@ def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
 </code></dt>
 <dd>
 <div class="desc"><p>Set the documentation for this node.</p>
-<p>:param document: A documentation string.
-:returns: This instance.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>document</code></strong></dt>
+<dd>A documentation string.</dd>
+<dt><strong><code>options</code></strong></dt>
+<dd>Documentation options.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>This instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1315,8 +1368,11 @@ def doc(self, document: str, **options: Any) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
     Set the documentation for this node.
 
-    :param document: A documentation string.
-    :returns: This instance.
+    Args:
+        document: A documentation string.
+        options: Documentation options.
+    Returns:
+        This instance.
     &#34;&#34;&#34;
     self._doc = document
     self._doc_options = options
@@ -1338,8 +1394,13 @@ def doc(self, document: str, **options: Any) -&gt; &#39;NodeSerializer&#39;:
 </ul>
 <p>When the number of arguments in signature of the function is less than 4, former arguments are omitted.
 For example, <code>def func(c, n, b, v):</code> is invoked with all arguments, while <code>def func(b, v):</code> is invoked with only 3rd and 4th arguments.</p>
-<p>:param func: A function converting a node entity into a serializable value.
-:returns: This instance.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>func</code></strong></dt>
+<dd>A function converting a node entity into a serializable value.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>This instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1359,10 +1420,12 @@ def each(self, func: Serializer) -&gt; &#39;NodeSerializer&#39;:
     - An entity value to convert.
 
     When the number of arguments in signature of the function is less than 4, former arguments are omitted.
-    For example, ``def func(c, n, b, v):`` is invoked with all arguments, while ``def func(b, v):`` is invoked with only 3rd and 4th arguments.
+    For example, `def func(c, n, b, v):` is invoked with all arguments, while `def func(b, v):` is invoked with only 3rd and 4th arguments.
 
-    :param func: A function converting a node entity into a serializable value.
-    :returns: This instance.
+    Args:
+        func: A function converting a node entity into a serializable value.
+    Returns:
+        This instance.
     &#34;&#34;&#34;
     self._serializers.append(func)
     return self</code></pre>
@@ -1373,8 +1436,13 @@ def each(self, func: Serializer) -&gt; &#39;NodeSerializer&#39;:
 </code></dt>
 <dd>
 <div class="desc"><p>Set an aggregation function converting a list of nodes into a single node or any value.</p>
-<p>:param aggregator: An aggregation function.
-:returns: This instance.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>aggregator</code></strong></dt>
+<dd>An aggregation function.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>This instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1384,8 +1452,10 @@ def fold(self, aggregator: Callable[[List[Node]], Any]) -&gt; &#39;NodeSerialize
     &#34;&#34;&#34;
     Set an aggregation function converting a list of nodes into a single node or any value.
 
-    :param aggregator: An aggregation function.
-    :returns: This instance.
+    Args:
+        aggregator: An aggregation function.
+    Returns:
+        This instance.
     &#34;&#34;&#34;
     return self._set_aggregator(aggregator, True)</code></pre>
 </details>
@@ -1395,8 +1465,13 @@ def fold(self, aggregator: Callable[[List[Node]], Any]) -&gt; &#39;NodeSerialize
 </code></dt>
 <dd>
 <div class="desc"><p>Set an aggregator which picks up the first node.</p>
-<p>:param alt: A value used when there exists no nodes.
-:returns: This instance.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>alt</code></strong></dt>
+<dd>A value used when there exists no nodes.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>This instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1406,8 +1481,10 @@ def head(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
     Set an aggregator which picks up the first node.
 
-    :param alt: A value used when there exists no nodes.
-    :returns: This instance.
+    Args:
+        alt: A value used when there exists no nodes.
+    Returns:
+        This instance.
     &#34;&#34;&#34;
     return self.at(0, alt)</code></pre>
 </details>
@@ -1417,8 +1494,13 @@ def head(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
 </code></dt>
 <dd>
 <div class="desc"><p>Set an aggregator which picks up the last node.</p>
-<p>:param alt: A value used when there exists no nodes.
-:returns: This instance.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>alt</code></strong></dt>
+<dd>A value used when there exists no nodes.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>This instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1428,8 +1510,10 @@ def last(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
     Set an aggregator which picks up the last node.
 
-    :param alt: A value used when there exists no nodes.
-    :returns: This instance.
+    Args:
+        alt: A value used when there exists no nodes.
+    Returns:
+        This instance.
     &#34;&#34;&#34;
     return self.fold(lambda vs: vs[-1] if len(vs) &gt; 0 else alt)</code></pre>
 </details>
@@ -1439,11 +1523,16 @@ def last(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
 </code></dt>
 <dd>
 <div class="desc"><p>Set a naming function taking a property name and returning a key in parent <code>dict</code>.</p>
-<p><code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> built with this methods merges the converted <code>dict</code> into parent <code>dict</code> and its <code>be_merged</code> property becomes <code>True</code> .</p>
+<p><code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> built with this methods merges the converted <code>dict</code> into parent <code>dict</code> and its <code>be_merged</code> property becomes <code>True</code>.</p>
 <p>Because merging needs folding, this method overrides the aggregation function by invoking <code>head()</code> internally
 if this <em>serializer</em> is not configured to fold nodes into a single node.</p>
-<p>:param namer: The naming function. If <code>None</code> , the property name is returned as it is.
-:returns: This instance.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>namer</code></strong></dt>
+<dd>The naming function. If <code>None</code>, the property name is returned as it is.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>This instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1453,13 +1542,15 @@ def merge(self, namer: Optional[Callable[[str], str]] = None) -&gt; &#39;NodeSer
     &#34;&#34;&#34;
     Set a naming function taking a property name and returning a key in parent `dict`.
 
-    `NodeSerializer` built with this methods merges the converted `dict` into parent `dict` and its `be_merged` property becomes ``True`` .
+    `NodeSerializer` built with this methods merges the converted `dict` into parent `dict` and its `be_merged` property becomes `True`.
 
     Because merging needs folding, this method overrides the aggregation function by invoking `head()` internally
     if this *serializer* is not configured to fold nodes into a single node.
 
-    :param namer: The naming function. If ``None`` , the property name is returned as it is.
-    :returns: This instance.
+    Args:
+        namer: The naming function. If `None`, the property name is returned as it is.
+    Returns:
+        This instance.
     &#34;&#34;&#34;
     if namer and not callable(namer):
         raise ValueError(f&#34;The method merging a node into its parent node must be callable or None.&#34;)
@@ -1474,8 +1565,13 @@ def merge(self, namer: Optional[Callable[[str], str]] = None) -&gt; &#39;NodeSer
 </code></dt>
 <dd>
 <div class="desc"><p>Set a key in parent dictionary.</p>
-<p>:param name: A key string.
-:returns: This instance.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>A key string.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>This instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1485,8 +1581,10 @@ def name(self, name: str) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
     Set a key in parent dictionary.
 
-    :param name: A key string.
-    :returns: This instance.
+    Args:
+        name: A key string.
+    Returns:
+        This instance.
     &#34;&#34;&#34;
     if not isinstance(name, str):
         raise ValueError(f&#34;The name of node must be a string but {type(name)} is given.&#34;)
@@ -1499,8 +1597,13 @@ def name(self, name: str) -&gt; &#39;NodeSerializer&#39;:
 </code></dt>
 <dd>
 <div class="desc"><p>Set an aggregation function chooding a list of nodes from all nodes in <code>NodeContainer</code> .</p>
-<p>:param aggregator: An aggregation function.
-:returns: This instance.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>aggregator</code></strong></dt>
+<dd>An aggregation function.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>This instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1510,8 +1613,10 @@ def select(self, aggregator: Callable[[List[Node]], List[Node]]) -&gt; &#39;Node
     &#34;&#34;&#34;
     Set an aggregation function chooding a list of nodes from all nodes in `NodeContainer` .
 
-    :param aggregator: An aggregation function.
-    :returns: This instance.
+    Args:
+        aggregator: An aggregation function.
+    Returns:
+        This instance.
     &#34;&#34;&#34;
     return self._set_aggregator(aggregator, False)</code></pre>
 </details>
@@ -1521,10 +1626,15 @@ def select(self, aggregator: Callable[[List[Node]], List[Node]]) -&gt; &#39;Node
 </code></dt>
 <dd>
 <div class="desc"><p>Set serialization settings for sub graph.</p>
-<p>This method is used for the property whose kind is <code>GraphTemplate</code> .
-The form of <code>settings</code> is same as keyword arguments of <code>GraphSpec.to_dict</code> .</p>
-<p>:param settings: Serialization settings used to serialize sub graph.
-:returns: This instance.</p></div>
+<p>This method is used for the property whose kind is <code>GraphTemplate</code>.
+The form of <code>settings</code> is same as keyword arguments of <code>GraphSpec.to_dict</code>.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>settings</code></strong></dt>
+<dd>Serialization settings used to serialize sub graph.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>This instance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1534,11 +1644,13 @@ def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
     Set serialization settings for sub graph.
 
-    This method is used for the property whose kind is `GraphTemplate` .
-    The form of ``settings`` is same as keyword arguments of `GraphSpec.to_dict` .
+    This method is used for the property whose kind is `GraphTemplate`.
+    The form of `settings` is same as keyword arguments of `GraphSpec.to_dict`.
 
-    :param settings: Serialization settings used to serialize sub graph.
-    :returns: This instance.
+    Args:
+        settings: Serialization settings used to serialize sub graph.
+    Returns:
+        This instance.
     &#34;&#34;&#34;
     class SubGraph(Typeable[T]):
         serializers = settings.copy()
@@ -1580,10 +1692,12 @@ def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
         Create an instance of `NodeSerializer`.
 
-        :param namer: A string or naming function.
-        :param aggregator: An aggregation function or an index of node to select in node container.
-        :param serializer: A list of *serializer* s.
-        :returns: Created `NodeSerializer` .
+        Args:
+            namer: A string or naming function.
+            aggregator: An aggregation function or an index of node to select in node container.
+            serializer: A list of *serializer* s.
+        Returns:
+            Created `NodeSerializer` .
         &#34;&#34;&#34;
         return NodeSerializer(namer, aggregator, *serializers)
 
@@ -1597,8 +1711,10 @@ def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;:
         &gt;&gt;&gt;     ...
         &gt;&gt;&gt; S.some_func()
 
-        :param builder: Decorating target.
-        :returns: Decorated builder.
+        Args:
+            builder: Decorating target.
+        Returns:
+            Decorated builder.
         &#34;&#34;&#34;
         def f(*args, **kwargs):
             return builder(S.of(), *args, **kwargs)
@@ -1617,8 +1733,13 @@ def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;:
 &gt;&gt;&gt;     ...
 &gt;&gt;&gt; S.some_func()
 </code></pre>
-<p>:param builder: Decorating target.
-:returns: Decorated builder.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>builder</code></strong></dt>
+<dd>Decorating target.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Decorated builder.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1633,8 +1754,10 @@ def builder(cls, builder: Callable[[Any], Any]):
     &gt;&gt;&gt;     ...
     &gt;&gt;&gt; S.some_func()
 
-    :param builder: Decorating target.
-    :returns: Decorated builder.
+    Args:
+        builder: Decorating target.
+    Returns:
+        Decorated builder.
     &#34;&#34;&#34;
     def f(*args, **kwargs):
         return builder(S.of(), *args, **kwargs)
@@ -1647,10 +1770,17 @@ def builder(cls, builder: Callable[[Any], Any]):
 </code></dt>
 <dd>
 <div class="desc"><p>Create an instance of <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code>.</p>
-<p>:param namer: A string or naming function.
-:param aggregator: An aggregation function or an index of node to select in node container.
-:param serializer: A list of <em>serializer</em> s.
-:returns: Created <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> .</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>namer</code></strong></dt>
+<dd>A string or naming function.</dd>
+<dt><strong><code>aggregator</code></strong></dt>
+<dd>An aggregation function or an index of node to select in node container.</dd>
+<dt><strong><code>serializer</code></strong></dt>
+<dd>A list of <em>serializer</em> s.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Created <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> .</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1665,10 +1795,12 @@ def of(
     &#34;&#34;&#34;
     Create an instance of `NodeSerializer`.
 
-    :param namer: A string or naming function.
-    :param aggregator: An aggregation function or an index of node to select in node container.
-    :param serializer: A list of *serializer* s.
-    :returns: Created `NodeSerializer` .
+    Args:
+        namer: A string or naming function.
+        aggregator: An aggregation function or an index of node to select in node container.
+        serializer: A list of *serializer* s.
+    Returns:
+        Created `NodeSerializer` .
     &#34;&#34;&#34;
     return NodeSerializer(namer, aggregator, *serializers)</code></pre>
 </details>
@@ -1838,9 +1970,15 @@ because they are obtained by this context which can be obtained at the first arg
 &gt;&gt;&gt;     dict(a={&quot;value&quot;: 10})
 &gt;&gt;&gt; )
 </code></pre>
-<p>:param settings: Mapping of node name to <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> .
-:param finder: A function to find base <em>serializer</em> s by a <code>type</code> .
-:param node_params: Parameters bound to node name. This context works as this <code>dict</code> on index access.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>settings</code></strong></dt>
+<dd>Mapping of node name to <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> .</dd>
+<dt><strong><code>finder</code></strong></dt>
+<dd>A function to find base <em>serializer</em> s by a <code>type</code> .</dd>
+<dt><strong><code>node_params</code></strong></dt>
+<dd>Parameters bound to node name. This context works as this <code>dict</code> on index access.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1862,9 +2000,10 @@ because they are obtained by this context which can be obtained at the first arg
     &gt;&gt;&gt;     dict(a={&#34;value&#34;: 10})
     &gt;&gt;&gt; )
 
-    :param settings: Mapping of node name to `NodeSerializer` .
-    :param finder: A function to find base *serializer* s by a `type` .
-    :param node_params: Parameters bound to node name. This context works as this `dict` on index access.
+    Args:
+        settings: Mapping of node name to `NodeSerializer` .
+        finder: A function to find base *serializer* s by a `type` .
+        node_params: Parameters bound to node name. This context works as this `dict` on index access.
     &#34;&#34;&#34;
     def __init__(
         self,
@@ -1881,8 +2020,10 @@ because they are obtained by this context which can be obtained at the first arg
         &#34;&#34;&#34;
         Returns an accessor to parameters for given node.
 
-        :param node: Node or node name.
-        :returns: An object exposing parameters for the node as attributes.
+        Args:
+            node: Node or node name.
+        Returns:
+            An object exposing parameters for the node as attributes.
         &#34;&#34;&#34;
         name = node.name if isinstance(node, Node) else node
         params = self.node_params.get(name, {})
@@ -1903,8 +2044,10 @@ because they are obtained by this context which can be obtained at the first arg
         &#34;&#34;&#34;
         Serializes a graph.
 
-        :param graph: The view of graph to serialize.
-        :returns: Serialization result.
+        Args:
+            graph: The view of graph to serialize.
+        Returns:
+            Serialization result.
         &#34;&#34;&#34;
         result = {}
 
@@ -1917,9 +2060,10 @@ because they are obtained by this context which can be obtained at the first arg
         &#34;&#34;&#34;
         Serialize nodes and appends them into the dictionary.
 
-        :param name: Name of the template property associated with the nodes.
-        :param container: Container of nodes. 
-        :param parent: A parent dictionary to which serialized values will be appended.
+        Args:
+            name: Name of the template property associated with the nodes.
+            container: Container of nodes. 
+            parent: A parent dictionary to which serialized values will be appended.
         &#34;&#34;&#34;
         ns = self.serializer_map.get(name, None)
 
@@ -1969,8 +2113,13 @@ because they are obtained by this context which can be obtained at the first arg
 </code></dt>
 <dd>
 <div class="desc"><p>Serializes a graph.</p>
-<p>:param graph: The view of graph to serialize.
-:returns: Serialization result.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>graph</code></strong></dt>
+<dd>The view of graph to serialize.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Serialization result.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1979,8 +2128,10 @@ because they are obtained by this context which can be obtained at the first arg
     &#34;&#34;&#34;
     Serializes a graph.
 
-    :param graph: The view of graph to serialize.
-    :returns: Serialization result.
+    Args:
+        graph: The view of graph to serialize.
+    Returns:
+        Serialization result.
     &#34;&#34;&#34;
     result = {}
 
@@ -1995,9 +2146,15 @@ because they are obtained by this context which can be obtained at the first arg
 </code></dt>
 <dd>
 <div class="desc"><p>Serialize nodes and appends them into the dictionary.</p>
-<p>:param name: Name of the template property associated with the nodes.
-:param container: Container of nodes.
-:param parent: A parent dictionary to which serialized values will be appended.</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>Name of the template property associated with the nodes.</dd>
+<dt><strong><code>container</code></strong></dt>
+<dd>Container of nodes. </dd>
+<dt><strong><code>parent</code></strong></dt>
+<dd>A parent dictionary to which serialized values will be appended.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2006,9 +2163,10 @@ because they are obtained by this context which can be obtained at the first arg
     &#34;&#34;&#34;
     Serialize nodes and appends them into the dictionary.
 
-    :param name: Name of the template property associated with the nodes.
-    :param container: Container of nodes. 
-    :param parent: A parent dictionary to which serialized values will be appended.
+    Args:
+        name: Name of the template property associated with the nodes.
+        container: Container of nodes. 
+        parent: A parent dictionary to which serialized values will be appended.
     &#34;&#34;&#34;
     ns = self.serializer_map.get(name, None)
 

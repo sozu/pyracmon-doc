@@ -38,6 +38,10 @@ except ImportError:
     typing_extensions = None
 
 
+def _extended(*names):
+    return all([hasattr(typing_extensions, n) for n in names])
+
+
 __all__ = [
     &#34;get_args&#34;,
     &#34;get_origin&#34;,
@@ -58,7 +62,7 @@ _ge37 = sys.version_info[0:2] &gt;= (3, 7)
 
 
 # get_args, get_origin
-if _ge38 or typing_extensions:
+if _ge38 or _extended(&#39;get_args&#39;, &#39;get_origin&#39;):
     if _ge38:
         from typing import get_args, get_origin
     else:
@@ -77,18 +81,19 @@ else:
             else:
                 return base[args]
         
-        _, args = tp._subs_tree()
-        if isinstance(args, tuple):
-            b, a = args
-            return [bind(b, a)]
-        else:
-            return [args]
+        args = []
+        for a in tp._subs_tree()[1:]:
+            if isinstance(a, tuple):
+                args.append(bind(a[0], a[1]))
+            else:
+                args.append(a)
+        return args
     def get_origin(tp):
         return getattr(tp, &#34;__origin__&#34;, None)
 
 
 # TypedDict
-if _ge38 or typing_extensions:
+if _ge38 or _extended(&#39;TypedDict&#39;, &#39;_TypedDictMeta&#39;):
     if _ge38:
         from typing import TypedDict, _TypedDictMeta
     else:
@@ -106,7 +111,7 @@ else:
 
 
 # Annotated
-if _ge39 or typing_extensions:
+if _ge39 or _extended(&#39;Annotated&#39;, &#39;get_type_hints&#39;):
     if _ge39:
         from typing import Annotated, get_type_hints
     else:
@@ -123,17 +128,19 @@ else:
     from typing import TypeVar, Generic
 
     T = TypeVar(&#39;T&#39;)
+    D = TypeVar(&#39;D&#39;)
 
-    class Annotated(Generic[T]):
+    class Annotated(Generic[T, D]):
         pass
 
     def annotate(t: type, doc: str):
+        class Doc:
+            pass
+        Doc.__doc__ = doc
         if get_origin(t) == Annotated:
-            return Annotated[get_args(t)[0], doc]
+            return Annotated[get_args(t)[0], Doc]
         else:
-            a = Annotated[t]
-            a.__args__ += (doc,)
-            return a
+            return Annotated[t, Doc]
 
     def get_annotated_hints(t):
         hints = {}
