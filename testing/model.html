@@ -30,12 +30,26 @@
 from decimal import Decimal
 from enum import Enum
 from uuid import UUID, uuid1, uuid3
-from typing import *
-
+from typing import Optional, Union, TypeVar, Any, overload, TYPE_CHECKING
+from typing_extensions import Self
 from pyracmon.config import PyracmonConfiguration
 from pyracmon.connection import Connection
+from pyracmon.mixin import CRUDMixin
 from pyracmon.model import Model
-from .util import Matcher, testing_config
+from pyracmon.graph.typing import issubgeneric
+from pyracmon.dialect.shared import MultiInsertMixin, TruncateMixin
+from .util import default_test_config, Matcher
+
+
+if TYPE_CHECKING:
+    class TestingModel(MultiInsertMixin, CRUDMixin):
+        pass
+else:
+    class TestingModel():
+        pass
+
+
+M = TypeVar(&#39;M&#39;, bound=TestingModel)
 
 
 class TestingState:
@@ -56,12 +70,12 @@ class TestingState:
         cls.indexes[model] = index
 
 
-class TestingMixin:
+class TestingMixin(TestingModel):
     &#34;&#34;&#34;
     Mixin class for model types providing methods designed for testing.
     &#34;&#34;&#34;
     @classmethod
-    def by(cls, index: int) -&gt; type:
+    def by(cls, index: int) -&gt; Self:
         &#34;&#34;&#34;
         Set current fixture index.
 
@@ -71,16 +85,70 @@ class TestingMixin:
             This type.
         &#34;&#34;&#34;
         TestingState.set_index(cls, index)
-        return cls
+        return cls # type: ignore
 
+    @overload
     @classmethod
     def fixture(
         cls,
-        db: Connection,
-        variable: Optional[Union[int, Dict[str, Any], Model, List[Dict[str, Any]], List[Model]]] = None,
+        db: Optional[Connection],
+        variable: None = None,
         index: Optional[int] = None,
         cfg: Optional[PyracmonConfiguration] = None,
-    ) -&gt; Union[Model, List[Model]]:
+    ) -&gt; list[Self]: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: int,
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; list[Self]: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: Self,
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; Self: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: dict[str, Any],
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; Self: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: list[Self],
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; list[Self]: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: list[dict[str, Any]],
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; list[Self]: ...
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: Optional[Union[int, dict[str, Any], Self, list[dict[str, Any]], list[Self]]] = None,
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; Union[Self, list[Self]]:
         &#34;&#34;&#34;
         Inserts record(s) with auto-generated column values.
 
@@ -142,7 +210,22 @@ class TestingMixin:
         return True
 
 
-def _generate_model(model, index, model_or_dict, cfg):
+def truncate(db: Connection, *models: type[TruncateMixin]):
+    &#34;&#34;&#34;
+    Truncate tables in order.
+
+    Args:
+        db: DB connection.
+        tables: Models of tables to truncate.
+    &#34;&#34;&#34;
+    if len(models) == 0:
+        raise ValueError(f&#34;No tables are specified. Did you forget to pass DB connection at the first argument?&#34;)
+
+    for m in models:
+        m.truncate(db)
+
+
+def _generate_model(model: type[M], index, model_or_dict, cfg) -&gt; M:
     values = {}
 
     if isinstance(model_or_dict, TestingMixin):
@@ -169,7 +252,7 @@ def _generate_value(table, column, index, cfg):
     Returns:
         Generated value.
     &#34;&#34;&#34;
-    cfg = cfg or testing_config()
+    cfg = cfg or default_test_config()
 
     mapping = cfg.fixture_mapping
     if mapping:
@@ -205,6 +288,8 @@ def _generate_value(table, column, index, cfg):
         return timedelta(days=index+1)
     elif column.ptype is UUID:
         return str(uuid3(fixed_uuid, f&#34;{table.name}-{column.name}-{index}&#34;))
+    elif issubgeneric(column.ptype, list):
+        return []
     elif isinstance(column.ptype, type) and issubclass(column.ptype, Enum):
         return next(iter(column.ptype), None)
     else:
@@ -216,6 +301,40 @@ def _generate_value(table, column, index, cfg):
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pyracmon.testing.model.truncate"><code class="name flex">
+<span>def <span class="ident">truncate</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>, *models: type[<a title="pyracmon.dialect.shared.TruncateMixin" href="../dialect/shared.html#pyracmon.dialect.shared.TruncateMixin">TruncateMixin</a>])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Truncate tables in order.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>db</code></strong></dt>
+<dd>DB connection.</dd>
+<dt><strong><code>tables</code></strong></dt>
+<dd>Models of tables to truncate.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def truncate(db: Connection, *models: type[TruncateMixin]):
+    &#34;&#34;&#34;
+    Truncate tables in order.
+
+    Args:
+        db: DB connection.
+        tables: Models of tables to truncate.
+    &#34;&#34;&#34;
+    if len(models) == 0:
+        raise ValueError(f&#34;No tables are specified. Did you forget to pass DB connection at the first argument?&#34;)
+
+    for m in models:
+        m.truncate(db)</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -229,12 +348,12 @@ def _generate_value(table, column, index, cfg):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestingMixin:
+<pre><code class="python">class TestingMixin(TestingModel):
     &#34;&#34;&#34;
     Mixin class for model types providing methods designed for testing.
     &#34;&#34;&#34;
     @classmethod
-    def by(cls, index: int) -&gt; type:
+    def by(cls, index: int) -&gt; Self:
         &#34;&#34;&#34;
         Set current fixture index.
 
@@ -244,16 +363,70 @@ def _generate_value(table, column, index, cfg):
             This type.
         &#34;&#34;&#34;
         TestingState.set_index(cls, index)
-        return cls
+        return cls # type: ignore
 
+    @overload
     @classmethod
     def fixture(
         cls,
-        db: Connection,
-        variable: Optional[Union[int, Dict[str, Any], Model, List[Dict[str, Any]], List[Model]]] = None,
+        db: Optional[Connection],
+        variable: None = None,
         index: Optional[int] = None,
         cfg: Optional[PyracmonConfiguration] = None,
-    ) -&gt; Union[Model, List[Model]]:
+    ) -&gt; list[Self]: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: int,
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; list[Self]: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: Self,
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; Self: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: dict[str, Any],
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; Self: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: list[Self],
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; list[Self]: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: list[dict[str, Any]],
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; list[Self]: ...
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: Optional[Union[int, dict[str, Any], Self, list[dict[str, Any]], list[Self]]] = None,
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; Union[Self, list[Self]]:
         &#34;&#34;&#34;
         Inserts record(s) with auto-generated column values.
 
@@ -314,10 +487,14 @@ def _generate_value(table, column, index, cfg):
                     return False
         return True</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pyracmon.testing.model.TestingModel" href="#pyracmon.testing.model.TestingModel">TestingModel</a></li>
+</ul>
 <h3>Static methods</h3>
 <dl>
 <dt id="pyracmon.testing.model.TestingMixin.by"><code class="name flex">
-<span>def <span class="ident">by</span></span>(<span>index: int) ‑> type</span>
+<span>def <span class="ident">by</span></span>(<span>index: int) ‑> typing_extensions.Self</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Set current fixture index.</p>
@@ -333,7 +510,7 @@ def _generate_value(table, column, index, cfg):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@classmethod
-def by(cls, index: int) -&gt; type:
+def by(cls, index: int) -&gt; Self:
     &#34;&#34;&#34;
     Set current fixture index.
 
@@ -343,11 +520,11 @@ def by(cls, index: int) -&gt; type:
         This type.
     &#34;&#34;&#34;
     TestingState.set_index(cls, index)
-    return cls</code></pre>
+    return cls # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.testing.model.TestingMixin.fixture"><code class="name flex">
-<span>def <span class="ident">fixture</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>, variable: Union[int, Dict[str, Any], <a title="pyracmon.model.Model" href="../model.html#pyracmon.model.Model">Model</a>, List[Dict[str, Any]], List[<a title="pyracmon.model.Model" href="../model.html#pyracmon.model.Model">Model</a>], None] = None, index: Optional[int] = None, cfg: Optional[<a title="pyracmon.config.PyracmonConfiguration" href="../config.html#pyracmon.config.PyracmonConfiguration">PyracmonConfiguration</a>] = None) ‑> Union[<a title="pyracmon.model.Model" href="../model.html#pyracmon.model.Model">Model</a>, List[<a title="pyracmon.model.Model" href="../model.html#pyracmon.model.Model">Model</a>]]</span>
+<span>def <span class="ident">fixture</span></span>(<span>db: Optional[<a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>], variable: Union[int, dict[str, Any], typing_extensions.Self, list[dict[str, Any]], list[typing_extensions.Self], ForwardRef(None)] = None, index: Optional[int] = None, cfg: Optional[<a title="pyracmon.config.PyracmonConfiguration" href="../config.html#pyracmon.config.PyracmonConfiguration">PyracmonConfiguration</a>] = None) ‑> Union[typing_extensions.Self, list[typing_extensions.Self]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Inserts record(s) with auto-generated column values.</p>
@@ -373,11 +550,11 @@ This argument is prepared only for internal use and can be changed or removed in
 <pre><code class="python">@classmethod
 def fixture(
     cls,
-    db: Connection,
-    variable: Optional[Union[int, Dict[str, Any], Model, List[Dict[str, Any]], List[Model]]] = None,
+    db: Optional[Connection],
+    variable: Optional[Union[int, dict[str, Any], Self, list[dict[str, Any]], list[Self]]] = None,
     index: Optional[int] = None,
     cfg: Optional[PyracmonConfiguration] = None,
-) -&gt; Union[Model, List[Model]]:
+) -&gt; Union[Self, list[Self]]:
     &#34;&#34;&#34;
     Inserts record(s) with auto-generated column values.
 
@@ -464,6 +641,23 @@ Matches or not.</p></div>
 </details>
 </dd>
 </dl>
+</dd>
+<dt id="pyracmon.testing.model.TestingModel"><code class="flex name class">
+<span>class <span class="ident">TestingModel</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TestingModel(MultiInsertMixin, CRUDMixin):
+    pass</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="pyracmon.testing.model.TestingMixin" href="#pyracmon.testing.model.TestingMixin">TestingMixin</a></li>
+</ul>
 </dd>
 <dt id="pyracmon.testing.model.TestingState"><code class="flex name class">
 <span>class <span class="ident">TestingState</span></span>
@@ -560,6 +754,11 @@ def set_index(cls, model, index):
 <li><code><a title="pyracmon.testing" href="index.html">pyracmon.testing</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pyracmon.testing.model.truncate" href="#pyracmon.testing.model.truncate">truncate</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
@@ -569,6 +768,9 @@ def set_index(cls, model, index):
 <li><code><a title="pyracmon.testing.model.TestingMixin.fixture" href="#pyracmon.testing.model.TestingMixin.fixture">fixture</a></code></li>
 <li><code><a title="pyracmon.testing.model.TestingMixin.match" href="#pyracmon.testing.model.TestingMixin.match">match</a></code></li>
 </ul>
+</li>
+<li>
+<h4><code><a title="pyracmon.testing.model.TestingModel" href="#pyracmon.testing.model.TestingModel">TestingModel</a></code></h4>
 </li>
 <li>
 <h4><code><a title="pyracmon.testing.model.TestingState" href="#pyracmon.testing.model.TestingState">TestingState</a></code></h4>

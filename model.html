@@ -27,16 +27,60 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from collections import OrderedDict
-from typing import *
+from collections.abc import Iterator, Sequence
+from typing import Any, Union, Optional, Callable, Generic, TypeVar, get_origin, get_args, cast, TYPE_CHECKING
+from typing_extensions import TypeVarTuple, Unpack, Self, dataclass_transform
+from .util import PKS
 
 
-class Model:
-    &#34;&#34;&#34;
-    Base type of model types.
+#----------------------------------------------------------------
+# Pseudo types used only for type hinting.
+#----------------------------------------------------------------
+M = TypeVar(&#39;M&#39;)
+MXS = TypeVarTuple(&#39;MXS&#39;)
+COLUMN = NotImplemented
 
-    This class only works as a marker of model types and gives no functionalities to them.
-    &#34;&#34;&#34;
+
+class Mixins(Generic[Unpack[MXS]]):
     pass
+MXT = TypeVar(&#39;MXT&#39;, bound=Mixins)
+
+
+if TYPE_CHECKING:
+    @dataclass_transform(kw_only_default=True)
+    class Meta(type):
+        #: Table name.
+        name: str
+        #: `Table` object.
+        table: &#39;Table&#39;
+        #: A list of `Column` s.
+        columns: list[&#39;Column&#39;]
+        #: An object exposing `Column` object via the attribute of its name.
+        column: Any
+
+        def __iter__(self) -&gt; Iterator[tuple[&#39;Column&#39;, Any]]: ...
+        def __getitem__(self, key: str) -&gt; Any: ...
+        def __contains__(self, key) -&gt; bool: ...
+
+        @classmethod
+        def shrink(cls, excludes, includes=None) -&gt; Self: ...
+
+
+    class Model(Mixins[Unpack[MXS]], metaclass=Meta):
+        &#34;&#34;&#34;
+        Base type of model types.
+
+        This class only works as a marker of model types and gives no functionalities to them.
+        &#34;&#34;&#34;
+        def __init__(self, **kwargs) -&gt; None: ... # for typing
+else:
+    class Meta:
+        pass
+    class Model:
+        pass
+#----------------------------------------------------------------
+Record = Union[Meta, dict[str, Any]]
+&#34;&#34;&#34;Model object or dict corresponding to a table row.&#34;&#34;&#34;
 
 
 class ForeignKey:
@@ -56,7 +100,7 @@ class Relations:
     &#34;&#34;&#34;
     def __init__(self) -&gt; None:
         #: Foreign key constraints on a column.
-        self.constraints = []
+        self.constraints: list[ForeignKey] = []
 
     def add(self, fk: ForeignKey):
         &#34;&#34;&#34;
@@ -76,7 +120,7 @@ class Column:
         self,
         name: str,
         ptype: type,
-        type_info: str,
+        type_info: Optional[Any],
         pk: bool,
         fk: Optional[Relations],
         incremental: Optional[Any],
@@ -105,7 +149,7 @@ class Table:
     &#34;&#34;&#34;
     This class represents a schema of a table.
     &#34;&#34;&#34;
-    def __init__(self, name: str, columns: List[Column], comment: str = &#34;&#34;):
+    def __init__(self, name: str, columns: list[Column], comment: str = &#34;&#34;):
         #: Table name.
         self.name = name
         #: Columns in the table.
@@ -125,7 +169,7 @@ class Table:
         return next(filter(lambda c: c.name == name, self.columns), None)
 
 
-def define_model(table_: Table, mixins: List[type] = []) -&gt; type:
+def define_model(table_: Table, mixins: Union[type[MXT], list[type], None] = None, model_type: Optional[type[M]] = Model) -&gt; type[M]:
     &#34;&#34;&#34;
     Create a model type representing a table.
 
@@ -141,90 +185,100 @@ def define_model(table_: Table, mixins: List[type] = []) -&gt; type:
     |columns|`List[Column]`|List of column schemas.|
     |column|`Any`|An object whose attribute exposes of column schema of its name.|
 
-    Model instances are created by passing the constructor keyword arguments holding column names and values.
-    The constructor does not require all of columns.
+    Model instances are created by passing the constructor keyword arguments composed of column names and values like builtin dataclass.
+    Unlike dataclass, the constructor does not require all of columns.
     Omitted columns don&#39;t affect predefined operations such as `CRUDMixin.insert` .
-    If `not null` constraint exists on the column, it of course denies the insertion.
+    If `not null` constraint exists on the column, insertion will be denied at runtime and exception will be thrown.
 
+    ```python
     &gt;&gt;&gt; # CREATE TABLE t1 (col1 int, col2 text, col3 text);
     &gt;&gt;&gt; table = define_model(&#34;t1&#34;)
     &gt;&gt;&gt; model = table(col1=1, col2=&#34;a&#34;)
+    ```
 
     Attributes are also assignable by normal setter. If attribute name is not a valid column name, `TypeError` raises.
 
+    ```python
     &gt;&gt;&gt; model.col3 = &#34;b&#34;
+    ```
 
     Model instance supports iteration which yields pairs of assigned column schema and its value.
 
+    ```python
     &gt;&gt;&gt; for c, v in model:
     &gt;&gt;&gt;     print(f&#34;{c.name} = {v}&#34;)
     col1 = 1
     col2 = a
     col3 = b
+    ```
 
     Args:
         table__: Table schema.
         mixin: Mixin types providing class methods to the model type.
+        model_type: Use this just for type hinting to determine returned model type.
     Returns:
         Model type.
     &#34;&#34;&#34;
     column_names = {c.name for c in table_.columns}
-
-    class Meta(type):
-        name = table_.name
-        table = table_
-        columns = table_.columns
-
-        @classmethod
-        def shrink(cls, excludes, includes=None):
-            &#34;&#34;&#34;
-            Creates new model type containing subset of columns.
-
-            Parameters
-            ----------
-            excludes: [str]
-                Column names to exclude.
-            includes: [str]
-                Column names to include.
-
-            Returns
-            -------
-            type
-                Created model type.
-            &#34;&#34;&#34;
-            cols = [c for c in cls.columns if (not includes or c.name in includes) and c.name not in excludes]
-            return define_model(Table(cls.name, cols, cls.table.comment), mixins)
 
     class Columns:
         def __init__(self):
             for c in table_.columns:
                 setattr(self, c.name, c)
 
-    setattr(Meta, &#34;column&#34;, Columns())
+    class Meta(type):
+        name = table_.name
+        table = table_
+        columns = table_.columns
+        column = Columns()
 
-    class Base(metaclass=Meta):
+        @classmethod
+        def shrink(cls, excludes: list[str], includes: Optional[list[str]] = None) -&gt; Self:
+            &#34;&#34;&#34;
+            Creates new model type containing subset of columns.
+
+            Args:
+                excludes: Column names to exclude.
+                includes: Column names to include.
+            Returns:
+                model type.
+            &#34;&#34;&#34;
+            cols = [c for c in cls.columns if (not includes or c.name in includes) and c.name not in excludes]
+            return define_model(Table(cls.name, cols, cls.table.comment), mixins) # type: ignore
+
+    class Base(Model, metaclass=Meta):
         pass
 
-    class Model(type(&#34;ModelBase&#34;, tuple([Base] + mixins), {})):
+    mixin_types: list[type] = []
+
+    if isinstance(mixins, list):
+        mixin_types = mixins
+    elif get_origin(mixins) is not None:
+        mixin_types = cast(list[type], list(get_args(mixins)))
+    elif mixins is not None:
+        raise ValueError(f&#34;Model mixin types should be specified by Mixins or a list of types.&#34;)
+
+    class _Model(type(&#34;ModelBase&#34;, tuple([Base] + mixin_types), {})):
         def __init__(self, **kwargs):
             for k, v in kwargs.items():
                 setattr(self, k, v)
 
         def __repr__(self):
-            cls = type(self)
+            cls = cast(type[Base], type(self))
             return f&#34;{cls.name}({&#39;, &#39;.join([f&#39;{c.name}={repr(getattr(self, c.name))}&#39; for c in cls.columns if hasattr(self, c.name)])})&#34;
 
         def __str__(self):
-            cls = type(self)
+            cls = cast(type[Base], type(self))
             return f&#34;{cls.name}({&#39;, &#39;.join([f&#39;{c.name}={str(getattr(self, c.name))}&#39; for c in cls.columns if hasattr(self, c.name)])})&#34;
 
-        def __iter__(self):
-            cls = type(self)
+        def __iter__(self) -&gt; Iterator[tuple[Column, Any]]:
+            cls = cast(type[Base], type(self))
             return map(lambda c: (c, getattr(self, c.name)), filter(lambda c: hasattr(self, c.name), cls.columns))
 
         def __setattr__(self, key, value):
+            cls = cast(type[Base], type(self))
             if key not in column_names:
-                raise TypeError(f&#34;{key} is not a column of {type(self).name}&#34;)
+                raise TypeError(f&#34;{key} is not a column of {cls.name}&#34;)
             object.__setattr__(self, key, value)
 
         def __getitem__(self, key):
@@ -244,14 +298,10 @@ def define_model(table_: Table, mixins: List[type] = []) -&gt; type:
                     return False
             return True
 
-    return Model
+    return cast(type[M], _Model)
 
 
-PKS = Union[Any, Dict[str, Any]]
-Record = Union[Model, Dict[str, Any]]
-
-
-def parse_pks(model: Type[Model], pks: PKS) -&gt; Tuple[List[str], List[Any]]:
+def parse_pks(model: type[Meta], pks: PKS) -&gt; tuple[list[str], list[Any]]:
     &#34;&#34;&#34;
     Generates a pair of PK columns names and their values from polymorphic input.
 
@@ -262,8 +312,8 @@ def parse_pks(model: Type[Model], pks: PKS) -&gt; Tuple[List[str], List[Any]]:
         Names of PK columns and their values.
     &#34;&#34;&#34;
     if isinstance(pks, dict):
-        check_columns(model, pks, lambda c: c.pk, True)
-        return list(pks.keys()), list(pks.values())
+        ordered = check_columns(model, pks, lambda c: c.pk, True)
+        return [v[0] for v in ordered], [v[1] for v in ordered]
     else:
         cols = [c.name for c in model.columns if c.pk]
         if len(cols) != 1:
@@ -271,30 +321,53 @@ def parse_pks(model: Type[Model], pks: PKS) -&gt; Tuple[List[str], List[Any]]:
         return ([cols[0]], [pks])
 
 
+def extract_pks(model: type[Meta], record: Record) -&gt; PKS:
+    &#34;&#34;&#34;
+    Extract all primary keys from a record.
+
+    Args:
+        model: Model class.
+        record: A record.
+    Returns:
+        Primary keys.
+    &#34;&#34;&#34;
+    pk_columns = [c.name for c in model.columns if c.pk]
+    if isinstance(record, dict):
+        pks = dict((c, record[c]) for c in pk_columns if c in record)
+    else:
+        pks = dict((c, getattr(record, c)) for c in pk_columns if hasattr(record, c))
+    if len(pks) != len(pk_columns):
+        missing = set(pk_columns) - set(pks.keys())
+        raise ValueError(f&#34;Some primary keys are not contained in passed values and auto-increment values: {missing}&#34;)
+    return pks
+
+
 def check_columns(
-    model: Type[Model],
-    col_map: Dict[str, Any],
+    model: type[Meta],
+    col_map: dict[str, Any],
     condition: Callable[[Column], bool] = lambda c: True,
     requires_all: bool = False,
-):
+) -&gt; list[tuple[str, Any]]:
     &#34;&#34;&#34;
     Checks keys of given `dict` match columns selected by a condition from a model.
 
     Args:
         model: Model class.
         col_map: Dictionary whose keys are column names.
-        condition: A Function which selects columns from the model.
+        condition: A function which selects columns from the model.
         requires_all: If `True`, `ValueError` raises when the dictionary does not contain keys of all selected columns.
     &#34;&#34;&#34;
-    names = set([c.name for c in model.columns if condition(c)])
+    names = [c.name for c in model.columns if condition(c)]
+    name_set = set(names)
     targets = set(col_map.keys())
-    if not names &gt;= targets:
-        raise ValueError(f&#34;Columns {targets - names} are not columns of &#39;{model.name}&#39;.&#34;)
-    if requires_all and not names == targets:
-        raise ValueError(f&#34;Required columns {names - targets} in &#39;{model.name}&#39; are not found.&#34;)
+    if not name_set &gt;= targets:
+        raise ValueError(f&#34;Columns {targets - name_set} are not specified columns of &#39;{model.name}&#39;.&#34;)
+    if requires_all and not name_set == targets:
+        raise ValueError(f&#34;Required columns {name_set - targets} in &#39;{model.name}&#39; are not found.&#34;)
+    return [(n, col_map[n]) for n in names if n in col_map]
 
 
-def model_values(model: Type[Model], values: Record, excludes_pk: bool = False):
+def model_values(model: type[Meta], values: Record, excludes_pk: bool = False) -&gt; dict[str, Any]:
     &#34;&#34;&#34;
     Generates a dictionary whose items are pairs of column name and column value.
 
@@ -311,18 +384,25 @@ def model_values(model: Type[Model], values: Record, excludes_pk: bool = False):
     elif isinstance(values, model):
         return {cv[0].name:cv[1] for cv in values if (not excludes_pk) or (not cv[0].pk)}
     else:
-        raise TypeError(f&#34;Values to insert or update must be a dictionary or model.&#34;)</code></pre>
+        raise TypeError(f&#34;Required column value is not contained in the dictionary or model.&#34;)</code></pre>
 </details>
 </section>
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-variables">Global variables</h2>
+<dl>
+<dt id="pyracmon.model.Record"><code class="name">var <span class="ident">Record</span></code></dt>
+<dd>
+<div class="desc"><p>Model object or dict corresponding to a table row.</p></div>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pyracmon.model.check_columns"><code class="name flex">
-<span>def <span class="ident">check_columns</span></span>(<span>model: Type[<a title="pyracmon.model.Model" href="#pyracmon.model.Model">Model</a>], col_map: Dict[str, Any], condition: Callable[[<a title="pyracmon.model.Column" href="#pyracmon.model.Column">Column</a>], bool] = &lt;function &lt;lambda&gt;&gt;, requires_all: bool = False)</span>
+<span>def <span class="ident">check_columns</span></span>(<span>model: type[<a title="pyracmon.model.Meta" href="#pyracmon.model.Meta">Meta</a>], col_map: dict[str, typing.Any], condition: Callable[[<a title="pyracmon.model.Column" href="#pyracmon.model.Column">Column</a>], bool] = &lt;function &lt;lambda&gt;&gt;, requires_all: bool = False) ‑> list[tuple[str, typing.Any]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Checks keys of given <code>dict</code> match columns selected by a condition from a model.</p>
@@ -333,7 +413,7 @@ def model_values(model: Type[Model], values: Record, excludes_pk: bool = False):
 <dt><strong><code>col_map</code></strong></dt>
 <dd>Dictionary whose keys are column names.</dd>
 <dt><strong><code>condition</code></strong></dt>
-<dd>A Function which selects columns from the model.</dd>
+<dd>A function which selects columns from the model.</dd>
 <dt><strong><code>requires_all</code></strong></dt>
 <dd>If <code>True</code>, <code>ValueError</code> raises when the dictionary does not contain keys of all selected columns.</dd>
 </dl></div>
@@ -342,30 +422,32 @@ def model_values(model: Type[Model], values: Record, excludes_pk: bool = False):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def check_columns(
-    model: Type[Model],
-    col_map: Dict[str, Any],
+    model: type[Meta],
+    col_map: dict[str, Any],
     condition: Callable[[Column], bool] = lambda c: True,
     requires_all: bool = False,
-):
+) -&gt; list[tuple[str, Any]]:
     &#34;&#34;&#34;
     Checks keys of given `dict` match columns selected by a condition from a model.
 
     Args:
         model: Model class.
         col_map: Dictionary whose keys are column names.
-        condition: A Function which selects columns from the model.
+        condition: A function which selects columns from the model.
         requires_all: If `True`, `ValueError` raises when the dictionary does not contain keys of all selected columns.
     &#34;&#34;&#34;
-    names = set([c.name for c in model.columns if condition(c)])
+    names = [c.name for c in model.columns if condition(c)]
+    name_set = set(names)
     targets = set(col_map.keys())
-    if not names &gt;= targets:
-        raise ValueError(f&#34;Columns {targets - names} are not columns of &#39;{model.name}&#39;.&#34;)
-    if requires_all and not names == targets:
-        raise ValueError(f&#34;Required columns {names - targets} in &#39;{model.name}&#39; are not found.&#34;)</code></pre>
+    if not name_set &gt;= targets:
+        raise ValueError(f&#34;Columns {targets - name_set} are not specified columns of &#39;{model.name}&#39;.&#34;)
+    if requires_all and not name_set == targets:
+        raise ValueError(f&#34;Required columns {name_set - targets} in &#39;{model.name}&#39; are not found.&#34;)
+    return [(n, col_map[n]) for n in names if n in col_map]</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.model.define_model"><code class="name flex">
-<span>def <span class="ident">define_model</span></span>(<span>table_: <a title="pyracmon.model.Table" href="#pyracmon.model.Table">Table</a>, mixins: List[type] = []) ‑> type</span>
+<span>def <span class="ident">define_model</span></span>(<span>table_: <a title="pyracmon.model.Table" href="#pyracmon.model.Table">Table</a>, mixins: Union[type[~MXT], list[type], ForwardRef(None)] = None, model_type: Optional[type[~M]] = pyracmon.model.Model) ‑> type[~M]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a model type representing a table.</p>
@@ -375,47 +457,47 @@ When the same attribute is defined in multiple mixin types, the former overrides
 <table>
 <thead>
 <tr>
-<th align="left">name</th>
-<th align="left">type</th>
-<th align="left">description</th>
+<th style="text-align: left;">name</th>
+<th style="text-align: left;">type</th>
+<th style="text-align: left;">description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left">name</td>
-<td align="left"><code>str</code></td>
-<td align="left">Name of the table.</td>
+<td style="text-align: left;">name</td>
+<td style="text-align: left;"><code>str</code></td>
+<td style="text-align: left;">Name of the table.</td>
 </tr>
 <tr>
-<td align="left">table</td>
-<td align="left"><code><a title="pyracmon.model.Table" href="#pyracmon.model.Table">Table</a></code></td>
-<td align="left">Table schema.</td>
+<td style="text-align: left;">table</td>
+<td style="text-align: left;"><code><a title="pyracmon.model.Table" href="#pyracmon.model.Table">Table</a></code></td>
+<td style="text-align: left;">Table schema.</td>
 </tr>
 <tr>
-<td align="left">columns</td>
-<td align="left"><code>List[<a title="pyracmon.model.Column" href="#pyracmon.model.Column">Column</a>]</code></td>
-<td align="left">List of column schemas.</td>
+<td style="text-align: left;">columns</td>
+<td style="text-align: left;"><code>List[<a title="pyracmon.model.Column" href="#pyracmon.model.Column">Column</a>]</code></td>
+<td style="text-align: left;">List of column schemas.</td>
 </tr>
 <tr>
-<td align="left">column</td>
-<td align="left"><code>Any</code></td>
-<td align="left">An object whose attribute exposes of column schema of its name.</td>
+<td style="text-align: left;">column</td>
+<td style="text-align: left;"><code>Any</code></td>
+<td style="text-align: left;">An object whose attribute exposes of column schema of its name.</td>
 </tr>
 </tbody>
 </table>
-<p>Model instances are created by passing the constructor keyword arguments holding column names and values.
-The constructor does not require all of columns.
+<p>Model instances are created by passing the constructor keyword arguments composed of column names and values like builtin dataclass.
+Unlike dataclass, the constructor does not require all of columns.
 Omitted columns don't affect predefined operations such as <code>CRUDMixin.insert</code> .
-If <code>not null</code> constraint exists on the column, it of course denies the insertion.</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; # CREATE TABLE t1 (col1 int, col2 text, col3 text);
+If <code>not null</code> constraint exists on the column, insertion will be denied at runtime and exception will be thrown.</p>
+<pre><code class="language-python">&gt;&gt;&gt; # CREATE TABLE t1 (col1 int, col2 text, col3 text);
 &gt;&gt;&gt; table = define_model(&quot;t1&quot;)
 &gt;&gt;&gt; model = table(col1=1, col2=&quot;a&quot;)
 </code></pre>
 <p>Attributes are also assignable by normal setter. If attribute name is not a valid column name, <code>TypeError</code> raises.</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; model.col3 = &quot;b&quot;
+<pre><code class="language-python">&gt;&gt;&gt; model.col3 = &quot;b&quot;
 </code></pre>
 <p>Model instance supports iteration which yields pairs of assigned column schema and its value.</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; for c, v in model:
+<pre><code class="language-python">&gt;&gt;&gt; for c, v in model:
 &gt;&gt;&gt;     print(f&quot;{c.name} = {v}&quot;)
 col1 = 1
 col2 = a
@@ -427,6 +509,8 @@ col3 = b
 <dd>Table schema.</dd>
 <dt><strong><code>mixin</code></strong></dt>
 <dd>Mixin types providing class methods to the model type.</dd>
+<dt><strong><code>model_type</code></strong></dt>
+<dd>Use this just for type hinting to determine returned model type.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>Model type.</p></div>
@@ -434,7 +518,7 @@ col3 = b
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def define_model(table_: Table, mixins: List[type] = []) -&gt; type:
+<pre><code class="python">def define_model(table_: Table, mixins: Union[type[MXT], list[type], None] = None, model_type: Optional[type[M]] = Model) -&gt; type[M]:
     &#34;&#34;&#34;
     Create a model type representing a table.
 
@@ -450,90 +534,100 @@ col3 = b
     |columns|`List[Column]`|List of column schemas.|
     |column|`Any`|An object whose attribute exposes of column schema of its name.|
 
-    Model instances are created by passing the constructor keyword arguments holding column names and values.
-    The constructor does not require all of columns.
+    Model instances are created by passing the constructor keyword arguments composed of column names and values like builtin dataclass.
+    Unlike dataclass, the constructor does not require all of columns.
     Omitted columns don&#39;t affect predefined operations such as `CRUDMixin.insert` .
-    If `not null` constraint exists on the column, it of course denies the insertion.
+    If `not null` constraint exists on the column, insertion will be denied at runtime and exception will be thrown.
 
+    ```python
     &gt;&gt;&gt; # CREATE TABLE t1 (col1 int, col2 text, col3 text);
     &gt;&gt;&gt; table = define_model(&#34;t1&#34;)
     &gt;&gt;&gt; model = table(col1=1, col2=&#34;a&#34;)
+    ```
 
     Attributes are also assignable by normal setter. If attribute name is not a valid column name, `TypeError` raises.
 
+    ```python
     &gt;&gt;&gt; model.col3 = &#34;b&#34;
+    ```
 
     Model instance supports iteration which yields pairs of assigned column schema and its value.
 
+    ```python
     &gt;&gt;&gt; for c, v in model:
     &gt;&gt;&gt;     print(f&#34;{c.name} = {v}&#34;)
     col1 = 1
     col2 = a
     col3 = b
+    ```
 
     Args:
         table__: Table schema.
         mixin: Mixin types providing class methods to the model type.
+        model_type: Use this just for type hinting to determine returned model type.
     Returns:
         Model type.
     &#34;&#34;&#34;
     column_names = {c.name for c in table_.columns}
-
-    class Meta(type):
-        name = table_.name
-        table = table_
-        columns = table_.columns
-
-        @classmethod
-        def shrink(cls, excludes, includes=None):
-            &#34;&#34;&#34;
-            Creates new model type containing subset of columns.
-
-            Parameters
-            ----------
-            excludes: [str]
-                Column names to exclude.
-            includes: [str]
-                Column names to include.
-
-            Returns
-            -------
-            type
-                Created model type.
-            &#34;&#34;&#34;
-            cols = [c for c in cls.columns if (not includes or c.name in includes) and c.name not in excludes]
-            return define_model(Table(cls.name, cols, cls.table.comment), mixins)
 
     class Columns:
         def __init__(self):
             for c in table_.columns:
                 setattr(self, c.name, c)
 
-    setattr(Meta, &#34;column&#34;, Columns())
+    class Meta(type):
+        name = table_.name
+        table = table_
+        columns = table_.columns
+        column = Columns()
 
-    class Base(metaclass=Meta):
+        @classmethod
+        def shrink(cls, excludes: list[str], includes: Optional[list[str]] = None) -&gt; Self:
+            &#34;&#34;&#34;
+            Creates new model type containing subset of columns.
+
+            Args:
+                excludes: Column names to exclude.
+                includes: Column names to include.
+            Returns:
+                model type.
+            &#34;&#34;&#34;
+            cols = [c for c in cls.columns if (not includes or c.name in includes) and c.name not in excludes]
+            return define_model(Table(cls.name, cols, cls.table.comment), mixins) # type: ignore
+
+    class Base(Model, metaclass=Meta):
         pass
 
-    class Model(type(&#34;ModelBase&#34;, tuple([Base] + mixins), {})):
+    mixin_types: list[type] = []
+
+    if isinstance(mixins, list):
+        mixin_types = mixins
+    elif get_origin(mixins) is not None:
+        mixin_types = cast(list[type], list(get_args(mixins)))
+    elif mixins is not None:
+        raise ValueError(f&#34;Model mixin types should be specified by Mixins or a list of types.&#34;)
+
+    class _Model(type(&#34;ModelBase&#34;, tuple([Base] + mixin_types), {})):
         def __init__(self, **kwargs):
             for k, v in kwargs.items():
                 setattr(self, k, v)
 
         def __repr__(self):
-            cls = type(self)
+            cls = cast(type[Base], type(self))
             return f&#34;{cls.name}({&#39;, &#39;.join([f&#39;{c.name}={repr(getattr(self, c.name))}&#39; for c in cls.columns if hasattr(self, c.name)])})&#34;
 
         def __str__(self):
-            cls = type(self)
+            cls = cast(type[Base], type(self))
             return f&#34;{cls.name}({&#39;, &#39;.join([f&#39;{c.name}={str(getattr(self, c.name))}&#39; for c in cls.columns if hasattr(self, c.name)])})&#34;
 
-        def __iter__(self):
-            cls = type(self)
+        def __iter__(self) -&gt; Iterator[tuple[Column, Any]]:
+            cls = cast(type[Base], type(self))
             return map(lambda c: (c, getattr(self, c.name)), filter(lambda c: hasattr(self, c.name), cls.columns))
 
         def __setattr__(self, key, value):
+            cls = cast(type[Base], type(self))
             if key not in column_names:
-                raise TypeError(f&#34;{key} is not a column of {type(self).name}&#34;)
+                raise TypeError(f&#34;{key} is not a column of {cls.name}&#34;)
             object.__setattr__(self, key, value)
 
         def __getitem__(self, key):
@@ -553,11 +647,50 @@ col3 = b
                     return False
             return True
 
-    return Model</code></pre>
+    return cast(type[M], _Model)</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.model.extract_pks"><code class="name flex">
+<span>def <span class="ident">extract_pks</span></span>(<span>model: type[<a title="pyracmon.model.Meta" href="#pyracmon.model.Meta">Meta</a>], record: Union[<a title="pyracmon.model.Meta" href="#pyracmon.model.Meta">Meta</a>, dict[str, Any]]) ‑> Union[Any, dict[str, Any]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extract all primary keys from a record.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>model</code></strong></dt>
+<dd>Model class.</dd>
+<dt><strong><code>record</code></strong></dt>
+<dd>A record.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Primary keys.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def extract_pks(model: type[Meta], record: Record) -&gt; PKS:
+    &#34;&#34;&#34;
+    Extract all primary keys from a record.
+
+    Args:
+        model: Model class.
+        record: A record.
+    Returns:
+        Primary keys.
+    &#34;&#34;&#34;
+    pk_columns = [c.name for c in model.columns if c.pk]
+    if isinstance(record, dict):
+        pks = dict((c, record[c]) for c in pk_columns if c in record)
+    else:
+        pks = dict((c, getattr(record, c)) for c in pk_columns if hasattr(record, c))
+    if len(pks) != len(pk_columns):
+        missing = set(pk_columns) - set(pks.keys())
+        raise ValueError(f&#34;Some primary keys are not contained in passed values and auto-increment values: {missing}&#34;)
+    return pks</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.model.model_values"><code class="name flex">
-<span>def <span class="ident">model_values</span></span>(<span>model: Type[<a title="pyracmon.model.Model" href="#pyracmon.model.Model">Model</a>], values: Union[<a title="pyracmon.model.Model" href="#pyracmon.model.Model">Model</a>, Dict[str, Any]], excludes_pk: bool = False)</span>
+<span>def <span class="ident">model_values</span></span>(<span>model: type[<a title="pyracmon.model.Meta" href="#pyracmon.model.Meta">Meta</a>], values: Union[<a title="pyracmon.model.Meta" href="#pyracmon.model.Meta">Meta</a>, dict[str, Any]], excludes_pk: bool = False) ‑> dict[str, typing.Any]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Generates a dictionary whose items are pairs of column name and column value.</p>
@@ -576,7 +709,7 @@ col3 = b
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def model_values(model: Type[Model], values: Record, excludes_pk: bool = False):
+<pre><code class="python">def model_values(model: type[Meta], values: Record, excludes_pk: bool = False) -&gt; dict[str, Any]:
     &#34;&#34;&#34;
     Generates a dictionary whose items are pairs of column name and column value.
 
@@ -593,11 +726,11 @@ col3 = b
     elif isinstance(values, model):
         return {cv[0].name:cv[1] for cv in values if (not excludes_pk) or (not cv[0].pk)}
     else:
-        raise TypeError(f&#34;Values to insert or update must be a dictionary or model.&#34;)</code></pre>
+        raise TypeError(f&#34;Required column value is not contained in the dictionary or model.&#34;)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.model.parse_pks"><code class="name flex">
-<span>def <span class="ident">parse_pks</span></span>(<span>model: Type[<a title="pyracmon.model.Model" href="#pyracmon.model.Model">Model</a>], pks: Union[Any, Dict[str, Any]]) ‑> Tuple[List[str], List[Any]]</span>
+<span>def <span class="ident">parse_pks</span></span>(<span>model: type[<a title="pyracmon.model.Meta" href="#pyracmon.model.Meta">Meta</a>], pks: Union[Any, dict[str, Any]]) ‑> tuple[list[str], list[typing.Any]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Generates a pair of PK columns names and their values from polymorphic input.</p>
@@ -614,7 +747,7 @@ col3 = b
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def parse_pks(model: Type[Model], pks: PKS) -&gt; Tuple[List[str], List[Any]]:
+<pre><code class="python">def parse_pks(model: type[Meta], pks: PKS) -&gt; tuple[list[str], list[Any]]:
     &#34;&#34;&#34;
     Generates a pair of PK columns names and their values from polymorphic input.
 
@@ -625,8 +758,8 @@ col3 = b
         Names of PK columns and their values.
     &#34;&#34;&#34;
     if isinstance(pks, dict):
-        check_columns(model, pks, lambda c: c.pk, True)
-        return list(pks.keys()), list(pks.values())
+        ordered = check_columns(model, pks, lambda c: c.pk, True)
+        return [v[0] for v in ordered], [v[1] for v in ordered]
     else:
         cols = [c.name for c in model.columns if c.pk]
         if len(cols) != 1:
@@ -641,7 +774,7 @@ col3 = b
 <dl>
 <dt id="pyracmon.model.Column"><code class="flex name class">
 <span>class <span class="ident">Column</span></span>
-<span>(</span><span>name: str, ptype: type, type_info: str, pk: bool, fk: Optional[<a title="pyracmon.model.Relations" href="#pyracmon.model.Relations">Relations</a>], incremental: Optional[Any], nullable: bool, comment: str = '')</span>
+<span>(</span><span>name: str, ptype: type, type_info: Optional[Any], pk: bool, fk: Optional[<a title="pyracmon.model.Relations" href="#pyracmon.model.Relations">Relations</a>], incremental: Optional[Any], nullable: bool, comment: str = '')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>This class represents a schema of a column.</p></div>
@@ -657,7 +790,7 @@ col3 = b
         self,
         name: str,
         ptype: type,
-        type_info: str,
+        type_info: Optional[Any],
         pk: bool,
         fk: Optional[Relations],
         incremental: Optional[Any],
@@ -749,23 +882,84 @@ col3 = b
 </dd>
 </dl>
 </dd>
-<dt id="pyracmon.model.Model"><code class="flex name class">
-<span>class <span class="ident">Model</span></span>
+<dt id="pyracmon.model.Meta"><code class="flex name class">
+<span>class <span class="ident">Meta</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Base type of model types.</p>
-<p>This class only works as a marker of model types and gives no functionalities to them.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Model:
+<pre><code class="python">@dataclass_transform(kw_only_default=True)
+class Meta(type):
+    #: Table name.
+    name: str
+    #: `Table` object.
+    table: &#39;Table&#39;
+    #: A list of `Column` s.
+    columns: list[&#39;Column&#39;]
+    #: An object exposing `Column` object via the attribute of its name.
+    column: Any
+
+    def __iter__(self) -&gt; Iterator[tuple[&#39;Column&#39;, Any]]: ...
+    def __getitem__(self, key: str) -&gt; Any: ...
+    def __contains__(self, key) -&gt; bool: ...
+
+    @classmethod
+    def shrink(cls, excludes, includes=None) -&gt; Self: ...</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="pyracmon.model_graph.GraphEntityMixin" href="model_graph.html#pyracmon.model_graph.GraphEntityMixin">GraphEntityMixin</a></li>
+</ul>
+</dd>
+<dt id="pyracmon.model.Mixins"><code class="flex name class">
+<span>class <span class="ident">Mixins</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Abstract base class for generic types.</p>
+<p>A generic type is typically declared by inheriting from
+this class parameterized with one or more type variables.
+For example, a generic mapping type might be defined as::</p>
+<p>class Mapping(Generic[KT, VT]):
+def <strong>getitem</strong>(self, key: KT) -&gt; VT:
+&hellip;
+# Etc.</p>
+<p>This class can then be used as follows::</p>
+<p>def lookup_name(mapping: Mapping[KT, VT], key: KT, default: VT) -&gt; VT:
+try:
+return mapping[key]
+except KeyError:
+return default</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Mixins(Generic[Unpack[MXS]]):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Generic</li>
+</ul>
+</dd>
+<dt id="pyracmon.model.Model"><code class="flex name class">
+<span>class <span class="ident">Model</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Model(Mixins[Unpack[MXS]], metaclass=Meta):
     &#34;&#34;&#34;
     Base type of model types.
 
     This class only works as a marker of model types and gives no functionalities to them.
     &#34;&#34;&#34;
-    pass</code></pre>
+    def __init__(self, **kwargs) -&gt; None: ... # for typing</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.model.Relations"><code class="flex name class">
@@ -783,7 +977,7 @@ col3 = b
     &#34;&#34;&#34;
     def __init__(self) -&gt; None:
         #: Foreign key constraints on a column.
-        self.constraints = []
+        self.constraints: list[ForeignKey] = []
 
     def add(self, fk: ForeignKey):
         &#34;&#34;&#34;
@@ -831,7 +1025,7 @@ col3 = b
 </dd>
 <dt id="pyracmon.model.Table"><code class="flex name class">
 <span>class <span class="ident">Table</span></span>
-<span>(</span><span>name: str, columns: List[<a title="pyracmon.model.Column" href="#pyracmon.model.Column">Column</a>], comment: str = '')</span>
+<span>(</span><span>name: str, columns: list[<a title="pyracmon.model.Column" href="#pyracmon.model.Column">Column</a>], comment: str = '')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>This class represents a schema of a table.</p></div>
@@ -843,7 +1037,7 @@ col3 = b
     &#34;&#34;&#34;
     This class represents a schema of a table.
     &#34;&#34;&#34;
-    def __init__(self, name: str, columns: List[Column], comment: str = &#34;&#34;):
+    def __init__(self, name: str, columns: list[Column], comment: str = &#34;&#34;):
         #: Table name.
         self.name = name
         #: Columns in the table.
@@ -923,10 +1117,16 @@ col3 = b
 <li><code><a title="pyracmon" href="index.html">pyracmon</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-variables">Global variables</a></h3>
+<ul class="">
+<li><code><a title="pyracmon.model.Record" href="#pyracmon.model.Record">Record</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="pyracmon.model.check_columns" href="#pyracmon.model.check_columns">check_columns</a></code></li>
 <li><code><a title="pyracmon.model.define_model" href="#pyracmon.model.define_model">define_model</a></code></li>
+<li><code><a title="pyracmon.model.extract_pks" href="#pyracmon.model.extract_pks">extract_pks</a></code></li>
 <li><code><a title="pyracmon.model.model_values" href="#pyracmon.model.model_values">model_values</a></code></li>
 <li><code><a title="pyracmon.model.parse_pks" href="#pyracmon.model.parse_pks">parse_pks</a></code></li>
 </ul>
@@ -952,6 +1152,12 @@ col3 = b
 <li><code><a title="pyracmon.model.ForeignKey.column" href="#pyracmon.model.ForeignKey.column">column</a></code></li>
 <li><code><a title="pyracmon.model.ForeignKey.table" href="#pyracmon.model.ForeignKey.table">table</a></code></li>
 </ul>
+</li>
+<li>
+<h4><code><a title="pyracmon.model.Meta" href="#pyracmon.model.Meta">Meta</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pyracmon.model.Mixins" href="#pyracmon.model.Mixins">Mixins</a></code></h4>
 </li>
 <li>
 <h4><code><a title="pyracmon.model.Model" href="#pyracmon.model.Model">Model</a></code></h4>

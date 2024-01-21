@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>pyracmon.connection API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="This module provides types and functions for DB connections." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,19 +22,25 @@
 <h1 class="title">Module <code>pyracmon.connection</code></h1>
 </header>
 <section id="section-intro">
+<p>This module provides types and functions for DB connections.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import string
+<pre><code class="python">&#34;&#34;&#34;
+This module provides types and functions for DB connections.
+&#34;&#34;&#34;
+from collections.abc import Sequence, Callable
+import secrets
+import string
 import threading
 import types
-from typing import *
-from datetime import datetime
-from .query import QueryHelper
+from typing import Any, Callable, Optional, Union
+from typing_extensions import Self
+from . import dbapi
 from .sql import Sql
 from .marker import Marker
-from .context import ConnectionContext
+from .context import ConnectionContext, PARAMS
 
 
 def connect(api: types.ModuleType, *args: Any, **kwargs: Any) -&gt; &#39;Connection&#39;:
@@ -43,13 +49,13 @@ def connect(api: types.ModuleType, *args: Any, **kwargs: Any) -&gt; &#39;Connect
 
     Every optional argument is passed to `api.connect` and returns the `Connection` object which wraps obtained DB connection.
 
-    Here shows an example connecting to database and executing query.
-
-    &gt;&gt;&gt; import psycopg2
-    &gt;&gt;&gt; from pyracmon import connect
-    &gt;&gt;&gt; db = connect(psycopg2, host=&#34;localhost&#34;, port=5432, dbname=&#34;pyracmon&#34;, user=&#34;postgres&#34;, password=&#34;postgres&#34;)
-    &gt;&gt;&gt; c = db.stmt().execute(&#34;SELECT 1&#34;)
-    &gt;&gt;&gt; assert c.fetchone()[0] == 1
+    ```python
+    import psycopg2
+    from pyracmon import connect
+    db = connect(psycopg2, host=&#34;localhost&#34;, port=5432, dbname=&#34;pyracmon&#34;, user=&#34;postgres&#34;, password=&#34;postgres&#34;)
+    c = db.stmt().execute(&#34;SELECT 1&#34;)
+    assert c.fetchone()[0] == 1
+    ```
 
     Args:
         api: DB-API 2.0 module which exports `connect` function.
@@ -61,7 +67,7 @@ def connect(api: types.ModuleType, *args: Any, **kwargs: Any) -&gt; &#39;Connect
     return Connection(api, api.connect(*args, **kwargs), None)
 
 
-class Connection:
+class Connection(dbapi.Connection):
     &#34;&#34;&#34;
     Wrapper class of DB-API 2.0 Connection.
 
@@ -69,12 +75,14 @@ class Connection:
     &#34;&#34;&#34;
     _characters = string.ascii_letters + string.digits + &#34;.=&#34;
 
-    def __init__(self, api, conn, context_factory=None):
+    def __init__(self, api, conn: dbapi.Connection, context_factory: Optional[Callable[[], ConnectionContext]] = None):
         #: A string which identifies a connection.
         self.identifier = self._gen_identifier()
+        #: DB-API 2.0 module.
         self.api = api
+        #: Original connection object.
         self.conn = conn
-        self.context_factory = context_factory
+        self._context_factory = context_factory
         self._context = None
 
     def __getattr__(self, name):
@@ -82,12 +90,12 @@ class Connection:
 
     def __enter__(self):
         if hasattr(self.conn, &#34;__enter__&#34;):
-            self.conn.__enter__()
+            self.conn.__enter__() # type: ignore
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         if hasattr(self.conn, &#34;__exit__&#34;):
-            self.conn.__exit__(exc_type, exc_value, traceback)
+            self.conn.__exit__(exc_type, exc_value, traceback) # type: ignore
         else:
             if exc_value is None:
                 self.conn.rollback()
@@ -96,16 +104,7 @@ class Connection:
             self.conn.close()
 
     def _gen_identifier(self):
-        t = int(datetime.now().timestamp() * 1000)
-
-        def gen(x):
-            base = len(Connection._characters)
-            while x &gt;= base:
-                x, r = divmod(x, base)
-                yield Connection._characters[r]
-            yield Connection._characters[x]
-
-        return threading.current_thread().name + &#34;-&#34; + &#39;&#39;.join(gen(t))[::-1]
+        return threading.current_thread().name + &#34;-&#34; + secrets.token_hex(4)
 
     @property
     def context(self) -&gt; ConnectionContext:
@@ -113,27 +112,40 @@ class Connection:
         Context object used for this connection.
         &#34;&#34;&#34;
         if not self._context:
-            self._context = (self.context_factory or ConnectionContext)()
+            self._context = (self._context_factory or ConnectionContext)()
             self._context.identifier = self.identifier
         return self._context
 
-    def use(self, factory: Callable[[], ConnectionContext]) -&gt; &#39;Connection&#39;:
-        &#34;&#34;&#34;
-        Set factory function of `ConnectionContext`.
+    def close(self) -&gt; None:
+        return self.conn.close()
 
-        Use this method to use your custom context object.
+    def commit(self) -&gt; None:
+        return self.conn.commit()
+
+    def rollback(self) -&gt; None:
+        return self.conn.rollback()
+
+    def cursor(self) -&gt; dbapi.Cursor:
+        return self.conn.cursor()
+
+    def use(self, factory: Callable[[], ConnectionContext]) -&gt; Self:
+        &#34;&#34;&#34;
+        Sets factory function of `ConnectionContext` to use custom context.
+
+        When the context is already set, it will be replaced with new one.
 
         Args:
-            factory: Function returning custom context object.
+            factory: Function returning custom context.
         Returns:
             This instance.
         &#34;&#34;&#34;
-        self.context_factory = factory
+        self._context_factory = factory
+        self._context = None
         return self
 
     def stmt(self, context: Optional[ConnectionContext] = None) -&gt; &#39;Statement&#39;:
         &#34;&#34;&#34;
-        Creates new statement which provides methods to execute query.
+        Creates new `Statement` which executes queries on this connection.
 
         Args:
             context: Context object used in the statement. If `None`, the context of this connection is used.
@@ -142,28 +154,21 @@ class Connection:
         &#34;&#34;&#34;
         return Statement(self, context or self.context)
 
-    @property
-    def helper(self) -&gt; QueryHelper:
-        &#34;&#34;&#34;
-        .. deprecated:: 1.0.0
-        &#34;&#34;&#34;
-        return QueryHelper(self.api, None)
-
 
 class Statement:
     &#34;&#34;&#34;
-    This class has method to execute query on containing connection and context.
+    This class has methods to execute query on containing connection and context.
 
     Be sure to execute queries on this class to benefit from:
 
     - Query formatting using unified marker `$_`.
     - Query logging.
     &#34;&#34;&#34;
-    def __init__(self, conn, context):
+    def __init__(self, conn: Connection, context: ConnectionContext):
         self.conn = conn
         self.context = context
 
-    def prepare(self, sql: str, *args: Any, **kwargs: Any) -&gt; Tuple[str, Union[List[Any], Dict[str, Any]]]:
+    def prepare(self, sql: str, *args: Any, **kwargs: Any) -&gt; tuple[str, PARAMS]:
         &#34;&#34;&#34;
         Generates formatted query and a list of parameters.
 
@@ -178,16 +183,11 @@ class Statement:
         &#34;&#34;&#34;
         paramstyle = self.context.config.paramstyle or self.conn.api.paramstyle
 
-        sql = Sql(Marker.of(paramstyle), sql)
+        return Sql(Marker.of(paramstyle), sql).render(*args, **kwargs)
 
-        return sql.render(*args, **kwargs)
-
-    def execute(self, sql: str, *args: Any, **kwargs: Any) -&gt; &#39;Cursor&#39;:
+    def execute(self, sql: str, *args: Any, **kwargs: Any) -&gt; dbapi.Cursor:
         &#34;&#34;&#34;
         Executes a query and returns a cursor object.
-
-        Cursor is defined in DB-API 2.0 and it provides methods to access results of the query (ex. `fetchall` `fetchone`).
-        See [PEP249](https://www.python.org/dev/peps/pep-0249/#cursor-objects) and documentations of DB driver to know the detail of Cursor.
 
         Args:
             sql: Query template which can contain unified marker.
@@ -200,7 +200,33 @@ class Statement:
 
         c = self.conn.cursor()
 
-        return self.context.execute(c, sql, params)</code></pre>
+        return self.context.execute(c, sql, params)
+
+    def executemany(self, sql: str, seq_of_args: Sequence[PARAMS]) -&gt; dbapi.Cursor:
+        &#34;&#34;&#34;
+        Executes a query for each parameters in `seq_of_args` and returns a cursor object.
+
+        Args:
+            sql: Query template which can contain unified marker.
+            seq_of_args: A sequence of parameters of the query.
+        Returns:
+            Cursor object used for the query execution.
+        &#34;&#34;&#34;
+        def prepare(ps: Union[list[Any], dict[str, Any]]):
+            args = list(ps) if isinstance(ps, (list, tuple)) else []
+            kwargs = ps if isinstance(ps, dict) else {}
+            return self.prepare(sql, *args, **kwargs)
+
+        rendered, params = prepare(seq_of_args[0])
+        seq_of_params: list[PARAMS] = [params]
+
+        for i, ps in enumerate(seq_of_args[1:]):
+            _, params = prepare(ps)
+            seq_of_params.append(params)
+
+        c = self.conn.cursor()
+
+        return self.context.executemany(c, rendered, seq_of_params)</code></pre>
 </details>
 </section>
 <section>
@@ -216,12 +242,11 @@ class Statement:
 <dd>
 <div class="desc"><p>Connects to DB by passing arguments to DB-API 2.0 module.</p>
 <p>Every optional argument is passed to <code>api.connect</code> and returns the <code><a title="pyracmon.connection.Connection" href="#pyracmon.connection.Connection">Connection</a></code> object which wraps obtained DB connection.</p>
-<p>Here shows an example connecting to database and executing query.</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; import psycopg2
-&gt;&gt;&gt; from pyracmon import connect
-&gt;&gt;&gt; db = connect(psycopg2, host=&quot;localhost&quot;, port=5432, dbname=&quot;pyracmon&quot;, user=&quot;postgres&quot;, password=&quot;postgres&quot;)
-&gt;&gt;&gt; c = db.stmt().execute(&quot;SELECT 1&quot;)
-&gt;&gt;&gt; assert c.fetchone()[0] == 1
+<pre><code class="language-python">import psycopg2
+from pyracmon import connect
+db = connect(psycopg2, host=&quot;localhost&quot;, port=5432, dbname=&quot;pyracmon&quot;, user=&quot;postgres&quot;, password=&quot;postgres&quot;)
+c = db.stmt().execute(&quot;SELECT 1&quot;)
+assert c.fetchone()[0] == 1
 </code></pre>
 <h2 id="args">Args</h2>
 <dl>
@@ -244,13 +269,13 @@ class Statement:
 
     Every optional argument is passed to `api.connect` and returns the `Connection` object which wraps obtained DB connection.
 
-    Here shows an example connecting to database and executing query.
-
-    &gt;&gt;&gt; import psycopg2
-    &gt;&gt;&gt; from pyracmon import connect
-    &gt;&gt;&gt; db = connect(psycopg2, host=&#34;localhost&#34;, port=5432, dbname=&#34;pyracmon&#34;, user=&#34;postgres&#34;, password=&#34;postgres&#34;)
-    &gt;&gt;&gt; c = db.stmt().execute(&#34;SELECT 1&#34;)
-    &gt;&gt;&gt; assert c.fetchone()[0] == 1
+    ```python
+    import psycopg2
+    from pyracmon import connect
+    db = connect(psycopg2, host=&#34;localhost&#34;, port=5432, dbname=&#34;pyracmon&#34;, user=&#34;postgres&#34;, password=&#34;postgres&#34;)
+    c = db.stmt().execute(&#34;SELECT 1&#34;)
+    assert c.fetchone()[0] == 1
+    ```
 
     Args:
         api: DB-API 2.0 module which exports `connect` function.
@@ -269,7 +294,7 @@ class Statement:
 <dl>
 <dt id="pyracmon.connection.Connection"><code class="flex name class">
 <span>class <span class="ident">Connection</span></span>
-<span>(</span><span>api, conn, context_factory=None)</span>
+<span>(</span><span>api, conn: <a title="pyracmon.dbapi.Connection" href="dbapi.html#pyracmon.dbapi.Connection">Connection</a>, context_factory: Optional[Callable[[], <a title="pyracmon.context.ConnectionContext" href="context.html#pyracmon.context.ConnectionContext">ConnectionContext</a>]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Wrapper class of DB-API 2.0 Connection.</p>
@@ -278,7 +303,7 @@ class Statement:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Connection:
+<pre><code class="python">class Connection(dbapi.Connection):
     &#34;&#34;&#34;
     Wrapper class of DB-API 2.0 Connection.
 
@@ -286,12 +311,14 @@ class Statement:
     &#34;&#34;&#34;
     _characters = string.ascii_letters + string.digits + &#34;.=&#34;
 
-    def __init__(self, api, conn, context_factory=None):
+    def __init__(self, api, conn: dbapi.Connection, context_factory: Optional[Callable[[], ConnectionContext]] = None):
         #: A string which identifies a connection.
         self.identifier = self._gen_identifier()
+        #: DB-API 2.0 module.
         self.api = api
+        #: Original connection object.
         self.conn = conn
-        self.context_factory = context_factory
+        self._context_factory = context_factory
         self._context = None
 
     def __getattr__(self, name):
@@ -299,12 +326,12 @@ class Statement:
 
     def __enter__(self):
         if hasattr(self.conn, &#34;__enter__&#34;):
-            self.conn.__enter__()
+            self.conn.__enter__() # type: ignore
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         if hasattr(self.conn, &#34;__exit__&#34;):
-            self.conn.__exit__(exc_type, exc_value, traceback)
+            self.conn.__exit__(exc_type, exc_value, traceback) # type: ignore
         else:
             if exc_value is None:
                 self.conn.rollback()
@@ -313,16 +340,7 @@ class Statement:
             self.conn.close()
 
     def _gen_identifier(self):
-        t = int(datetime.now().timestamp() * 1000)
-
-        def gen(x):
-            base = len(Connection._characters)
-            while x &gt;= base:
-                x, r = divmod(x, base)
-                yield Connection._characters[r]
-            yield Connection._characters[x]
-
-        return threading.current_thread().name + &#34;-&#34; + &#39;&#39;.join(gen(t))[::-1]
+        return threading.current_thread().name + &#34;-&#34; + secrets.token_hex(4)
 
     @property
     def context(self) -&gt; ConnectionContext:
@@ -330,44 +348,64 @@ class Statement:
         Context object used for this connection.
         &#34;&#34;&#34;
         if not self._context:
-            self._context = (self.context_factory or ConnectionContext)()
+            self._context = (self._context_factory or ConnectionContext)()
             self._context.identifier = self.identifier
         return self._context
 
-    def use(self, factory: Callable[[], ConnectionContext]) -&gt; &#39;Connection&#39;:
-        &#34;&#34;&#34;
-        Set factory function of `ConnectionContext`.
+    def close(self) -&gt; None:
+        return self.conn.close()
 
-        Use this method to use your custom context object.
+    def commit(self) -&gt; None:
+        return self.conn.commit()
+
+    def rollback(self) -&gt; None:
+        return self.conn.rollback()
+
+    def cursor(self) -&gt; dbapi.Cursor:
+        return self.conn.cursor()
+
+    def use(self, factory: Callable[[], ConnectionContext]) -&gt; Self:
+        &#34;&#34;&#34;
+        Sets factory function of `ConnectionContext` to use custom context.
+
+        When the context is already set, it will be replaced with new one.
 
         Args:
-            factory: Function returning custom context object.
+            factory: Function returning custom context.
         Returns:
             This instance.
         &#34;&#34;&#34;
-        self.context_factory = factory
+        self._context_factory = factory
+        self._context = None
         return self
 
     def stmt(self, context: Optional[ConnectionContext] = None) -&gt; &#39;Statement&#39;:
         &#34;&#34;&#34;
-        Creates new statement which provides methods to execute query.
+        Creates new `Statement` which executes queries on this connection.
 
         Args:
             context: Context object used in the statement. If `None`, the context of this connection is used.
         Returns:
             Created statement.
         &#34;&#34;&#34;
-        return Statement(self, context or self.context)
-
-    @property
-    def helper(self) -&gt; QueryHelper:
-        &#34;&#34;&#34;
-        .. deprecated:: 1.0.0
-        &#34;&#34;&#34;
-        return QueryHelper(self.api, None)</code></pre>
+        return Statement(self, context or self.context)</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pyracmon.dbapi.Connection" href="dbapi.html#pyracmon.dbapi.Connection">Connection</a></li>
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
 <h3>Instance variables</h3>
 <dl>
+<dt id="pyracmon.connection.Connection.api"><code class="name">var <span class="ident">api</span></code></dt>
+<dd>
+<div class="desc"><p>DB-API 2.0 module.</p></div>
+</dd>
+<dt id="pyracmon.connection.Connection.conn"><code class="name">var <span class="ident">conn</span></code></dt>
+<dd>
+<div class="desc"><p>Original connection object.</p></div>
+</dd>
 <dt id="pyracmon.connection.Connection.context"><code class="name">var <span class="ident">context</span> : <a title="pyracmon.context.ConnectionContext" href="context.html#pyracmon.context.ConnectionContext">ConnectionContext</a></code></dt>
 <dd>
 <div class="desc"><p>Context object used for this connection.</p></div>
@@ -381,26 +419,9 @@ def context(self) -&gt; ConnectionContext:
     Context object used for this connection.
     &#34;&#34;&#34;
     if not self._context:
-        self._context = (self.context_factory or ConnectionContext)()
+        self._context = (self._context_factory or ConnectionContext)()
         self._context.identifier = self.identifier
     return self._context</code></pre>
-</details>
-</dd>
-<dt id="pyracmon.connection.Connection.helper"><code class="name">var <span class="ident">helper</span> : <a title="pyracmon.query.QueryHelper" href="query.html#pyracmon.query.QueryHelper">QueryHelper</a></code></dt>
-<dd>
-<div class="desc"><div class="admonition deprecated">
-<p class="admonition-title">Deprecated since version:&ensp;1.0.0</p>
-</div></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def helper(self) -&gt; QueryHelper:
-    &#34;&#34;&#34;
-    .. deprecated:: 1.0.0
-    &#34;&#34;&#34;
-    return QueryHelper(self.api, None)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.connection.Connection.identifier"><code class="name">var <span class="ident">identifier</span></code></dt>
@@ -410,11 +431,63 @@ def helper(self) -&gt; QueryHelper:
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="pyracmon.connection.Connection.close"><code class="name flex">
+<span>def <span class="ident">close</span></span>(<span>self) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def close(self) -&gt; None:
+    return self.conn.close()</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.connection.Connection.commit"><code class="name flex">
+<span>def <span class="ident">commit</span></span>(<span>self) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def commit(self) -&gt; None:
+    return self.conn.commit()</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.connection.Connection.cursor"><code class="name flex">
+<span>def <span class="ident">cursor</span></span>(<span>self) ‑> <a title="pyracmon.dbapi.Cursor" href="dbapi.html#pyracmon.dbapi.Cursor">Cursor</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cursor(self) -&gt; dbapi.Cursor:
+    return self.conn.cursor()</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.connection.Connection.rollback"><code class="name flex">
+<span>def <span class="ident">rollback</span></span>(<span>self) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rollback(self) -&gt; None:
+    return self.conn.rollback()</code></pre>
+</details>
+</dd>
 <dt id="pyracmon.connection.Connection.stmt"><code class="name flex">
 <span>def <span class="ident">stmt</span></span>(<span>self, context: Optional[<a title="pyracmon.context.ConnectionContext" href="context.html#pyracmon.context.ConnectionContext">ConnectionContext</a>] = None) ‑> <a title="pyracmon.connection.Statement" href="#pyracmon.connection.Statement">Statement</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Creates new statement which provides methods to execute query.</p>
+<div class="desc"><p>Creates new <code><a title="pyracmon.connection.Statement" href="#pyracmon.connection.Statement">Statement</a></code> which executes queries on this connection.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>context</code></strong></dt>
@@ -428,7 +501,7 @@ def helper(self) -&gt; QueryHelper:
 </summary>
 <pre><code class="python">def stmt(self, context: Optional[ConnectionContext] = None) -&gt; &#39;Statement&#39;:
     &#34;&#34;&#34;
-    Creates new statement which provides methods to execute query.
+    Creates new `Statement` which executes queries on this connection.
 
     Args:
         context: Context object used in the statement. If `None`, the context of this connection is used.
@@ -439,15 +512,15 @@ def helper(self) -&gt; QueryHelper:
 </details>
 </dd>
 <dt id="pyracmon.connection.Connection.use"><code class="name flex">
-<span>def <span class="ident">use</span></span>(<span>self, factory: Callable[[], <a title="pyracmon.context.ConnectionContext" href="context.html#pyracmon.context.ConnectionContext">ConnectionContext</a>]) ‑> <a title="pyracmon.connection.Connection" href="#pyracmon.connection.Connection">Connection</a></span>
+<span>def <span class="ident">use</span></span>(<span>self, factory: Callable[[], <a title="pyracmon.context.ConnectionContext" href="context.html#pyracmon.context.ConnectionContext">ConnectionContext</a>]) ‑> typing_extensions.Self</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Set factory function of <code>ConnectionContext</code>.</p>
-<p>Use this method to use your custom context object.</p>
+<div class="desc"><p>Sets factory function of <code>ConnectionContext</code> to use custom context.</p>
+<p>When the context is already set, it will be replaced with new one.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>factory</code></strong></dt>
-<dd>Function returning custom context object.</dd>
+<dd>Function returning custom context.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>This instance.</p></div>
@@ -455,18 +528,19 @@ def helper(self) -&gt; QueryHelper:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def use(self, factory: Callable[[], ConnectionContext]) -&gt; &#39;Connection&#39;:
+<pre><code class="python">def use(self, factory: Callable[[], ConnectionContext]) -&gt; Self:
     &#34;&#34;&#34;
-    Set factory function of `ConnectionContext`.
+    Sets factory function of `ConnectionContext` to use custom context.
 
-    Use this method to use your custom context object.
+    When the context is already set, it will be replaced with new one.
 
     Args:
-        factory: Function returning custom context object.
+        factory: Function returning custom context.
     Returns:
         This instance.
     &#34;&#34;&#34;
-    self.context_factory = factory
+    self._context_factory = factory
+    self._context = None
     return self</code></pre>
 </details>
 </dd>
@@ -474,10 +548,10 @@ def helper(self) -&gt; QueryHelper:
 </dd>
 <dt id="pyracmon.connection.Statement"><code class="flex name class">
 <span>class <span class="ident">Statement</span></span>
-<span>(</span><span>conn, context)</span>
+<span>(</span><span>conn: <a title="pyracmon.connection.Connection" href="#pyracmon.connection.Connection">Connection</a>, context: <a title="pyracmon.context.ConnectionContext" href="context.html#pyracmon.context.ConnectionContext">ConnectionContext</a>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>This class has method to execute query on containing connection and context.</p>
+<div class="desc"><p>This class has methods to execute query on containing connection and context.</p>
 <p>Be sure to execute queries on this class to benefit from:</p>
 <ul>
 <li>Query formatting using unified marker <code>$_</code>.</li>
@@ -489,18 +563,18 @@ def helper(self) -&gt; QueryHelper:
 </summary>
 <pre><code class="python">class Statement:
     &#34;&#34;&#34;
-    This class has method to execute query on containing connection and context.
+    This class has methods to execute query on containing connection and context.
 
     Be sure to execute queries on this class to benefit from:
 
     - Query formatting using unified marker `$_`.
     - Query logging.
     &#34;&#34;&#34;
-    def __init__(self, conn, context):
+    def __init__(self, conn: Connection, context: ConnectionContext):
         self.conn = conn
         self.context = context
 
-    def prepare(self, sql: str, *args: Any, **kwargs: Any) -&gt; Tuple[str, Union[List[Any], Dict[str, Any]]]:
+    def prepare(self, sql: str, *args: Any, **kwargs: Any) -&gt; tuple[str, PARAMS]:
         &#34;&#34;&#34;
         Generates formatted query and a list of parameters.
 
@@ -515,16 +589,11 @@ def helper(self) -&gt; QueryHelper:
         &#34;&#34;&#34;
         paramstyle = self.context.config.paramstyle or self.conn.api.paramstyle
 
-        sql = Sql(Marker.of(paramstyle), sql)
+        return Sql(Marker.of(paramstyle), sql).render(*args, **kwargs)
 
-        return sql.render(*args, **kwargs)
-
-    def execute(self, sql: str, *args: Any, **kwargs: Any) -&gt; &#39;Cursor&#39;:
+    def execute(self, sql: str, *args: Any, **kwargs: Any) -&gt; dbapi.Cursor:
         &#34;&#34;&#34;
         Executes a query and returns a cursor object.
-
-        Cursor is defined in DB-API 2.0 and it provides methods to access results of the query (ex. `fetchall` `fetchone`).
-        See [PEP249](https://www.python.org/dev/peps/pep-0249/#cursor-objects) and documentations of DB driver to know the detail of Cursor.
 
         Args:
             sql: Query template which can contain unified marker.
@@ -537,17 +606,41 @@ def helper(self) -&gt; QueryHelper:
 
         c = self.conn.cursor()
 
-        return self.context.execute(c, sql, params)</code></pre>
+        return self.context.execute(c, sql, params)
+
+    def executemany(self, sql: str, seq_of_args: Sequence[PARAMS]) -&gt; dbapi.Cursor:
+        &#34;&#34;&#34;
+        Executes a query for each parameters in `seq_of_args` and returns a cursor object.
+
+        Args:
+            sql: Query template which can contain unified marker.
+            seq_of_args: A sequence of parameters of the query.
+        Returns:
+            Cursor object used for the query execution.
+        &#34;&#34;&#34;
+        def prepare(ps: Union[list[Any], dict[str, Any]]):
+            args = list(ps) if isinstance(ps, (list, tuple)) else []
+            kwargs = ps if isinstance(ps, dict) else {}
+            return self.prepare(sql, *args, **kwargs)
+
+        rendered, params = prepare(seq_of_args[0])
+        seq_of_params: list[PARAMS] = [params]
+
+        for i, ps in enumerate(seq_of_args[1:]):
+            _, params = prepare(ps)
+            seq_of_params.append(params)
+
+        c = self.conn.cursor()
+
+        return self.context.executemany(c, rendered, seq_of_params)</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
 <dt id="pyracmon.connection.Statement.execute"><code class="name flex">
-<span>def <span class="ident">execute</span></span>(<span>self, sql: str, *args: Any, **kwargs: Any) ‑> Cursor</span>
+<span>def <span class="ident">execute</span></span>(<span>self, sql: str, *args: Any, **kwargs: Any) ‑> <a title="pyracmon.dbapi.Cursor" href="dbapi.html#pyracmon.dbapi.Cursor">Cursor</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Executes a query and returns a cursor object.</p>
-<p>Cursor is defined in DB-API 2.0 and it provides methods to access results of the query (ex. <code>fetchall</code> <code>fetchone</code>).
-See <a href="https://www.python.org/dev/peps/pep-0249/#cursor-objects">PEP249</a> and documentations of DB driver to know the detail of Cursor.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>sql</code></strong></dt>
@@ -563,12 +656,9 @@ See <a href="https://www.python.org/dev/peps/pep-0249/#cursor-objects">PEP249</a
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def execute(self, sql: str, *args: Any, **kwargs: Any) -&gt; &#39;Cursor&#39;:
+<pre><code class="python">def execute(self, sql: str, *args: Any, **kwargs: Any) -&gt; dbapi.Cursor:
     &#34;&#34;&#34;
     Executes a query and returns a cursor object.
-
-    Cursor is defined in DB-API 2.0 and it provides methods to access results of the query (ex. `fetchall` `fetchone`).
-    See [PEP249](https://www.python.org/dev/peps/pep-0249/#cursor-objects) and documentations of DB driver to know the detail of Cursor.
 
     Args:
         sql: Query template which can contain unified marker.
@@ -584,8 +674,53 @@ See <a href="https://www.python.org/dev/peps/pep-0249/#cursor-objects">PEP249</a
     return self.context.execute(c, sql, params)</code></pre>
 </details>
 </dd>
+<dt id="pyracmon.connection.Statement.executemany"><code class="name flex">
+<span>def <span class="ident">executemany</span></span>(<span>self, sql: str, seq_of_args: collections.abc.Sequence[typing.Union[list[typing.Any], dict[str, typing.Any]]]) ‑> <a title="pyracmon.dbapi.Cursor" href="dbapi.html#pyracmon.dbapi.Cursor">Cursor</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Executes a query for each parameters in <code>seq_of_args</code> and returns a cursor object.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>sql</code></strong></dt>
+<dd>Query template which can contain unified marker.</dd>
+<dt><strong><code>seq_of_args</code></strong></dt>
+<dd>A sequence of parameters of the query.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Cursor object used for the query execution.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def executemany(self, sql: str, seq_of_args: Sequence[PARAMS]) -&gt; dbapi.Cursor:
+    &#34;&#34;&#34;
+    Executes a query for each parameters in `seq_of_args` and returns a cursor object.
+
+    Args:
+        sql: Query template which can contain unified marker.
+        seq_of_args: A sequence of parameters of the query.
+    Returns:
+        Cursor object used for the query execution.
+    &#34;&#34;&#34;
+    def prepare(ps: Union[list[Any], dict[str, Any]]):
+        args = list(ps) if isinstance(ps, (list, tuple)) else []
+        kwargs = ps if isinstance(ps, dict) else {}
+        return self.prepare(sql, *args, **kwargs)
+
+    rendered, params = prepare(seq_of_args[0])
+    seq_of_params: list[PARAMS] = [params]
+
+    for i, ps in enumerate(seq_of_args[1:]):
+        _, params = prepare(ps)
+        seq_of_params.append(params)
+
+    c = self.conn.cursor()
+
+    return self.context.executemany(c, rendered, seq_of_params)</code></pre>
+</details>
+</dd>
 <dt id="pyracmon.connection.Statement.prepare"><code class="name flex">
-<span>def <span class="ident">prepare</span></span>(<span>self, sql: str, *args: Any, **kwargs: Any) ‑> Tuple[str, Union[List[Any], Dict[str, Any]]]</span>
+<span>def <span class="ident">prepare</span></span>(<span>self, sql: str, *args: Any, **kwargs: Any) ‑> tuple[str, typing.Union[list[typing.Any], dict[str, typing.Any]]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Generates formatted query and a list of parameters.</p>
@@ -605,7 +740,7 @@ See <a href="https://www.python.org/dev/peps/pep-0249/#cursor-objects">PEP249</a
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def prepare(self, sql: str, *args: Any, **kwargs: Any) -&gt; Tuple[str, Union[List[Any], Dict[str, Any]]]:
+<pre><code class="python">def prepare(self, sql: str, *args: Any, **kwargs: Any) -&gt; tuple[str, PARAMS]:
     &#34;&#34;&#34;
     Generates formatted query and a list of parameters.
 
@@ -620,9 +755,7 @@ See <a href="https://www.python.org/dev/peps/pep-0249/#cursor-objects">PEP249</a
     &#34;&#34;&#34;
     paramstyle = self.context.config.paramstyle or self.conn.api.paramstyle
 
-    sql = Sql(Marker.of(paramstyle), sql)
-
-    return sql.render(*args, **kwargs)</code></pre>
+    return Sql(Marker.of(paramstyle), sql).render(*args, **kwargs)</code></pre>
 </details>
 </dd>
 </dl>
@@ -650,10 +783,15 @@ See <a href="https://www.python.org/dev/peps/pep-0249/#cursor-objects">PEP249</a
 <ul>
 <li>
 <h4><code><a title="pyracmon.connection.Connection" href="#pyracmon.connection.Connection">Connection</a></code></h4>
-<ul class="">
+<ul class="two-column">
+<li><code><a title="pyracmon.connection.Connection.api" href="#pyracmon.connection.Connection.api">api</a></code></li>
+<li><code><a title="pyracmon.connection.Connection.close" href="#pyracmon.connection.Connection.close">close</a></code></li>
+<li><code><a title="pyracmon.connection.Connection.commit" href="#pyracmon.connection.Connection.commit">commit</a></code></li>
+<li><code><a title="pyracmon.connection.Connection.conn" href="#pyracmon.connection.Connection.conn">conn</a></code></li>
 <li><code><a title="pyracmon.connection.Connection.context" href="#pyracmon.connection.Connection.context">context</a></code></li>
-<li><code><a title="pyracmon.connection.Connection.helper" href="#pyracmon.connection.Connection.helper">helper</a></code></li>
+<li><code><a title="pyracmon.connection.Connection.cursor" href="#pyracmon.connection.Connection.cursor">cursor</a></code></li>
 <li><code><a title="pyracmon.connection.Connection.identifier" href="#pyracmon.connection.Connection.identifier">identifier</a></code></li>
+<li><code><a title="pyracmon.connection.Connection.rollback" href="#pyracmon.connection.Connection.rollback">rollback</a></code></li>
 <li><code><a title="pyracmon.connection.Connection.stmt" href="#pyracmon.connection.Connection.stmt">stmt</a></code></li>
 <li><code><a title="pyracmon.connection.Connection.use" href="#pyracmon.connection.Connection.use">use</a></code></li>
 </ul>
@@ -662,6 +800,7 @@ See <a href="https://www.python.org/dev/peps/pep-0249/#cursor-objects">PEP249</a
 <h4><code><a title="pyracmon.connection.Statement" href="#pyracmon.connection.Statement">Statement</a></code></h4>
 <ul class="">
 <li><code><a title="pyracmon.connection.Statement.execute" href="#pyracmon.connection.Statement.execute">execute</a></code></li>
+<li><code><a title="pyracmon.connection.Statement.executemany" href="#pyracmon.connection.Statement.executemany">executemany</a></code></li>
 <li><code><a title="pyracmon.connection.Statement.prepare" href="#pyracmon.connection.Statement.prepare">prepare</a></code></li>
 </ul>
 </li>

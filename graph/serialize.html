@@ -26,74 +26,95 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from inspect import signature, Signature
-from itertools import chain
-from typing import *
+<pre><code class="python">from collections.abc import Iterator, Iterable
+from inspect import signature, Signature, getmembers, isfunction
+from typing import Any, Mapping, Optional, Union, Callable, Protocol, TypeVar, cast
+try:
+    from typing import ParamSpec, TypeAlias
+except:
+    from typing_extensions import ParamSpec, TypeAlias
 from .template import GraphTemplate
 from .graph import Node, NodeContainer, GraphView
-from .schema import Shrink, Extend, T, Typeable, GraphSchema, issubgeneric
-from .util import Serializer, chain_serializers
+from .typing import Shrink, Extend, Typeable, issubgeneric, to_rawdict
 
 
-class S:
+T = TypeVar(&#39;T&#39;)
+P = ParamSpec(&#39;P&#39;)
+
+
+# type aliases.
+Serializer: TypeAlias = Callable[[&#39;NodeContext&#39;], Any]
+
+
+class NodeSerializing(Protocol):
+    def doc(self, document: str, **options: Any) -&gt; &#39;NodeSerializer&#39;: ...
+    def name(self, name: str) -&gt; &#39;NodeSerializer&#39;: ...
+    def merge(self, namer: Optional[Callable[[str], str]] = None) -&gt; &#39;NodeSerializer&#39;: ...
+    def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;: ...
+    def head(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;: ...
+    def last(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;: ...
+    def fold(self, aggregator: Callable[[list[Node]], Any]) -&gt; &#39;NodeSerializer&#39;: ...
+    def select(self, aggregator: Callable[[list[Node]], list[Node]]) -&gt; &#39;NodeSerializer&#39;: ...
+    def each(self, func: Serializer) -&gt; &#39;NodeSerializer&#39;: ...
+    def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;: ...
+    def alter(
+        self,
+        generator: Optional[Serializer] = None,
+        excludes: Optional[Iterable[str]] = None,
+        includes: Optional[Iterable[str]] = None,
+    ) -&gt; &#39;NodeSerializer&#39;: ...
+
+
+class NodeSerializer(NodeSerializing):
     &#34;&#34;&#34;
-    An utility class to build `NodeSerializer`.
-    &#34;&#34;&#34;
-    @classmethod
-    def of(
-        cls,
-        namer: Optional[Union[str, Callable[[str], str]]] = None,
-        aggregator: Optional[Union[Callable[[Node], Node], Callable[[Node], List[Node]], int]] = None,
-        *serializers: Serializer,
-    ) -&gt; &#39;NodeSerializer&#39;:
-        &#34;&#34;&#34;
-        Create an instance of `NodeSerializer`.
+    This class provides ways to configure serialization result for a node container.
 
-        Args:
-            namer: A string or naming function.
-            aggregator: An aggregation function or an index of node to select in node container.
-            serializer: A list of *serializer* s.
-        Returns:
-            Created `NodeSerializer` .
-        &#34;&#34;&#34;
-        return NodeSerializer(namer, aggregator, *serializers)
+    Graph is serialized into `dict` from root node containers to their descendants.
+    `NodeSerializer` should be set to each container (= template property) to control how to serialize nodes in it.
 
-    @classmethod
-    def builder(cls, builder: Callable[[Any], Any]):
-        &#34;&#34;&#34;
-        This method is used as decorator to put decorating target to `S` builder methods.
+    At first, nodes to be serialized are selected by a node container using *aggregator*
+    which is a function or sequence of functions extracting a node or nodes from a node container.
+    `fold` and `select` are the general methods to set *aggregator* to `NodeSerializer` .
 
-        &gt;&gt;&gt; @S.builder
-        &gt;&gt;&gt; def some_func():
-        &gt;&gt;&gt;     ...
-        &gt;&gt;&gt; S.some_func()
+    ```python
+    &gt;&gt;&gt; # NodeSerializer to select first node in the container.
+    &gt;&gt;&gt; S.fold(lambda ns: ns[0])
+    &gt;&gt;&gt; # NodeSerializer to select every other node.
+    &gt;&gt;&gt; S.fold(lambda ns: ns[0::2])
+    ```
 
-        Args:
-            builder: Decorating target.
-        Returns:
-            Decorated builder.
-        &#34;&#34;&#34;
-        def f(*args, **kwargs):
-            return builder(S.of(), *args, **kwargs)
-        setattr(S, builder.__name__, f)
-        return builder
+    Each selected node is serialized in the way determined by the type of corresponding template property.
+    Serialization function (= *serializer* ) is obtained usually from `pyracmon.graph.spec.GraphSpec`
+    where *serializer* are stored with being related with applicable types respectively.
+    Additionally, *serializer*s can be set to `NodeSerializer` directly by `each` or some other methods.
+    For each node, all valid *serializer*s are collected and merged into a function which finally is applied to its entity.
 
+    ```python
+    &gt;&gt;&gt; spec = GraphSpec()
+    &gt;&gt;&gt; # Register a serializer for int type which converts an int into a dict.
+    &gt;&gt;&gt; spec.add_serializer(int, lambda v: dict(v=v))
+    &gt;&gt;&gt; # Set serializer which multiplies values in dict.
+    &gt;&gt;&gt; ns = S.each(lambda cxt: {k:v*2 for k,v in cxt.serialize()})
+    &gt;&gt;&gt; # Do serialization
+    &gt;&gt;&gt; graph.append(a=1).append(a=2)
+    &gt;&gt;&gt; spec.to_dict(
+    &gt;&gt;&gt;     graph.view,
+    &gt;&gt;&gt;     a = ns,
+    &gt;&gt;&gt; )
+    {&#34;a&#34;: [{&#34;v&#34;: 2}, {&#34;v&#34;: 4}]}
+    ```
 
-class NodeSerializer:
-    &#34;&#34;&#34;
-    The instance of this class contains the configurations to conert a `NodeContainer` into values in serialization result.
+    Only when a node is serialized into `dict` ,
+    its child nodes are serialized succeedingly and the result is put into the `dict` with the same keys as their property names.
+    The key can be changed by set *namer* to the `NodeSerializer` by `name` .
 
-    The conversion is composed of 3 phases.
+    Here, `merge` is a special configuration of `NodeSerializer` ,
+    which can be used for the case that a child node is also serialized into `dict` and it is wanted to be merged into parent `dict` .
+    It can take a callable which converts key in original child `dict` into another key used in parent `dict` .
 
-    1. If `aggregator` is set, aggregate the list of nodes into a node or shrinked list of nodes.
-    2. Convert the entity of each node into a serializable value by *serializer* .
-    3. Put the converted value(s) into the dictionary converted from the parent node with a key determined by `namer`.
+    Whether the child should be put or merge into parent `dict` is determined whether *namer* is `str` (or `None`) or `Callable` .
 
-    These phases are applied from the roots of graph to their descendants as long as the entity is converted to `dict`.
-    Children of the entity which is not converted to `dict` are simply ignored.
-
-    When `namer` is a callable, the result updates parent dictionary with its items instead of just being put to it.
-
+    ```python
     &gt;&gt;&gt; graph.append(a=dict(a1=1, a2=2), b=dict(b1=3, b2=4))
     &gt;&gt;&gt; GraphSpec().to_dict(
     &gt;&gt;&gt;     graph.view,
@@ -101,60 +122,61 @@ class NodeSerializer:
     &gt;&gt;&gt;     b = S.merge(lambda n: f&#34;__{n}__&#34;),
     &gt;&gt;&gt; )
     {&#34;a&#34;: [{&#34;a1&#34;:1, &#34;a2&#34;:2, &#34;__b1__&#34;:3, &#34;__b2__&#34;:4}]}
-
-    In this case, the property name `b` is ignored and `head` aggregation is implicitly applied to the property if no aggregator is set.
-    As shown in the example, the converted value on `b` must be a `dict` in order to being expanded to key-value pairs.
-    Exception raises when the value of another type is obtained.
+    ```
 
     Args:
-        namer: Key in the dictionary or naming funciton.
-        aggregator: Function to select node(s) from the node container.
+        namer: A string or a function determining the key in parent `dict` .
+        aggregator: A function to select node(s) from the node container.
         serializers: List of *serializer* s.
     &#34;&#34;&#34;
     def __init__(
         self,
         namer: Optional[Union[str, Callable[[str], str]]] = None,
-        aggregator: Optional[Union[Callable[[Node], Node], Callable[[Node], List[Node]], int]] = None,
+        aggregator: Optional[Union[Callable[[list[Node]], Node], Callable[[list[Node]], list[Node]]]] = None,
         *serializers: Serializer,
     ):
         self._namer = namer
         self._aggregator = aggregator
         self._serializers = list(serializers)
+        self._be_merged = False
         self._doc = &#34;&#34;
         self._doc_options = {}
 
     @property
     def namer(self) -&gt; Callable[[str], str]:
         &#34;&#34;&#34;
-        Returns naming function which determines the key of the property even when `namer` is set to a string.
+        Returns *namer* in the form of function even when not to merge.
         &#34;&#34;&#34;
-        if not self._namer:
-            return lambda n: n
-        elif isinstance(self._namer, str):
-            return lambda n: self._namer
-        else:
-            return lambda n: self._namer(n)
+        def f(v: str) -&gt; str:
+            if self._namer is None:
+                return v
+            elif isinstance(self._namer, str):
+                return self._namer
+            else:
+                return self._namer(v)
+        return f
 
     @property
-    def aggregator(self) -&gt; Callable[[List[Node]], Union[List[Node], Node, Any]]:
+    def aggregator(self) -&gt; Callable[[list[Node]], Union[list[Node], Node, Any]]:
         &#34;&#34;&#34;
-        Returns aggregation function which selects node(s) from nodes in the container.
+        Returns *aggregator* supplied with correct return annotation.
         &#34;&#34;&#34;
         if self._aggregator is None:
-            def agg(values: List[T]) -&gt; List[T]:
+            def agg1(values: list[T]) -&gt; list[T]:
                 return values
-            return agg
+            return agg1
         elif signature(self._aggregator).return_annotation == Signature.empty:
-            def agg(values: List[T]) -&gt; List[T]:
-                return self._aggregator(values)
-            return agg
+            # TODO: No return annotation implies list to list aggregation.
+            def agg2(values: list[T]) -&gt; list[T]:
+                return self._aggregator(values) # type: ignore
+            return agg2
         else:
             return self._aggregator
 
     @property
     def serializer(self) -&gt; Serializer:
         &#34;&#34;&#34;
-        Returns serialization function which converts an entity into a serializable value.
+        Returns merged *serializer* which has correctly annotated signature.
         &#34;&#34;&#34;
         return chain_serializers(self._serializers)
 
@@ -163,7 +185,7 @@ class NodeSerializer:
         &#34;&#34;&#34;
         Returns whether the converted value will be merged into parent.
         &#34;&#34;&#34;
-        return callable(self._namer)
+        return self._be_merged
 
     @property
     def be_singular(self) -&gt; bool:
@@ -171,7 +193,7 @@ class NodeSerializer:
         Returns whether the converted value will be a singular object, not a list.
 
         This is estimated by annotation of aggregation function. If its returning type is not annotated, this property always returns `False` .
-        `S` builder methods adds appropriate annotation to given function when it does not have the annotation.
+        Builder methods adds appropriate annotation to given function when it does not have the annotation.
         &#34;&#34;&#34;
         rt = signature(self.aggregator).return_annotation
         return not issubgeneric(rt, list)
@@ -183,7 +205,7 @@ class NodeSerializer:
             rt = Signature.empty
 
         if rt == Signature.empty:
-            def agg(vs: List[T]) -&gt; (T if folds else List[T]):
+            def agg(vs: list[T]) -&gt; (T if folds else list[T]):
                 return aggregator(vs)
             self._aggregator = agg
         elif issubgeneric(rt, list) ^ (not folds):
@@ -196,10 +218,11 @@ class NodeSerializer:
     #----------------------------------------------------------------
     # Documentation
     #----------------------------------------------------------------
-    @S.builder
     def doc(self, document: str, **options: Any) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
         Set the documentation for this node.
+
+        `document` is used in graph schema as a parameter of `Annotated` .
 
         Args:
             document: A documentation string.
@@ -214,7 +237,6 @@ class NodeSerializer:
     #----------------------------------------------------------------
     # Naming
     #----------------------------------------------------------------
-    @S.builder
     def name(self, name: str) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
         Set a key in parent dictionary.
@@ -227,26 +249,25 @@ class NodeSerializer:
         if not isinstance(name, str):
             raise ValueError(f&#34;The name of node must be a string but {type(name)} is given.&#34;)
         self._namer = name
+        self._be_merged = False
         return self
 
-    @S.builder
     def merge(self, namer: Optional[Callable[[str], str]] = None) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set a naming function taking a property name and returning a key in parent `dict`.
-
-        `NodeSerializer` built with this methods merges the converted `dict` into parent `dict` and its `be_merged` property becomes `True`.
+        Set a naming function for merging into parent.
 
         Because merging needs folding, this method overrides the aggregation function by invoking `head()` internally
-        if this *serializer* is not configured to fold nodes into a single node.
+        if this instance is not configured to fold nodes into a single node.
 
         Args:
-            namer: The naming function. If `None`, the property name is returned as it is.
+            namer: The naming function. If `None`, the property is used as it is.
         Returns:
             This instance.
         &#34;&#34;&#34;
         if namer and not callable(namer):
             raise ValueError(f&#34;The method merging a node into its parent node must be callable or None.&#34;)
         self._namer = namer or (lambda x:x)
+        self._be_merged = True
         if not self.be_singular:
             self.head()
         return self
@@ -254,10 +275,9 @@ class NodeSerializer:
     #----------------------------------------------------------------
     # Aggregation
     #----------------------------------------------------------------
-    @S.builder
     def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set an aggregator which picks up the node at the index.
+        Set an *aggregator* which picks up the node at the index.
 
         Args:
             index: An index of the element.
@@ -265,12 +285,14 @@ class NodeSerializer:
         Returns:
             This instance.
         &#34;&#34;&#34;
-        return self.fold(lambda vs: vs[index] if len(vs) &gt; index else alt)
+        def agg(vs: list[T]) -&gt; (Optional[T] if alt is None else T):
+            return vs[index] if len(vs) &gt; index else alt
+        #return self.fold(lambda vs: vs[index] if len(vs) &gt; index else alt)
+        return self.fold(agg)
 
-    @S.builder
     def head(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set an aggregator which picks up the first node.
+        Set an *aggregator* which picks up the first node.
 
         Args:
             alt: A value used when there exists no nodes.
@@ -279,20 +301,21 @@ class NodeSerializer:
         &#34;&#34;&#34;
         return self.at(0, alt)
 
-    @S.builder
     def last(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set an aggregator which picks up the last node.
+        Set an *aggregator* which picks up the last node.
 
         Args:
             alt: A value used when there exists no nodes.
         Returns:
             This instance.
         &#34;&#34;&#34;
-        return self.fold(lambda vs: vs[-1] if len(vs) &gt; 0 else alt)
+        def agg(vs: list[T]) -&gt; (Optional[T] if alt is None else T):
+            return vs[-1] if len(vs) &gt; 0 else alt
+        #return self.fold(lambda vs: vs[-1] if len(vs) &gt; 0 else alt)
+        return self.fold(agg)
 
-    @S.builder
-    def fold(self, aggregator: Callable[[List[Node]], Any]) -&gt; &#39;NodeSerializer&#39;:
+    def fold(self, aggregator: Callable[[list[Node]], Any]) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
         Set an aggregation function converting a list of nodes into a single node or any value.
 
@@ -303,10 +326,9 @@ class NodeSerializer:
         &#34;&#34;&#34;
         return self._set_aggregator(aggregator, True)
 
-    @S.builder
-    def select(self, aggregator: Callable[[List[Node]], List[Node]]) -&gt; &#39;NodeSerializer&#39;:
+    def select(self, aggregator: Callable[[list[Node]], list[Node]]) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set an aggregation function chooding a list of nodes from all nodes in `NodeContainer` .
+        Set an aggregation function selecting a list of nodes from all nodes from the container.
 
         Args:
             aggregator: An aggregation function.
@@ -318,44 +340,36 @@ class NodeSerializer:
     #----------------------------------------------------------------
     # Serizlization
     #----------------------------------------------------------------
-    @S.builder
     def each(self, func: Serializer) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set a function converting a node entity into a serializable value.
+        Set a *serializer* .
 
-        In order to progress serialization to child nodes, the function MUST returns a `dict` .
+        *serializer* is a function which will be invoked with a single argument of `NodeContext` ,
+        from which internal code of *serializer* can get information of the node.
 
-        The function (i.e. *serializer* ) will be invoked with 0 to 4 arguments listed below.
-
-        - `SerializationContext` of the serialization.
-        - `Node` to serialize.
-        - A function which takes the entity value and returns converted value by applying all serialization functions added beforehand.
-        - An entity value to convert.
-
-        When the number of arguments in signature of the function is less than 4, former arguments are omitted.
-        For example, `def func(c, n, b, v):` is invoked with all arguments, while `def func(b, v):` is invoked with only 3rd and 4th arguments.
+        For the sake of static typing, the *serializer* should have correct returns annotation.
 
         Args:
-            func: A function converting a node entity into a serializable value.
+            func: A function converting a node entity into a value.
         Returns:
             This instance.
         &#34;&#34;&#34;
         self._serializers.append(func)
         return self
 
-    @S.builder
     def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
         Set serialization settings for sub graph.
 
-        This method is used for the property whose kind is `GraphTemplate`.
-        The form of `settings` is same as keyword arguments of `GraphSpec.to_dict`.
+        This method is used for the property whose kind is `GraphTemplate` .
+        The form of `settings` is same as keyword arguments used to serialize the graph.
 
         Args:
             settings: Serialization settings used to serialize sub graph.
         Returns:
             This instance.
         &#34;&#34;&#34;
+        from pyracmon.graph.schema import GraphSchema
         class SubGraph(Typeable[T]):
             serializers = settings.copy()
 
@@ -363,25 +377,30 @@ class NodeSerializer:
             def resolve(sub_graph, bound, arg, spec):
                 return GraphSchema(spec, arg.template, **sub_graph.serializers).schema
 
-        def to_dict(cxt) -&gt; SubGraph[T]:
+        def to_dict(cxt: NodeContext) -&gt; SubGraph[T]:
             vv = cxt.serialize()
-            return SerializationContext(settings, cxt.context.finder if cxt.context else lambda t: []).execute(vv.view)
+            return SerializationContext(
+                settings,
+                cxt.context.finder if cxt.context else lambda t: [],
+            ).execute(vv.view) # type: ignore
 
         self._serializers.append(to_dict)
         return self.head()
 
-    @S.builder
     def alter(
         self,
         generator: Optional[Serializer] = None,
-        excludes: Optional[List[str]] = None,
-        includes: Optional[List[str]] = None,
+        excludes: Optional[Iterable[str]] = None,
+        includes: Optional[Iterable[str]] = None,
     ) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Extends and shrinks the dictionary.
+        Extends and shrinks the dictionary obtained as a result of *serializer*s applied beforehand.
 
         `generator` is a kind of *serializer* returning `dict` which will be merged into serialization result.
-        `excludes` and `includes` are used to select keys in the result.
+        This can be used to add extra key value pairs into the result.
+        For the sake of static typing, `generator` should have correct return annotation of `TypedDict` .
+
+        `excludes` and `includes` are used to select keys from the result.
 
         Args:
             generator: A function generating dictionary to be merged.
@@ -405,8 +424,8 @@ class NodeSerializer:
         def convert(cxt) -&gt; EachShrink[EachExtend[T]]:
             ext = generator(cxt) if generator else {}
             vv = cxt.serialize()
-            vv.update(**ext)
-            return {k:v for k, v in vv.items() if (not includes or k in includes) and k not in excludes}
+            vv.update(**to_rawdict(ext, True))
+            return {k:v for k, v in vv.items() if (not includes or k in includes) and k not in excludes} # type: ignore
 
         self._serializers.append(convert)
         return self
@@ -414,18 +433,38 @@ class NodeSerializer:
 
 class NodeParams:
     def __init__(self, params) -&gt; None:
-        self.params = params
+        self._params: dict[str, Any] = params
 
     def __getattr__(self, key) -&gt; Optional[Any]:
-        return self.params.get(key, None)
+        &#34;&#34;&#34;
+        Returns a value by key from values passed from invoking scope being bound for the node.
+        &#34;&#34;&#34;
+        return self._params.get(key, None)
 
 
 class NodeContext:
+    &#34;&#34;&#34;
+    A class containing informations for serialization of a single node.
+
+    The instance of this class is passed to the serialization function.
+    Properties listed below are available to control serialization.
+
+    - context: `SerializationContext` for the serialization of the graph.
+    - node: `Node` to serialize.
+    - value: Entity value of the `Node` .
+    - params: Arbitrary values which is passed from invoking scope with being bound to the key of node name.
+
+    Every serializer has to call `serialize()` to get the result of preceeding serializers,
+    or make a result direcly from the node.
+    &#34;&#34;&#34;
     def __init__(self, context: &#39;SerializationContext&#39;, params: NodeParams) -&gt; None:
-        self._context = context
-        self._node = None
-        self._iterator = None
+        #: `SerializationContext` for the serializaion of the graph.`
+        self.context = context
+        #: Arbitrary values passed by outside for the node.
         self.params = params
+        # Set on demand.
+        self._node: Optional[Node] = None
+        self._iterator: Optional[Iterator[Any]] = None
 
     def __enter__(self):
         return self
@@ -435,71 +474,86 @@ class NodeContext:
         self._iterator = None
 
     @property
-    def context(self) -&gt; Optional[&#39;SerializationContext&#39;]:
-        return self._context
-
-    @property
     def node(self) -&gt; Node:
-        return self._node
+        # Node must be set when passed to serialization function.
+        return cast(Node, self._node)
 
     @property
     def value(self) -&gt; Any:
-        return self._node.entity
+        return cast(Node, self._node).entity
 
     def serialize(self) -&gt; Any:
+        &#34;&#34;&#34;
+        Obtain a value serialized by preceeding serializers.
+        &#34;&#34;&#34;
         try:
-            return next(self._iterator)(self)
+            return next(cast(Iterator[Any], self._iterator))(self)
         except StopIteration:
             return self.node.entity
 
 
 class NodeContextFactory:
-    def __init__(self, context: &#39;SerializationContext&#39;, serializers, params: Dict[str, Any]) -&gt; None:
+    &#34;&#34;&#34;
+    This class generates a `NodeContext` for nodes bound to a template property.
+
+    Args:
+        context: `SerializationContext` for the serialization of a graph.
+        serializers: Globally registered serializers for the type of node entity.
+        params: Parameters given at the serialization by caller.
+    &#34;&#34;&#34;
+    def __init__(
+        self,
+        context: &#39;SerializationContext&#39;,
+        serializers: list[Serializer],
+        params: dict[str, Any],
+    ) -&gt; None:
         self.serializers = serializers
+        # Generate and keep an instance of NodeContext to save memory for big graph.
         self.node_context = NodeContext(context, NodeParams(params))
 
-    @property
-    def base_serializers(self):
-        return self.serializers
-
-    def begin(self, node, serializers):
+    def begin(self, node, serializers) -&gt; NodeContext:
         self.node_context._node = node
-        self.node_context._iterator = iter((self.base_serializers + serializers)[::-1])
+        self.node_context._iterator = iter((self.serializers + serializers)[::-1])
         return self.node_context
 
 
 class SerializationContext:
     &#34;&#34;&#34;
-    This class implements actual serialization flow using `NodeContainer` s.
+    This class implements actual serialization flow applied to a graph.
 
-    `node_params` enables *serializer* to get values dynamically determined
-    because they are obtained by this context which can be obtained at the first argument of *serializer* function.
+    `node_params` is a `dict` whose values will be passed to *serializer* via `params` attribute of `NodeContext` .
+    The property name of the node is used to get values (also a `dict` ) from the `dict`
+    and the `params` exposes them as its attributes of the same names as their keys.
 
-    Following code shows the example using the parameters in *serializer* .
+    Arbitrary values can be passed in `node_params` which is a `dict` 
 
-    &gt;&gt;&gt; cxt = SerializationContext(
-    &gt;&gt;&gt;     dict(
-    &gt;&gt;&gt;         a = S.each(lambda c,n,b,v: v*c[&#34;a&#34;].value),
-    &gt;&gt;&gt;     ),
-    &gt;&gt;&gt;     finder,
-    &gt;&gt;&gt;     dict(a={&#34;value&#34;: 10})
-    &gt;&gt;&gt; )
+    Following code shows the example passing a parameter to a *serializer* .
+
+    ```python
+    cxt = SerializationContext(
+        dict(
+            a = S.each(lambda cxt: cxt.value*c.params.value),
+        ),
+        finder,
+        dict(a={&#34;value&#34;: 10})
+    )
+    ```
 
     Args:
         settings: Mapping of node name to `NodeSerializer` .
         finder: A function to find base *serializer* s by a `type` .
-        node_params: Parameters bound to node name. This context works as this `dict` on index access.
+        node_params: Arbitrary parameters passed to *serializer*s.
     &#34;&#34;&#34;
     def __init__(
         self,
-        settings: Dict[str, NodeSerializer],
-        finder: Callable[[type], List[Serializer]],
-        node_params: Optional[Dict[str, Dict[str, Any]]] = None,
+        settings: dict[str, NodeSerializer],
+        finder: Callable[[type], list[Serializer]],
+        node_params: Optional[dict[str, dict[str, Any]]] = None,
     ):
-        self.serializer_map = {n:self._to_serializer(s) for n, s in settings.items()}
-        self.finder = finder
-        self.node_params = node_params or {}
-        self.context_factories = {}
+        self.settings: dict[str, NodeSerializer] = settings
+        self.finder: Callable[[type], list[Serializer]] = finder
+        self._node_params: dict[str, dict[str, Any]] = node_params or {}
+        self._context_factories: dict[str, NodeContextFactory] = {}
 
     def __getitem__(self, node: Union[Node, str]) -&gt; Any:
         &#34;&#34;&#34;
@@ -511,7 +565,7 @@ class SerializationContext:
             An object exposing parameters for the node as attributes.
         &#34;&#34;&#34;
         name = node.name if isinstance(node, Node) else node
-        params = self.node_params.get(name, {})
+        params = self._node_params.get(name, {})
 
         class Accessor:
             def __getattr__(self, key):
@@ -519,13 +573,7 @@ class SerializationContext:
 
         return Accessor()
 
-    def _to_serializer(self, s):
-        if isinstance(s, NodeSerializer):
-            return s
-        else:
-            return S.of(*s)
-
-    def execute(self, graph: GraphView) -&gt; Dict[str, Any]:
+    def execute(self, graph: GraphView) -&gt; dict[str, Any]:
         &#34;&#34;&#34;
         Serializes a graph.
 
@@ -535,13 +583,11 @@ class SerializationContext:
             Serialization result.
         &#34;&#34;&#34;
         result = {}
-
-        for n, c in filter(lambda nc: nc[1]().prop.parent is None, graph):
-            self.serialize_to(c().name, c, result)
-
+        for c in graph().roots:
+            self.serialize_to(c.name, c, result)
         return result
 
-    def serialize_to(self, name: str, container: Union[NodeContainer, Node.Children], parent: Dict[str, Any]):
+    def serialize_to(self, name: str, container: Union[NodeContainer, Node.Children], parent: dict[str, Any]) -&gt; None:
         &#34;&#34;&#34;
         Serialize nodes and appends them into the dictionary.
 
@@ -550,46 +596,144 @@ class SerializationContext:
             container: Container of nodes. 
             parent: A parent dictionary to which serialized values will be appended.
         &#34;&#34;&#34;
-        ns = self.serializer_map.get(name, None)
+        ns = self.settings.get(name, None)
 
-        if ns:
-            agg = ns.aggregator(container().nodes)
+        if not ns:
+            # Nodes whose names are not supplied to settings are not serialized.
+            return
 
-            if ns.be_singular:
-                # Alternative value given to aggregation function may be returned instead of node.
-                value = self._serialize_node(agg, ns) if isinstance(agg, Node) else agg
+        # First, aggregate nodes into its subset or a single node.
+        nodes: Union[list[Node], Node, Any] = ns.aggregator(container.nodes)
 
-                if ns.be_merged:
-                    if not isinstance(value, dict):
-                        raise ValueError(f&#34;Serialized value must be dict but {type(value)}.&#34;)
+        if ns.be_singular:
+            if isinstance(nodes, list):
+                raise ValueError(f&#34;Aggregation function is marked to create a single value but returns node list.&#34;)
 
-                    parent.update({ns.namer(k):v for k, v in value.items()})
-                else:
-                    parent[ns.namer(name)] = value
+            # Alternative value given to aggregation function may be returned instead of node.
+            value = self._serialize_node(nodes, ns) if isinstance(nodes, Node) else nodes
+
+            if ns.be_merged:
+                if value is None:
+                    # When empty, no key-value pair is added to parent.
+                    return
+                elif not isinstance(value, dict):
+                    raise ValueError(f&#34;Serialized value must be dict but {type(value)}.&#34;)
+
+                parent.update({ns.namer(k):v for k, v in value.items()})
             else:
-                if ns.be_merged:
-                    raise ValueError(f&#34;Merging to parent dict requires folding.&#34;)
+                parent[ns.namer(name)] = value
+        else:
+            if not isinstance(nodes, list):
+                raise ValueError(f&#34;Aggregation function is marked to return node list but returns a single value.&#34;)
+            if ns.be_merged:
+                raise ValueError(f&#34;Merging to parent dict requires folding.&#34;)
 
-                parent[ns.namer(name)] = [self._serialize_node(n, ns) for n in agg]
+            parent[ns.namer(name)] = [self._serialize_node(n, ns) for n in nodes]
 
-    def _serialize_node(self, node, node_serializer):
-        if not node.prop.name in self.context_factories:
-            self.context_factories[node.prop.name] = NodeContextFactory(
+    def _find_serializer(self, prop: GraphTemplate.Property) -&gt; list[Serializer]:
+        return self.finder(prop.kind) if isinstance(prop.kind, type) else []
+
+    def _serialize_node(self, node: Node, node_serializer: NodeSerializer):
+        if not node.prop.name in self._context_factories:
+            self._context_factories[node.prop.name] = NodeContextFactory(
                 self,
-                self.finder(node.prop.kind),
-                self.node_params.get(node.prop.name, {}),
+                self._find_serializer(node.prop),
+                self._node_params.get(node.prop.name, {}),
             )
 
-        factory = self.context_factories[node.prop.name]
+        factory = self._context_factories[node.prop.name]
 
         with factory.begin(node, node_serializer._serializers) as cxt:
             value = cxt.serialize()
 
+            # Child nodes are serialized only when the parent node is serialized into a dict.
             if isinstance(value, dict):
                 for n, ch in node.children.items():
-                    self.serialize_to(n, ch.view, value)
+                    self.serialize_to(n, ch, value)
 
-            return value</code></pre>
+            return value
+
+
+class SerializerMeta(NodeSerializing, type): # type: ignore
+    @classmethod
+    def __prepare__(cls, __name: str, __bases: tuple[type, ...], **kwds: Any) -&gt; Mapping[str, object]:
+        def wrap(n, f):
+            def g(*args, **kwargs):
+                ns = NodeSerializer()
+                nf = getattr(ns, n)
+                return nf(*args, **kwargs)
+            return g
+        return {n: wrap(n, f) for n, f in getmembers(NodeSerializing, isfunction) if not n.startswith(&#34;__&#34;)}
+
+
+class S(metaclass=SerializerMeta):
+    &#34;&#34;&#34;
+    An utility class to build `NodeSerializer` .
+
+    This class provides factory class methods to create `NodeSerializer`
+    each of which works in the same way as the method of the same name declared on `NodeSerializer` .
+
+    Use them to supply `NodeSerializer`s to functions to serialize a graph or to create a graph schema
+    such as `graph_dict` or `graph_schema` .
+
+    ```python
+    graph_dict(
+        graph,
+        a = S.of(),
+        b = S.head(),
+    )
+    ```
+    &#34;&#34;&#34;
+    @classmethod
+    def of(
+        cls,
+        namer: Optional[Union[str, Callable[[str], str]]] = None,
+        aggregator: Optional[Union[Callable[[list[Node]], Node], Callable[[list[Node]], list[Node]]]] = None,
+        *serializers: Serializer,
+    ) -&gt; &#39;NodeSerializer&#39;:
+        &#34;&#34;&#34;
+        Create an instance of `NodeSerializer`.
+
+        Args:
+            namer: A string or naming function.
+            aggregator: An aggregation function or an index of node to select in node container.
+            serializer: A list of *serializer* s.
+        Returns:
+            Created `NodeSerializer` .
+        &#34;&#34;&#34;
+        return NodeSerializer(namer, aggregator, *serializers)
+
+
+def chain_serializers(serializers: list[Serializer]) -&gt; Serializer:
+    &#34;&#34;&#34;
+    Creates a serializer which chains given serializers.
+
+    Args:
+        serializers: A list of serializers.
+    Returns:
+        Chained serializer.
+    &#34;&#34;&#34;
+    def merge(fs) -&gt; type:
+        rt = Signature.empty
+        for f in fs[::-1]:
+            t = signature(f).return_annotation
+            if t != Signature.empty:
+                try:
+                    t[T]
+                    rt = t if rt == Signature.empty else rt[t] # type: ignore
+                except TypeError:
+                    try:
+                        return rt[t] # type: ignore
+                    except TypeError:
+                        return t
+        return rt
+
+    rt = merge(serializers)
+    def composed(cxt) -&gt; rt: # type: ignore
+        cxt._iterator = iter(serializers[::-1] + list(cxt._iterator))
+        return cxt.serialize()
+
+    return composed</code></pre>
 </details>
 </section>
 <section>
@@ -597,6 +741,57 @@ class SerializationContext:
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pyracmon.graph.serialize.chain_serializers"><code class="name flex">
+<span>def <span class="ident">chain_serializers</span></span>(<span>serializers: list[typing.Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], typing.Any]]) ‑> Callable[[<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>], Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a serializer which chains given serializers.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>serializers</code></strong></dt>
+<dd>A list of serializers.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Chained serializer.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def chain_serializers(serializers: list[Serializer]) -&gt; Serializer:
+    &#34;&#34;&#34;
+    Creates a serializer which chains given serializers.
+
+    Args:
+        serializers: A list of serializers.
+    Returns:
+        Chained serializer.
+    &#34;&#34;&#34;
+    def merge(fs) -&gt; type:
+        rt = Signature.empty
+        for f in fs[::-1]:
+            t = signature(f).return_annotation
+            if t != Signature.empty:
+                try:
+                    t[T]
+                    rt = t if rt == Signature.empty else rt[t] # type: ignore
+                except TypeError:
+                    try:
+                        return rt[t] # type: ignore
+                    except TypeError:
+                        return t
+        return rt
+
+    rt = merge(serializers)
+    def composed(cxt) -&gt; rt: # type: ignore
+        cxt._iterator = iter(serializers[::-1] + list(cxt._iterator))
+        return cxt.serialize()
+
+    return composed</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -606,17 +801,44 @@ class SerializationContext:
 <span>(</span><span>context: <a title="pyracmon.graph.serialize.SerializationContext" href="#pyracmon.graph.serialize.SerializationContext">SerializationContext</a>, params: <a title="pyracmon.graph.serialize.NodeParams" href="#pyracmon.graph.serialize.NodeParams">NodeParams</a>)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>A class containing informations for serialization of a single node.</p>
+<p>The instance of this class is passed to the serialization function.
+Properties listed below are available to control serialization.</p>
+<ul>
+<li>context: <code><a title="pyracmon.graph.serialize.SerializationContext" href="#pyracmon.graph.serialize.SerializationContext">SerializationContext</a></code> for the serialization of the graph.</li>
+<li>node: <code>Node</code> to serialize.</li>
+<li>value: Entity value of the <code>Node</code> .</li>
+<li>params: Arbitrary values which is passed from invoking scope with being bound to the key of node name.</li>
+</ul>
+<p>Every serializer has to call <code>serialize()</code> to get the result of preceeding serializers,
+or make a result direcly from the node.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class NodeContext:
+    &#34;&#34;&#34;
+    A class containing informations for serialization of a single node.
+
+    The instance of this class is passed to the serialization function.
+    Properties listed below are available to control serialization.
+
+    - context: `SerializationContext` for the serialization of the graph.
+    - node: `Node` to serialize.
+    - value: Entity value of the `Node` .
+    - params: Arbitrary values which is passed from invoking scope with being bound to the key of node name.
+
+    Every serializer has to call `serialize()` to get the result of preceeding serializers,
+    or make a result direcly from the node.
+    &#34;&#34;&#34;
     def __init__(self, context: &#39;SerializationContext&#39;, params: NodeParams) -&gt; None:
-        self._context = context
-        self._node = None
-        self._iterator = None
+        #: `SerializationContext` for the serializaion of the graph.`
+        self.context = context
+        #: Arbitrary values passed by outside for the node.
         self.params = params
+        # Set on demand.
+        self._node: Optional[Node] = None
+        self._iterator: Optional[Iterator[Any]] = None
 
     def __enter__(self):
         return self
@@ -626,36 +848,28 @@ class SerializationContext:
         self._iterator = None
 
     @property
-    def context(self) -&gt; Optional[&#39;SerializationContext&#39;]:
-        return self._context
-
-    @property
     def node(self) -&gt; Node:
-        return self._node
+        # Node must be set when passed to serialization function.
+        return cast(Node, self._node)
 
     @property
     def value(self) -&gt; Any:
-        return self._node.entity
+        return cast(Node, self._node).entity
 
     def serialize(self) -&gt; Any:
+        &#34;&#34;&#34;
+        Obtain a value serialized by preceeding serializers.
+        &#34;&#34;&#34;
         try:
-            return next(self._iterator)(self)
+            return next(cast(Iterator[Any], self._iterator))(self)
         except StopIteration:
             return self.node.entity</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
-<dt id="pyracmon.graph.serialize.NodeContext.context"><code class="name">var <span class="ident">context</span> : Optional[<a title="pyracmon.graph.serialize.SerializationContext" href="#pyracmon.graph.serialize.SerializationContext">SerializationContext</a>]</code></dt>
+<dt id="pyracmon.graph.serialize.NodeContext.context"><code class="name">var <span class="ident">context</span></code></dt>
 <dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def context(self) -&gt; Optional[&#39;SerializationContext&#39;]:
-    return self._context</code></pre>
-</details>
+<div class="desc"><p><code><a title="pyracmon.graph.serialize.SerializationContext" href="#pyracmon.graph.serialize.SerializationContext">SerializationContext</a></code> for the serializaion of the graph.`</p></div>
 </dd>
 <dt id="pyracmon.graph.serialize.NodeContext.node"><code class="name">var <span class="ident">node</span> : <a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a></code></dt>
 <dd>
@@ -666,8 +880,13 @@ def context(self) -&gt; Optional[&#39;SerializationContext&#39;]:
 </summary>
 <pre><code class="python">@property
 def node(self) -&gt; Node:
-    return self._node</code></pre>
+    # Node must be set when passed to serialization function.
+    return cast(Node, self._node)</code></pre>
 </details>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeContext.params"><code class="name">var <span class="ident">params</span></code></dt>
+<dd>
+<div class="desc"><p>Arbitrary values passed by outside for the node.</p></div>
 </dd>
 <dt id="pyracmon.graph.serialize.NodeContext.value"><code class="name">var <span class="ident">value</span> : Any</code></dt>
 <dd>
@@ -678,7 +897,7 @@ def node(self) -&gt; Node:
 </summary>
 <pre><code class="python">@property
 def value(self) -&gt; Any:
-    return self._node.entity</code></pre>
+    return cast(Node, self._node).entity</code></pre>
 </details>
 </dd>
 </dl>
@@ -688,14 +907,17 @@ def value(self) -&gt; Any:
 <span>def <span class="ident">serialize</span></span>(<span>self) ‑> Any</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Obtain a value serialized by preceeding serializers.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def serialize(self) -&gt; Any:
+    &#34;&#34;&#34;
+    Obtain a value serialized by preceeding serializers.
+    &#34;&#34;&#34;
     try:
-        return next(self._iterator)(self)
+        return next(cast(Iterator[Any], self._iterator))(self)
     except StopIteration:
         return self.node.entity</code></pre>
 </details>
@@ -704,47 +926,51 @@ def value(self) -&gt; Any:
 </dd>
 <dt id="pyracmon.graph.serialize.NodeContextFactory"><code class="flex name class">
 <span>class <span class="ident">NodeContextFactory</span></span>
-<span>(</span><span>context: <a title="pyracmon.graph.serialize.SerializationContext" href="#pyracmon.graph.serialize.SerializationContext">SerializationContext</a>, serializers, params: Dict[str, Any])</span>
+<span>(</span><span>context: <a title="pyracmon.graph.serialize.SerializationContext" href="#pyracmon.graph.serialize.SerializationContext">SerializationContext</a>, serializers: list[typing.Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], typing.Any]], params: dict[str, typing.Any])</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>This class generates a <code><a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a></code> for nodes bound to a template property.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>context</code></strong></dt>
+<dd><code><a title="pyracmon.graph.serialize.SerializationContext" href="#pyracmon.graph.serialize.SerializationContext">SerializationContext</a></code> for the serialization of a graph.</dd>
+<dt><strong><code>serializers</code></strong></dt>
+<dd>Globally registered serializers for the type of node entity.</dd>
+<dt><strong><code>params</code></strong></dt>
+<dd>Parameters given at the serialization by caller.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class NodeContextFactory:
-    def __init__(self, context: &#39;SerializationContext&#39;, serializers, params: Dict[str, Any]) -&gt; None:
+    &#34;&#34;&#34;
+    This class generates a `NodeContext` for nodes bound to a template property.
+
+    Args:
+        context: `SerializationContext` for the serialization of a graph.
+        serializers: Globally registered serializers for the type of node entity.
+        params: Parameters given at the serialization by caller.
+    &#34;&#34;&#34;
+    def __init__(
+        self,
+        context: &#39;SerializationContext&#39;,
+        serializers: list[Serializer],
+        params: dict[str, Any],
+    ) -&gt; None:
         self.serializers = serializers
+        # Generate and keep an instance of NodeContext to save memory for big graph.
         self.node_context = NodeContext(context, NodeParams(params))
 
-    @property
-    def base_serializers(self):
-        return self.serializers
-
-    def begin(self, node, serializers):
+    def begin(self, node, serializers) -&gt; NodeContext:
         self.node_context._node = node
-        self.node_context._iterator = iter((self.base_serializers + serializers)[::-1])
+        self.node_context._iterator = iter((self.serializers + serializers)[::-1])
         return self.node_context</code></pre>
 </details>
-<h3>Instance variables</h3>
-<dl>
-<dt id="pyracmon.graph.serialize.NodeContextFactory.base_serializers"><code class="name">var <span class="ident">base_serializers</span></code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def base_serializers(self):
-    return self.serializers</code></pre>
-</details>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="pyracmon.graph.serialize.NodeContextFactory.begin"><code class="name flex">
-<span>def <span class="ident">begin</span></span>(<span>self, node, serializers)</span>
+<span>def <span class="ident">begin</span></span>(<span>self, node, serializers) ‑> <a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -752,9 +978,9 @@ def base_serializers(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def begin(self, node, serializers):
+<pre><code class="python">def begin(self, node, serializers) -&gt; NodeContext:
     self.node_context._node = node
-    self.node_context._iterator = iter((self.base_serializers + serializers)[::-1])
+    self.node_context._iterator = iter((self.serializers + serializers)[::-1])
     return self.node_context</code></pre>
 </details>
 </dd>
@@ -772,28 +998,57 @@ def base_serializers(self):
 </summary>
 <pre><code class="python">class NodeParams:
     def __init__(self, params) -&gt; None:
-        self.params = params
+        self._params: dict[str, Any] = params
 
     def __getattr__(self, key) -&gt; Optional[Any]:
-        return self.params.get(key, None)</code></pre>
+        &#34;&#34;&#34;
+        Returns a value by key from values passed from invoking scope being bound for the node.
+        &#34;&#34;&#34;
+        return self._params.get(key, None)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.NodeSerializer"><code class="flex name class">
 <span>class <span class="ident">NodeSerializer</span></span>
-<span>(</span><span>namer: Union[str, Callable[[str], str], None] = None, aggregator: Union[Callable[[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>], <a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>], Callable[[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>], List[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], int, None] = None, *serializers: Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], Any])</span>
+<span>(</span><span>namer: Union[str, Callable[[str], str], ForwardRef(None)] = None, aggregator: Union[Callable[[list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], <a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>], Callable[[list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], ForwardRef(None)] = None, *serializers: Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], Any])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>The instance of this class contains the configurations to conert a <code>NodeContainer</code> into values in serialization result.</p>
-<p>The conversion is composed of 3 phases.</p>
-<ol>
-<li>If <code>aggregator</code> is set, aggregate the list of nodes into a node or shrinked list of nodes.</li>
-<li>Convert the entity of each node into a serializable value by <em>serializer</em> .</li>
-<li>Put the converted value(s) into the dictionary converted from the parent node with a key determined by <code>namer</code>.</li>
-</ol>
-<p>These phases are applied from the roots of graph to their descendants as long as the entity is converted to <code>dict</code>.
-Children of the entity which is not converted to <code>dict</code> are simply ignored.</p>
-<p>When <code>namer</code> is a callable, the result updates parent dictionary with its items instead of just being put to it.</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; graph.append(a=dict(a1=1, a2=2), b=dict(b1=3, b2=4))
+<div class="desc"><p>This class provides ways to configure serialization result for a node container.</p>
+<p>Graph is serialized into <code>dict</code> from root node containers to their descendants.
+<code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> should be set to each container (= template property) to control how to serialize nodes in it.</p>
+<p>At first, nodes to be serialized are selected by a node container using <em>aggregator</em>
+which is a function or sequence of functions extracting a node or nodes from a node container.
+<code>fold</code> and <code>select</code> are the general methods to set <em>aggregator</em> to <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> .</p>
+<pre><code class="language-python">&gt;&gt;&gt; # NodeSerializer to select first node in the container.
+&gt;&gt;&gt; S.fold(lambda ns: ns[0])
+&gt;&gt;&gt; # NodeSerializer to select every other node.
+&gt;&gt;&gt; S.fold(lambda ns: ns[0::2])
+</code></pre>
+<p>Each selected node is serialized in the way determined by the type of corresponding template property.
+Serialization function (= <em>serializer</em> ) is obtained usually from <code><a title="pyracmon.graph.spec.GraphSpec" href="spec.html#pyracmon.graph.spec.GraphSpec">GraphSpec</a></code>
+where <em>serializer</em> are stored with being related with applicable types respectively.
+Additionally, <em>serializer</em>s can be set to <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> directly by <code>each</code> or some other methods.
+For each node, all valid <em>serializer</em>s are collected and merged into a function which finally is applied to its entity.</p>
+<pre><code class="language-python">&gt;&gt;&gt; spec = GraphSpec()
+&gt;&gt;&gt; # Register a serializer for int type which converts an int into a dict.
+&gt;&gt;&gt; spec.add_serializer(int, lambda v: dict(v=v))
+&gt;&gt;&gt; # Set serializer which multiplies values in dict.
+&gt;&gt;&gt; ns = S.each(lambda cxt: {k:v*2 for k,v in cxt.serialize()})
+&gt;&gt;&gt; # Do serialization
+&gt;&gt;&gt; graph.append(a=1).append(a=2)
+&gt;&gt;&gt; spec.to_dict(
+&gt;&gt;&gt;     graph.view,
+&gt;&gt;&gt;     a = ns,
+&gt;&gt;&gt; )
+{&quot;a&quot;: [{&quot;v&quot;: 2}, {&quot;v&quot;: 4}]}
+</code></pre>
+<p>Only when a node is serialized into <code>dict</code> ,
+its child nodes are serialized succeedingly and the result is put into the <code>dict</code> with the same keys as their property names.
+The key can be changed by set <em>namer</em> to the <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> by <code>name</code> .</p>
+<p>Here, <code>merge</code> is a special configuration of <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> ,
+which can be used for the case that a child node is also serialized into <code>dict</code> and it is wanted to be merged into parent <code>dict</code> .
+It can take a callable which converts key in original child <code>dict</code> into another key used in parent <code>dict</code> .</p>
+<p>Whether the child should be put or merge into parent <code>dict</code> is determined whether <em>namer</em> is <code>str</code> (or <code>None</code>) or <code>Callable</code> .</p>
+<pre><code class="language-python">&gt;&gt;&gt; graph.append(a=dict(a1=1, a2=2), b=dict(b1=3, b2=4))
 &gt;&gt;&gt; GraphSpec().to_dict(
 &gt;&gt;&gt;     graph.view,
 &gt;&gt;&gt;     a = S.of(),
@@ -801,15 +1056,12 @@ Children of the entity which is not converted to <code>dict</code> are simply ig
 &gt;&gt;&gt; )
 {&quot;a&quot;: [{&quot;a1&quot;:1, &quot;a2&quot;:2, &quot;__b1__&quot;:3, &quot;__b2__&quot;:4}]}
 </code></pre>
-<p>In this case, the property name <code>b</code> is ignored and <code>head</code> aggregation is implicitly applied to the property if no aggregator is set.
-As shown in the example, the converted value on <code>b</code> must be a <code>dict</code> in order to being expanded to key-value pairs.
-Exception raises when the value of another type is obtained.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>namer</code></strong></dt>
-<dd>Key in the dictionary or naming funciton.</dd>
+<dd>A string or a function determining the key in parent <code>dict</code> .</dd>
 <dt><strong><code>aggregator</code></strong></dt>
-<dd>Function to select node(s) from the node container.</dd>
+<dd>A function to select node(s) from the node container.</dd>
 <dt><strong><code>serializers</code></strong></dt>
 <dd>List of <em>serializer</em> s.</dd>
 </dl></div>
@@ -817,21 +1069,56 @@ Exception raises when the value of another type is obtained.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class NodeSerializer:
+<pre><code class="python">class NodeSerializer(NodeSerializing):
     &#34;&#34;&#34;
-    The instance of this class contains the configurations to conert a `NodeContainer` into values in serialization result.
+    This class provides ways to configure serialization result for a node container.
 
-    The conversion is composed of 3 phases.
+    Graph is serialized into `dict` from root node containers to their descendants.
+    `NodeSerializer` should be set to each container (= template property) to control how to serialize nodes in it.
 
-    1. If `aggregator` is set, aggregate the list of nodes into a node or shrinked list of nodes.
-    2. Convert the entity of each node into a serializable value by *serializer* .
-    3. Put the converted value(s) into the dictionary converted from the parent node with a key determined by `namer`.
+    At first, nodes to be serialized are selected by a node container using *aggregator*
+    which is a function or sequence of functions extracting a node or nodes from a node container.
+    `fold` and `select` are the general methods to set *aggregator* to `NodeSerializer` .
 
-    These phases are applied from the roots of graph to their descendants as long as the entity is converted to `dict`.
-    Children of the entity which is not converted to `dict` are simply ignored.
+    ```python
+    &gt;&gt;&gt; # NodeSerializer to select first node in the container.
+    &gt;&gt;&gt; S.fold(lambda ns: ns[0])
+    &gt;&gt;&gt; # NodeSerializer to select every other node.
+    &gt;&gt;&gt; S.fold(lambda ns: ns[0::2])
+    ```
 
-    When `namer` is a callable, the result updates parent dictionary with its items instead of just being put to it.
+    Each selected node is serialized in the way determined by the type of corresponding template property.
+    Serialization function (= *serializer* ) is obtained usually from `pyracmon.graph.spec.GraphSpec`
+    where *serializer* are stored with being related with applicable types respectively.
+    Additionally, *serializer*s can be set to `NodeSerializer` directly by `each` or some other methods.
+    For each node, all valid *serializer*s are collected and merged into a function which finally is applied to its entity.
 
+    ```python
+    &gt;&gt;&gt; spec = GraphSpec()
+    &gt;&gt;&gt; # Register a serializer for int type which converts an int into a dict.
+    &gt;&gt;&gt; spec.add_serializer(int, lambda v: dict(v=v))
+    &gt;&gt;&gt; # Set serializer which multiplies values in dict.
+    &gt;&gt;&gt; ns = S.each(lambda cxt: {k:v*2 for k,v in cxt.serialize()})
+    &gt;&gt;&gt; # Do serialization
+    &gt;&gt;&gt; graph.append(a=1).append(a=2)
+    &gt;&gt;&gt; spec.to_dict(
+    &gt;&gt;&gt;     graph.view,
+    &gt;&gt;&gt;     a = ns,
+    &gt;&gt;&gt; )
+    {&#34;a&#34;: [{&#34;v&#34;: 2}, {&#34;v&#34;: 4}]}
+    ```
+
+    Only when a node is serialized into `dict` ,
+    its child nodes are serialized succeedingly and the result is put into the `dict` with the same keys as their property names.
+    The key can be changed by set *namer* to the `NodeSerializer` by `name` .
+
+    Here, `merge` is a special configuration of `NodeSerializer` ,
+    which can be used for the case that a child node is also serialized into `dict` and it is wanted to be merged into parent `dict` .
+    It can take a callable which converts key in original child `dict` into another key used in parent `dict` .
+
+    Whether the child should be put or merge into parent `dict` is determined whether *namer* is `str` (or `None`) or `Callable` .
+
+    ```python
     &gt;&gt;&gt; graph.append(a=dict(a1=1, a2=2), b=dict(b1=3, b2=4))
     &gt;&gt;&gt; GraphSpec().to_dict(
     &gt;&gt;&gt;     graph.view,
@@ -839,60 +1126,61 @@ Exception raises when the value of another type is obtained.</p>
     &gt;&gt;&gt;     b = S.merge(lambda n: f&#34;__{n}__&#34;),
     &gt;&gt;&gt; )
     {&#34;a&#34;: [{&#34;a1&#34;:1, &#34;a2&#34;:2, &#34;__b1__&#34;:3, &#34;__b2__&#34;:4}]}
-
-    In this case, the property name `b` is ignored and `head` aggregation is implicitly applied to the property if no aggregator is set.
-    As shown in the example, the converted value on `b` must be a `dict` in order to being expanded to key-value pairs.
-    Exception raises when the value of another type is obtained.
+    ```
 
     Args:
-        namer: Key in the dictionary or naming funciton.
-        aggregator: Function to select node(s) from the node container.
+        namer: A string or a function determining the key in parent `dict` .
+        aggregator: A function to select node(s) from the node container.
         serializers: List of *serializer* s.
     &#34;&#34;&#34;
     def __init__(
         self,
         namer: Optional[Union[str, Callable[[str], str]]] = None,
-        aggregator: Optional[Union[Callable[[Node], Node], Callable[[Node], List[Node]], int]] = None,
+        aggregator: Optional[Union[Callable[[list[Node]], Node], Callable[[list[Node]], list[Node]]]] = None,
         *serializers: Serializer,
     ):
         self._namer = namer
         self._aggregator = aggregator
         self._serializers = list(serializers)
+        self._be_merged = False
         self._doc = &#34;&#34;
         self._doc_options = {}
 
     @property
     def namer(self) -&gt; Callable[[str], str]:
         &#34;&#34;&#34;
-        Returns naming function which determines the key of the property even when `namer` is set to a string.
+        Returns *namer* in the form of function even when not to merge.
         &#34;&#34;&#34;
-        if not self._namer:
-            return lambda n: n
-        elif isinstance(self._namer, str):
-            return lambda n: self._namer
-        else:
-            return lambda n: self._namer(n)
+        def f(v: str) -&gt; str:
+            if self._namer is None:
+                return v
+            elif isinstance(self._namer, str):
+                return self._namer
+            else:
+                return self._namer(v)
+        return f
 
     @property
-    def aggregator(self) -&gt; Callable[[List[Node]], Union[List[Node], Node, Any]]:
+    def aggregator(self) -&gt; Callable[[list[Node]], Union[list[Node], Node, Any]]:
         &#34;&#34;&#34;
-        Returns aggregation function which selects node(s) from nodes in the container.
+        Returns *aggregator* supplied with correct return annotation.
         &#34;&#34;&#34;
         if self._aggregator is None:
-            def agg(values: List[T]) -&gt; List[T]:
+            def agg1(values: list[T]) -&gt; list[T]:
                 return values
-            return agg
+            return agg1
         elif signature(self._aggregator).return_annotation == Signature.empty:
-            def agg(values: List[T]) -&gt; List[T]:
-                return self._aggregator(values)
-            return agg
+            # TODO: No return annotation implies list to list aggregation.
+            def agg2(values: list[T]) -&gt; list[T]:
+                return self._aggregator(values) # type: ignore
+            return agg2
         else:
             return self._aggregator
 
     @property
     def serializer(self) -&gt; Serializer:
         &#34;&#34;&#34;
-        Returns serialization function which converts an entity into a serializable value.
+        Returns merged *serializer* which has correctly annotated signature.
         &#34;&#34;&#34;
         return chain_serializers(self._serializers)
 
@@ -901,7 +1189,7 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         Returns whether the converted value will be merged into parent.
         &#34;&#34;&#34;
-        return callable(self._namer)
+        return self._be_merged
 
     @property
     def be_singular(self) -&gt; bool:
@@ -909,7 +1197,7 @@ Exception raises when the value of another type is obtained.</p>
         Returns whether the converted value will be a singular object, not a list.
 
         This is estimated by annotation of aggregation function. If its returning type is not annotated, this property always returns `False` .
-        `S` builder methods adds appropriate annotation to given function when it does not have the annotation.
+        Builder methods adds appropriate annotation to given function when it does not have the annotation.
         &#34;&#34;&#34;
         rt = signature(self.aggregator).return_annotation
         return not issubgeneric(rt, list)
@@ -921,7 +1209,7 @@ Exception raises when the value of another type is obtained.</p>
             rt = Signature.empty
 
         if rt == Signature.empty:
-            def agg(vs: List[T]) -&gt; (T if folds else List[T]):
+            def agg(vs: list[T]) -&gt; (T if folds else list[T]):
                 return aggregator(vs)
             self._aggregator = agg
         elif issubgeneric(rt, list) ^ (not folds):
@@ -934,10 +1222,11 @@ Exception raises when the value of another type is obtained.</p>
     #----------------------------------------------------------------
     # Documentation
     #----------------------------------------------------------------
-    @S.builder
     def doc(self, document: str, **options: Any) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
         Set the documentation for this node.
+
+        `document` is used in graph schema as a parameter of `Annotated` .
 
         Args:
             document: A documentation string.
@@ -952,7 +1241,6 @@ Exception raises when the value of another type is obtained.</p>
     #----------------------------------------------------------------
     # Naming
     #----------------------------------------------------------------
-    @S.builder
     def name(self, name: str) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
         Set a key in parent dictionary.
@@ -965,26 +1253,25 @@ Exception raises when the value of another type is obtained.</p>
         if not isinstance(name, str):
             raise ValueError(f&#34;The name of node must be a string but {type(name)} is given.&#34;)
         self._namer = name
+        self._be_merged = False
         return self
 
-    @S.builder
     def merge(self, namer: Optional[Callable[[str], str]] = None) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set a naming function taking a property name and returning a key in parent `dict`.
-
-        `NodeSerializer` built with this methods merges the converted `dict` into parent `dict` and its `be_merged` property becomes `True`.
+        Set a naming function for merging into parent.
 
         Because merging needs folding, this method overrides the aggregation function by invoking `head()` internally
-        if this *serializer* is not configured to fold nodes into a single node.
+        if this instance is not configured to fold nodes into a single node.
 
         Args:
-            namer: The naming function. If `None`, the property name is returned as it is.
+            namer: The naming function. If `None`, the property is used as it is.
         Returns:
             This instance.
         &#34;&#34;&#34;
         if namer and not callable(namer):
             raise ValueError(f&#34;The method merging a node into its parent node must be callable or None.&#34;)
         self._namer = namer or (lambda x:x)
+        self._be_merged = True
         if not self.be_singular:
             self.head()
         return self
@@ -992,10 +1279,9 @@ Exception raises when the value of another type is obtained.</p>
     #----------------------------------------------------------------
     # Aggregation
     #----------------------------------------------------------------
-    @S.builder
     def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set an aggregator which picks up the node at the index.
+        Set an *aggregator* which picks up the node at the index.
 
         Args:
             index: An index of the element.
@@ -1003,12 +1289,14 @@ Exception raises when the value of another type is obtained.</p>
         Returns:
             This instance.
         &#34;&#34;&#34;
-        return self.fold(lambda vs: vs[index] if len(vs) &gt; index else alt)
+        def agg(vs: list[T]) -&gt; (Optional[T] if alt is None else T):
+            return vs[index] if len(vs) &gt; index else alt
+        #return self.fold(lambda vs: vs[index] if len(vs) &gt; index else alt)
+        return self.fold(agg)
 
-    @S.builder
     def head(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set an aggregator which picks up the first node.
+        Set an *aggregator* which picks up the first node.
 
         Args:
             alt: A value used when there exists no nodes.
@@ -1017,20 +1305,21 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         return self.at(0, alt)
 
-    @S.builder
     def last(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set an aggregator which picks up the last node.
+        Set an *aggregator* which picks up the last node.
 
         Args:
             alt: A value used when there exists no nodes.
         Returns:
             This instance.
         &#34;&#34;&#34;
-        return self.fold(lambda vs: vs[-1] if len(vs) &gt; 0 else alt)
+        def agg(vs: list[T]) -&gt; (Optional[T] if alt is None else T):
+            return vs[-1] if len(vs) &gt; 0 else alt
+        #return self.fold(lambda vs: vs[-1] if len(vs) &gt; 0 else alt)
+        return self.fold(agg)
 
-    @S.builder
-    def fold(self, aggregator: Callable[[List[Node]], Any]) -&gt; &#39;NodeSerializer&#39;:
+    def fold(self, aggregator: Callable[[list[Node]], Any]) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
         Set an aggregation function converting a list of nodes into a single node or any value.
 
@@ -1041,10 +1330,9 @@ Exception raises when the value of another type is obtained.</p>
         &#34;&#34;&#34;
         return self._set_aggregator(aggregator, True)
 
-    @S.builder
-    def select(self, aggregator: Callable[[List[Node]], List[Node]]) -&gt; &#39;NodeSerializer&#39;:
+    def select(self, aggregator: Callable[[list[Node]], list[Node]]) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set an aggregation function chooding a list of nodes from all nodes in `NodeContainer` .
+        Set an aggregation function selecting a list of nodes from all nodes from the container.
 
         Args:
             aggregator: An aggregation function.
@@ -1056,44 +1344,36 @@ Exception raises when the value of another type is obtained.</p>
     #----------------------------------------------------------------
     # Serizlization
     #----------------------------------------------------------------
-    @S.builder
     def each(self, func: Serializer) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Set a function converting a node entity into a serializable value.
+        Set a *serializer* .
 
-        In order to progress serialization to child nodes, the function MUST returns a `dict` .
+        *serializer* is a function which will be invoked with a single argument of `NodeContext` ,
+        from which internal code of *serializer* can get information of the node.
 
-        The function (i.e. *serializer* ) will be invoked with 0 to 4 arguments listed below.
-
-        - `SerializationContext` of the serialization.
-        - `Node` to serialize.
-        - A function which takes the entity value and returns converted value by applying all serialization functions added beforehand.
-        - An entity value to convert.
-
-        When the number of arguments in signature of the function is less than 4, former arguments are omitted.
-        For example, `def func(c, n, b, v):` is invoked with all arguments, while `def func(b, v):` is invoked with only 3rd and 4th arguments.
+        For the sake of static typing, the *serializer* should have correct returns annotation.
 
         Args:
-            func: A function converting a node entity into a serializable value.
+            func: A function converting a node entity into a value.
         Returns:
             This instance.
         &#34;&#34;&#34;
         self._serializers.append(func)
         return self
 
-    @S.builder
     def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
         Set serialization settings for sub graph.
 
-        This method is used for the property whose kind is `GraphTemplate`.
-        The form of `settings` is same as keyword arguments of `GraphSpec.to_dict`.
+        This method is used for the property whose kind is `GraphTemplate` .
+        The form of `settings` is same as keyword arguments used to serialize the graph.
 
         Args:
             settings: Serialization settings used to serialize sub graph.
         Returns:
             This instance.
         &#34;&#34;&#34;
+        from pyracmon.graph.schema import GraphSchema
         class SubGraph(Typeable[T]):
             serializers = settings.copy()
 
@@ -1101,25 +1381,30 @@ Exception raises when the value of another type is obtained.</p>
             def resolve(sub_graph, bound, arg, spec):
                 return GraphSchema(spec, arg.template, **sub_graph.serializers).schema
 
-        def to_dict(cxt) -&gt; SubGraph[T]:
+        def to_dict(cxt: NodeContext) -&gt; SubGraph[T]:
             vv = cxt.serialize()
-            return SerializationContext(settings, cxt.context.finder if cxt.context else lambda t: []).execute(vv.view)
+            return SerializationContext(
+                settings,
+                cxt.context.finder if cxt.context else lambda t: [],
+            ).execute(vv.view) # type: ignore
 
         self._serializers.append(to_dict)
         return self.head()
 
-    @S.builder
     def alter(
         self,
         generator: Optional[Serializer] = None,
-        excludes: Optional[List[str]] = None,
-        includes: Optional[List[str]] = None,
+        excludes: Optional[Iterable[str]] = None,
+        includes: Optional[Iterable[str]] = None,
     ) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
-        Extends and shrinks the dictionary.
+        Extends and shrinks the dictionary obtained as a result of *serializer*s applied beforehand.
 
         `generator` is a kind of *serializer* returning `dict` which will be merged into serialization result.
-        `excludes` and `includes` are used to select keys in the result.
+        This can be used to add extra key value pairs into the result.
+        For the sake of static typing, `generator` should have correct return annotation of `TypedDict` .
+
+        `excludes` and `includes` are used to select keys from the result.
 
         Args:
             generator: A function generating dictionary to be merged.
@@ -1143,34 +1428,41 @@ Exception raises when the value of another type is obtained.</p>
         def convert(cxt) -&gt; EachShrink[EachExtend[T]]:
             ext = generator(cxt) if generator else {}
             vv = cxt.serialize()
-            vv.update(**ext)
-            return {k:v for k, v in vv.items() if (not includes or k in includes) and k not in excludes}
+            vv.update(**to_rawdict(ext, True))
+            return {k:v for k, v in vv.items() if (not includes or k in includes) and k not in excludes} # type: ignore
 
         self._serializers.append(convert)
         return self</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pyracmon.graph.serialize.NodeSerializing" href="#pyracmon.graph.serialize.NodeSerializing">NodeSerializing</a></li>
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="pyracmon.graph.serialize.NodeSerializer.aggregator"><code class="name">var <span class="ident">aggregator</span> : Callable[[List[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], Union[List[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>], <a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>, Any]]</code></dt>
+<dt id="pyracmon.graph.serialize.NodeSerializer.aggregator"><code class="name">var <span class="ident">aggregator</span> : Callable[[list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], Union[list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>], <a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>, Any]]</code></dt>
 <dd>
-<div class="desc"><p>Returns aggregation function which selects node(s) from nodes in the container.</p></div>
+<div class="desc"><p>Returns <em>aggregator</em> supplied with correct return annotation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
-def aggregator(self) -&gt; Callable[[List[Node]], Union[List[Node], Node, Any]]:
+def aggregator(self) -&gt; Callable[[list[Node]], Union[list[Node], Node, Any]]:
     &#34;&#34;&#34;
-    Returns aggregation function which selects node(s) from nodes in the container.
+    Returns *aggregator* supplied with correct return annotation.
     &#34;&#34;&#34;
     if self._aggregator is None:
-        def agg(values: List[T]) -&gt; List[T]:
+        def agg1(values: list[T]) -&gt; list[T]:
             return values
-        return agg
+        return agg1
     elif signature(self._aggregator).return_annotation == Signature.empty:
-        def agg(values: List[T]) -&gt; List[T]:
-            return self._aggregator(values)
-        return agg
+        # TODO: No return annotation implies list to list aggregation.
+        def agg2(values: list[T]) -&gt; list[T]:
+            return self._aggregator(values) # type: ignore
+        return agg2
     else:
         return self._aggregator</code></pre>
 </details>
@@ -1187,14 +1479,14 @@ def be_merged(self) -&gt; bool:
     &#34;&#34;&#34;
     Returns whether the converted value will be merged into parent.
     &#34;&#34;&#34;
-    return callable(self._namer)</code></pre>
+    return self._be_merged</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.NodeSerializer.be_singular"><code class="name">var <span class="ident">be_singular</span> : bool</code></dt>
 <dd>
 <div class="desc"><p>Returns whether the converted value will be a singular object, not a list.</p>
 <p>This is estimated by annotation of aggregation function. If its returning type is not annotated, this property always returns <code>False</code> .
-<code><a title="pyracmon.graph.serialize.S" href="#pyracmon.graph.serialize.S">S</a></code> builder methods adds appropriate annotation to given function when it does not have the annotation.</p></div>
+Builder methods adds appropriate annotation to given function when it does not have the annotation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1205,7 +1497,7 @@ def be_singular(self) -&gt; bool:
     Returns whether the converted value will be a singular object, not a list.
 
     This is estimated by annotation of aggregation function. If its returning type is not annotated, this property always returns `False` .
-    `S` builder methods adds appropriate annotation to given function when it does not have the annotation.
+    Builder methods adds appropriate annotation to given function when it does not have the annotation.
     &#34;&#34;&#34;
     rt = signature(self.aggregator).return_annotation
     return not issubgeneric(rt, list)</code></pre>
@@ -1213,7 +1505,7 @@ def be_singular(self) -&gt; bool:
 </dd>
 <dt id="pyracmon.graph.serialize.NodeSerializer.namer"><code class="name">var <span class="ident">namer</span> : Callable[[str], str]</code></dt>
 <dd>
-<div class="desc"><p>Returns naming function which determines the key of the property even when <code>namer</code> is set to a string.</p></div>
+<div class="desc"><p>Returns <em>namer</em> in the form of function even when not to merge.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1221,19 +1513,21 @@ def be_singular(self) -&gt; bool:
 <pre><code class="python">@property
 def namer(self) -&gt; Callable[[str], str]:
     &#34;&#34;&#34;
-    Returns naming function which determines the key of the property even when `namer` is set to a string.
+    Returns *namer* in the form of function even when not to merge.
     &#34;&#34;&#34;
-    if not self._namer:
-        return lambda n: n
-    elif isinstance(self._namer, str):
-        return lambda n: self._namer
-    else:
-        return lambda n: self._namer(n)</code></pre>
+    def f(v: str) -&gt; str:
+        if self._namer is None:
+            return v
+        elif isinstance(self._namer, str):
+            return self._namer
+        else:
+            return self._namer(v)
+    return f</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.NodeSerializer.serializer"><code class="name">var <span class="ident">serializer</span> : Callable[[<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>], Any]</code></dt>
 <dd>
-<div class="desc"><p>Returns serialization function which converts an entity into a serializable value.</p></div>
+<div class="desc"><p>Returns merged <em>serializer</em> which has correctly annotated signature.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1241,7 +1535,7 @@ def namer(self) -&gt; Callable[[str], str]:
 <pre><code class="python">@property
 def serializer(self) -&gt; Serializer:
     &#34;&#34;&#34;
-    Returns serialization function which converts an entity into a serializable value.
+    Returns merged *serializer* which has correctly annotated signature.
     &#34;&#34;&#34;
     return chain_serializers(self._serializers)</code></pre>
 </details>
@@ -1250,12 +1544,14 @@ def serializer(self) -&gt; Serializer:
 <h3>Methods</h3>
 <dl>
 <dt id="pyracmon.graph.serialize.NodeSerializer.alter"><code class="name flex">
-<span>def <span class="ident">alter</span></span>(<span>self, generator: Optional[Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], Any]] = None, excludes: Optional[List[str]] = None, includes: Optional[List[str]] = None) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+<span>def <span class="ident">alter</span></span>(<span>self, generator: Optional[Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], Any]] = None, excludes: Optional[collections.abc.Iterable[str]] = None, includes: Optional[collections.abc.Iterable[str]] = None) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Extends and shrinks the dictionary.</p>
+<div class="desc"><p>Extends and shrinks the dictionary obtained as a result of <em>serializer</em>s applied beforehand.</p>
 <p><code>generator</code> is a kind of <em>serializer</em> returning <code>dict</code> which will be merged into serialization result.
-<code>excludes</code> and <code>includes</code> are used to select keys in the result.</p>
+This can be used to add extra key value pairs into the result.
+For the sake of static typing, <code>generator</code> should have correct return annotation of <code>TypedDict</code> .</p>
+<p><code>excludes</code> and <code>includes</code> are used to select keys from the result.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>generator</code></strong></dt>
@@ -1271,18 +1567,20 @@ def serializer(self) -&gt; Serializer:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@S.builder
-def alter(
+<pre><code class="python">def alter(
     self,
     generator: Optional[Serializer] = None,
-    excludes: Optional[List[str]] = None,
-    includes: Optional[List[str]] = None,
+    excludes: Optional[Iterable[str]] = None,
+    includes: Optional[Iterable[str]] = None,
 ) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
-    Extends and shrinks the dictionary.
+    Extends and shrinks the dictionary obtained as a result of *serializer*s applied beforehand.
 
     `generator` is a kind of *serializer* returning `dict` which will be merged into serialization result.
-    `excludes` and `includes` are used to select keys in the result.
+    This can be used to add extra key value pairs into the result.
+    For the sake of static typing, `generator` should have correct return annotation of `TypedDict` .
+
+    `excludes` and `includes` are used to select keys from the result.
 
     Args:
         generator: A function generating dictionary to be merged.
@@ -1306,8 +1604,8 @@ def alter(
     def convert(cxt) -&gt; EachShrink[EachExtend[T]]:
         ext = generator(cxt) if generator else {}
         vv = cxt.serialize()
-        vv.update(**ext)
-        return {k:v for k, v in vv.items() if (not includes or k in includes) and k not in excludes}
+        vv.update(**to_rawdict(ext, True))
+        return {k:v for k, v in vv.items() if (not includes or k in includes) and k not in excludes} # type: ignore
 
     self._serializers.append(convert)
     return self</code></pre>
@@ -1317,7 +1615,7 @@ def alter(
 <span>def <span class="ident">at</span></span>(<span>self, index: int, alt: Any = None) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Set an aggregator which picks up the node at the index.</p>
+<div class="desc"><p>Set an <em>aggregator</em> which picks up the node at the index.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>index</code></strong></dt>
@@ -1331,10 +1629,9 @@ def alter(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@S.builder
-def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
+<pre><code class="python">def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
-    Set an aggregator which picks up the node at the index.
+    Set an *aggregator* which picks up the node at the index.
 
     Args:
         index: An index of the element.
@@ -1342,7 +1639,10 @@ def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
     Returns:
         This instance.
     &#34;&#34;&#34;
-    return self.fold(lambda vs: vs[index] if len(vs) &gt; index else alt)</code></pre>
+    def agg(vs: list[T]) -&gt; (Optional[T] if alt is None else T):
+        return vs[index] if len(vs) &gt; index else alt
+    #return self.fold(lambda vs: vs[index] if len(vs) &gt; index else alt)
+    return self.fold(agg)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.NodeSerializer.doc"><code class="name flex">
@@ -1350,6 +1650,7 @@ def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
 </code></dt>
 <dd>
 <div class="desc"><p>Set the documentation for this node.</p>
+<p><code>document</code> is used in graph schema as a parameter of <code>Annotated</code> .</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>document</code></strong></dt>
@@ -1363,10 +1664,11 @@ def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@S.builder
-def doc(self, document: str, **options: Any) -&gt; &#39;NodeSerializer&#39;:
+<pre><code class="python">def doc(self, document: str, **options: Any) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
     Set the documentation for this node.
+
+    `document` is used in graph schema as a parameter of `Annotated` .
 
     Args:
         document: A documentation string.
@@ -1383,21 +1685,14 @@ def doc(self, document: str, **options: Any) -&gt; &#39;NodeSerializer&#39;:
 <span>def <span class="ident">each</span></span>(<span>self, func: Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], Any]) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Set a function converting a node entity into a serializable value.</p>
-<p>In order to progress serialization to child nodes, the function MUST returns a <code>dict</code> .</p>
-<p>The function (i.e. <em>serializer</em> ) will be invoked with 0 to 4 arguments listed below.</p>
-<ul>
-<li><code><a title="pyracmon.graph.serialize.SerializationContext" href="#pyracmon.graph.serialize.SerializationContext">SerializationContext</a></code> of the serialization.</li>
-<li><code>Node</code> to serialize.</li>
-<li>A function which takes the entity value and returns converted value by applying all serialization functions added beforehand.</li>
-<li>An entity value to convert.</li>
-</ul>
-<p>When the number of arguments in signature of the function is less than 4, former arguments are omitted.
-For example, <code>def func(c, n, b, v):</code> is invoked with all arguments, while <code>def func(b, v):</code> is invoked with only 3rd and 4th arguments.</p>
+<div class="desc"><p>Set a <em>serializer</em> .</p>
+<p><em>serializer</em> is a function which will be invoked with a single argument of <code><a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a></code> ,
+from which internal code of <em>serializer</em> can get information of the node.</p>
+<p>For the sake of static typing, the <em>serializer</em> should have correct returns annotation.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>func</code></strong></dt>
-<dd>A function converting a node entity into a serializable value.</dd>
+<dd>A function converting a node entity into a value.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>This instance.</p></div>
@@ -1405,25 +1700,17 @@ For example, <code>def func(c, n, b, v):</code> is invoked with all arguments, w
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@S.builder
-def each(self, func: Serializer) -&gt; &#39;NodeSerializer&#39;:
+<pre><code class="python">def each(self, func: Serializer) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
-    Set a function converting a node entity into a serializable value.
+    Set a *serializer* .
 
-    In order to progress serialization to child nodes, the function MUST returns a `dict` .
+    *serializer* is a function which will be invoked with a single argument of `NodeContext` ,
+    from which internal code of *serializer* can get information of the node.
 
-    The function (i.e. *serializer* ) will be invoked with 0 to 4 arguments listed below.
-
-    - `SerializationContext` of the serialization.
-    - `Node` to serialize.
-    - A function which takes the entity value and returns converted value by applying all serialization functions added beforehand.
-    - An entity value to convert.
-
-    When the number of arguments in signature of the function is less than 4, former arguments are omitted.
-    For example, `def func(c, n, b, v):` is invoked with all arguments, while `def func(b, v):` is invoked with only 3rd and 4th arguments.
+    For the sake of static typing, the *serializer* should have correct returns annotation.
 
     Args:
-        func: A function converting a node entity into a serializable value.
+        func: A function converting a node entity into a value.
     Returns:
         This instance.
     &#34;&#34;&#34;
@@ -1432,7 +1719,7 @@ def each(self, func: Serializer) -&gt; &#39;NodeSerializer&#39;:
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.NodeSerializer.fold"><code class="name flex">
-<span>def <span class="ident">fold</span></span>(<span>self, aggregator: Callable[[List[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], Any]) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+<span>def <span class="ident">fold</span></span>(<span>self, aggregator: Callable[[list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], Any]) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Set an aggregation function converting a list of nodes into a single node or any value.</p>
@@ -1447,8 +1734,7 @@ def each(self, func: Serializer) -&gt; &#39;NodeSerializer&#39;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@S.builder
-def fold(self, aggregator: Callable[[List[Node]], Any]) -&gt; &#39;NodeSerializer&#39;:
+<pre><code class="python">def fold(self, aggregator: Callable[[list[Node]], Any]) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
     Set an aggregation function converting a list of nodes into a single node or any value.
 
@@ -1464,7 +1750,7 @@ def fold(self, aggregator: Callable[[List[Node]], Any]) -&gt; &#39;NodeSerialize
 <span>def <span class="ident">head</span></span>(<span>self, alt: Any = None) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Set an aggregator which picks up the first node.</p>
+<div class="desc"><p>Set an <em>aggregator</em> which picks up the first node.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>alt</code></strong></dt>
@@ -1476,10 +1762,9 @@ def fold(self, aggregator: Callable[[List[Node]], Any]) -&gt; &#39;NodeSerialize
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@S.builder
-def head(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
+<pre><code class="python">def head(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
-    Set an aggregator which picks up the first node.
+    Set an *aggregator* which picks up the first node.
 
     Args:
         alt: A value used when there exists no nodes.
@@ -1493,7 +1778,7 @@ def head(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
 <span>def <span class="ident">last</span></span>(<span>self, alt: Any = None) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Set an aggregator which picks up the last node.</p>
+<div class="desc"><p>Set an <em>aggregator</em> which picks up the last node.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>alt</code></strong></dt>
@@ -1505,31 +1790,32 @@ def head(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@S.builder
-def last(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
+<pre><code class="python">def last(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
-    Set an aggregator which picks up the last node.
+    Set an *aggregator* which picks up the last node.
 
     Args:
         alt: A value used when there exists no nodes.
     Returns:
         This instance.
     &#34;&#34;&#34;
-    return self.fold(lambda vs: vs[-1] if len(vs) &gt; 0 else alt)</code></pre>
+    def agg(vs: list[T]) -&gt; (Optional[T] if alt is None else T):
+        return vs[-1] if len(vs) &gt; 0 else alt
+    #return self.fold(lambda vs: vs[-1] if len(vs) &gt; 0 else alt)
+    return self.fold(agg)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.NodeSerializer.merge"><code class="name flex">
 <span>def <span class="ident">merge</span></span>(<span>self, namer: Optional[Callable[[str], str]] = None) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Set a naming function taking a property name and returning a key in parent <code>dict</code>.</p>
-<p><code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> built with this methods merges the converted <code>dict</code> into parent <code>dict</code> and its <code>be_merged</code> property becomes <code>True</code>.</p>
+<div class="desc"><p>Set a naming function for merging into parent.</p>
 <p>Because merging needs folding, this method overrides the aggregation function by invoking <code>head()</code> internally
-if this <em>serializer</em> is not configured to fold nodes into a single node.</p>
+if this instance is not configured to fold nodes into a single node.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>namer</code></strong></dt>
-<dd>The naming function. If <code>None</code>, the property name is returned as it is.</dd>
+<dd>The naming function. If <code>None</code>, the property is used as it is.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>This instance.</p></div>
@@ -1537,24 +1823,22 @@ if this <em>serializer</em> is not configured to fold nodes into a single node.<
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@S.builder
-def merge(self, namer: Optional[Callable[[str], str]] = None) -&gt; &#39;NodeSerializer&#39;:
+<pre><code class="python">def merge(self, namer: Optional[Callable[[str], str]] = None) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
-    Set a naming function taking a property name and returning a key in parent `dict`.
-
-    `NodeSerializer` built with this methods merges the converted `dict` into parent `dict` and its `be_merged` property becomes `True`.
+    Set a naming function for merging into parent.
 
     Because merging needs folding, this method overrides the aggregation function by invoking `head()` internally
-    if this *serializer* is not configured to fold nodes into a single node.
+    if this instance is not configured to fold nodes into a single node.
 
     Args:
-        namer: The naming function. If `None`, the property name is returned as it is.
+        namer: The naming function. If `None`, the property is used as it is.
     Returns:
         This instance.
     &#34;&#34;&#34;
     if namer and not callable(namer):
         raise ValueError(f&#34;The method merging a node into its parent node must be callable or None.&#34;)
     self._namer = namer or (lambda x:x)
+    self._be_merged = True
     if not self.be_singular:
         self.head()
     return self</code></pre>
@@ -1576,8 +1860,7 @@ def merge(self, namer: Optional[Callable[[str], str]] = None) -&gt; &#39;NodeSer
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@S.builder
-def name(self, name: str) -&gt; &#39;NodeSerializer&#39;:
+<pre><code class="python">def name(self, name: str) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
     Set a key in parent dictionary.
 
@@ -1589,14 +1872,15 @@ def name(self, name: str) -&gt; &#39;NodeSerializer&#39;:
     if not isinstance(name, str):
         raise ValueError(f&#34;The name of node must be a string but {type(name)} is given.&#34;)
     self._namer = name
+    self._be_merged = False
     return self</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.NodeSerializer.select"><code class="name flex">
-<span>def <span class="ident">select</span></span>(<span>self, aggregator: Callable[[List[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], List[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]]) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+<span>def <span class="ident">select</span></span>(<span>self, aggregator: Callable[[list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]]) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Set an aggregation function chooding a list of nodes from all nodes in <code>NodeContainer</code> .</p>
+<div class="desc"><p>Set an aggregation function selecting a list of nodes from all nodes from the container.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>aggregator</code></strong></dt>
@@ -1608,10 +1892,9 @@ def name(self, name: str) -&gt; &#39;NodeSerializer&#39;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@S.builder
-def select(self, aggregator: Callable[[List[Node]], List[Node]]) -&gt; &#39;NodeSerializer&#39;:
+<pre><code class="python">def select(self, aggregator: Callable[[list[Node]], list[Node]]) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
-    Set an aggregation function chooding a list of nodes from all nodes in `NodeContainer` .
+    Set an aggregation function selecting a list of nodes from all nodes from the container.
 
     Args:
         aggregator: An aggregation function.
@@ -1626,8 +1909,8 @@ def select(self, aggregator: Callable[[List[Node]], List[Node]]) -&gt; &#39;Node
 </code></dt>
 <dd>
 <div class="desc"><p>Set serialization settings for sub graph.</p>
-<p>This method is used for the property whose kind is <code>GraphTemplate</code>.
-The form of <code>settings</code> is same as keyword arguments of <code>GraphSpec.to_dict</code>.</p>
+<p>This method is used for the property whose kind is <code>GraphTemplate</code> .
+The form of <code>settings</code> is same as keyword arguments used to serialize the graph.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>settings</code></strong></dt>
@@ -1639,19 +1922,19 @@ The form of <code>settings</code> is same as keyword arguments of <code>GraphSpe
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@S.builder
-def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;:
+<pre><code class="python">def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
     Set serialization settings for sub graph.
 
-    This method is used for the property whose kind is `GraphTemplate`.
-    The form of `settings` is same as keyword arguments of `GraphSpec.to_dict`.
+    This method is used for the property whose kind is `GraphTemplate` .
+    The form of `settings` is same as keyword arguments used to serialize the graph.
 
     Args:
         settings: Serialization settings used to serialize sub graph.
     Returns:
         This instance.
     &#34;&#34;&#34;
+    from pyracmon.graph.schema import GraphSchema
     class SubGraph(Typeable[T]):
         serializers = settings.copy()
 
@@ -1659,12 +1942,218 @@ def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;:
         def resolve(sub_graph, bound, arg, spec):
             return GraphSchema(spec, arg.template, **sub_graph.serializers).schema
 
-    def to_dict(cxt) -&gt; SubGraph[T]:
+    def to_dict(cxt: NodeContext) -&gt; SubGraph[T]:
         vv = cxt.serialize()
-        return SerializationContext(settings, cxt.context.finder if cxt.context else lambda t: []).execute(vv.view)
+        return SerializationContext(
+            settings,
+            cxt.context.finder if cxt.context else lambda t: [],
+        ).execute(vv.view) # type: ignore
 
     self._serializers.append(to_dict)
     return self.head()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeSerializing"><code class="flex name class">
+<span>class <span class="ident">NodeSerializing</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing), for example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto(Protocol[T]):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NodeSerializing(Protocol):
+    def doc(self, document: str, **options: Any) -&gt; &#39;NodeSerializer&#39;: ...
+    def name(self, name: str) -&gt; &#39;NodeSerializer&#39;: ...
+    def merge(self, namer: Optional[Callable[[str], str]] = None) -&gt; &#39;NodeSerializer&#39;: ...
+    def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;: ...
+    def head(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;: ...
+    def last(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;: ...
+    def fold(self, aggregator: Callable[[list[Node]], Any]) -&gt; &#39;NodeSerializer&#39;: ...
+    def select(self, aggregator: Callable[[list[Node]], list[Node]]) -&gt; &#39;NodeSerializer&#39;: ...
+    def each(self, func: Serializer) -&gt; &#39;NodeSerializer&#39;: ...
+    def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;: ...
+    def alter(
+        self,
+        generator: Optional[Serializer] = None,
+        excludes: Optional[Iterable[str]] = None,
+        includes: Optional[Iterable[str]] = None,
+    ) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></li>
+<li><a title="pyracmon.graph.serialize.SerializerMeta" href="#pyracmon.graph.serialize.SerializerMeta">SerializerMeta</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="pyracmon.graph.serialize.NodeSerializing.alter"><code class="name flex">
+<span>def <span class="ident">alter</span></span>(<span>self, generator: Optional[Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], Any]] = None, excludes: Optional[collections.abc.Iterable[str]] = None, includes: Optional[collections.abc.Iterable[str]] = None) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def alter(
+    self,
+    generator: Optional[Serializer] = None,
+    excludes: Optional[Iterable[str]] = None,
+    includes: Optional[Iterable[str]] = None,
+) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeSerializing.at"><code class="name flex">
+<span>def <span class="ident">at</span></span>(<span>self, index: int, alt: Any = None) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def at(self, index: int, alt: Any = None) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeSerializing.doc"><code class="name flex">
+<span>def <span class="ident">doc</span></span>(<span>self, document: str, **options: Any) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def doc(self, document: str, **options: Any) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeSerializing.each"><code class="name flex">
+<span>def <span class="ident">each</span></span>(<span>self, func: Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], Any]) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def each(self, func: Serializer) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeSerializing.fold"><code class="name flex">
+<span>def <span class="ident">fold</span></span>(<span>self, aggregator: Callable[[list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], Any]) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fold(self, aggregator: Callable[[list[Node]], Any]) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeSerializing.head"><code class="name flex">
+<span>def <span class="ident">head</span></span>(<span>self, alt: Any = None) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def head(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeSerializing.last"><code class="name flex">
+<span>def <span class="ident">last</span></span>(<span>self, alt: Any = None) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def last(self, alt: Any = None) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeSerializing.merge"><code class="name flex">
+<span>def <span class="ident">merge</span></span>(<span>self, namer: Optional[Callable[[str], str]] = None) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def merge(self, namer: Optional[Callable[[str], str]] = None) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeSerializing.name"><code class="name flex">
+<span>def <span class="ident">name</span></span>(<span>self, name: str) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def name(self, name: str) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeSerializing.select"><code class="name flex">
+<span>def <span class="ident">select</span></span>(<span>self, aggregator: Callable[[list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]]) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def select(self, aggregator: Callable[[list[Node]], list[Node]]) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.graph.serialize.NodeSerializing.sub"><code class="name flex">
+<span>def <span class="ident">sub</span></span>(<span>self, **settings) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;: ...</code></pre>
 </details>
 </dd>
 </dl>
@@ -1673,20 +2162,44 @@ def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;:
 <span>class <span class="ident">S</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>An utility class to build <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code>.</p></div>
+<div class="desc"><p>An utility class to build <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> .</p>
+<p>This class provides factory class methods to create <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code>
+each of which works in the same way as the method of the same name declared on <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code> .</p>
+<p>Use them to supply <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code>s to functions to serialize a graph or to create a graph schema
+such as <code>graph_dict</code> or <code>graph_schema</code> .</p>
+<pre><code class="language-python">graph_dict(
+    graph,
+    a = S.of(),
+    b = S.head(),
+)
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class S:
+<pre><code class="python">class S(metaclass=SerializerMeta):
     &#34;&#34;&#34;
-    An utility class to build `NodeSerializer`.
+    An utility class to build `NodeSerializer` .
+
+    This class provides factory class methods to create `NodeSerializer`
+    each of which works in the same way as the method of the same name declared on `NodeSerializer` .
+
+    Use them to supply `NodeSerializer`s to functions to serialize a graph or to create a graph schema
+    such as `graph_dict` or `graph_schema` .
+
+    ```python
+    graph_dict(
+        graph,
+        a = S.of(),
+        b = S.head(),
+    )
+    ```
     &#34;&#34;&#34;
     @classmethod
     def of(
         cls,
         namer: Optional[Union[str, Callable[[str], str]]] = None,
-        aggregator: Optional[Union[Callable[[Node], Node], Callable[[Node], List[Node]], int]] = None,
+        aggregator: Optional[Union[Callable[[list[Node]], Node], Callable[[list[Node]], list[Node]]]] = None,
         *serializers: Serializer,
     ) -&gt; &#39;NodeSerializer&#39;:
         &#34;&#34;&#34;
@@ -1699,74 +2212,12 @@ def sub(self, **settings) -&gt; &#39;NodeSerializer&#39;:
         Returns:
             Created `NodeSerializer` .
         &#34;&#34;&#34;
-        return NodeSerializer(namer, aggregator, *serializers)
-
-    @classmethod
-    def builder(cls, builder: Callable[[Any], Any]):
-        &#34;&#34;&#34;
-        This method is used as decorator to put decorating target to `S` builder methods.
-
-        &gt;&gt;&gt; @S.builder
-        &gt;&gt;&gt; def some_func():
-        &gt;&gt;&gt;     ...
-        &gt;&gt;&gt; S.some_func()
-
-        Args:
-            builder: Decorating target.
-        Returns:
-            Decorated builder.
-        &#34;&#34;&#34;
-        def f(*args, **kwargs):
-            return builder(S.of(), *args, **kwargs)
-        setattr(S, builder.__name__, f)
-        return builder</code></pre>
+        return NodeSerializer(namer, aggregator, *serializers)</code></pre>
 </details>
 <h3>Static methods</h3>
 <dl>
-<dt id="pyracmon.graph.serialize.S.builder"><code class="name flex">
-<span>def <span class="ident">builder</span></span>(<span>builder: Callable[[Any], Any])</span>
-</code></dt>
-<dd>
-<div class="desc"><p>This method is used as decorator to put decorating target to <code><a title="pyracmon.graph.serialize.S" href="#pyracmon.graph.serialize.S">S</a></code> builder methods.</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; @S.builder
-&gt;&gt;&gt; def some_func():
-&gt;&gt;&gt;     ...
-&gt;&gt;&gt; S.some_func()
-</code></pre>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>builder</code></strong></dt>
-<dd>Decorating target.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>Decorated builder.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@classmethod
-def builder(cls, builder: Callable[[Any], Any]):
-    &#34;&#34;&#34;
-    This method is used as decorator to put decorating target to `S` builder methods.
-
-    &gt;&gt;&gt; @S.builder
-    &gt;&gt;&gt; def some_func():
-    &gt;&gt;&gt;     ...
-    &gt;&gt;&gt; S.some_func()
-
-    Args:
-        builder: Decorating target.
-    Returns:
-        Decorated builder.
-    &#34;&#34;&#34;
-    def f(*args, **kwargs):
-        return builder(S.of(), *args, **kwargs)
-    setattr(S, builder.__name__, f)
-    return builder</code></pre>
-</details>
-</dd>
 <dt id="pyracmon.graph.serialize.S.of"><code class="name flex">
-<span>def <span class="ident">of</span></span>(<span>namer: Union[str, Callable[[str], str], None] = None, aggregator: Union[Callable[[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>], <a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>], Callable[[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>], List[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], int, None] = None, *serializers: Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], Any]) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
+<span>def <span class="ident">of</span></span>(<span>namer: Union[str, Callable[[str], str], ForwardRef(None)] = None, aggregator: Union[Callable[[list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], <a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>], Callable[[list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], list[<a title="pyracmon.graph.graph.Node" href="graph.html#pyracmon.graph.graph.Node">Node</a>]], ForwardRef(None)] = None, *serializers: Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], Any]) ‑> <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create an instance of <code><a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a></code>.</p>
@@ -1789,7 +2240,7 @@ def builder(cls, builder: Callable[[Any], Any]):
 def of(
     cls,
     namer: Optional[Union[str, Callable[[str], str]]] = None,
-    aggregator: Optional[Union[Callable[[Node], Node], Callable[[Node], List[Node]], int]] = None,
+    aggregator: Optional[Union[Callable[[list[Node]], Node], Callable[[list[Node]], list[Node]]]] = None,
     *serializers: Serializer,
 ) -&gt; &#39;NodeSerializer&#39;:
     &#34;&#34;&#34;
@@ -1817,8 +2268,10 @@ def of(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def f(*args, **kwargs):
-    return builder(S.of(), *args, **kwargs)</code></pre>
+<pre><code class="python">def g(*args, **kwargs):
+    ns = NodeSerializer()
+    nf = getattr(ns, n)
+    return nf(*args, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.S.at"><code class="name flex">
@@ -1830,8 +2283,10 @@ def of(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def f(*args, **kwargs):
-    return builder(S.of(), *args, **kwargs)</code></pre>
+<pre><code class="python">def g(*args, **kwargs):
+    ns = NodeSerializer()
+    nf = getattr(ns, n)
+    return nf(*args, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.S.doc"><code class="name flex">
@@ -1843,8 +2298,10 @@ def of(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def f(*args, **kwargs):
-    return builder(S.of(), *args, **kwargs)</code></pre>
+<pre><code class="python">def g(*args, **kwargs):
+    ns = NodeSerializer()
+    nf = getattr(ns, n)
+    return nf(*args, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.S.each"><code class="name flex">
@@ -1856,8 +2313,10 @@ def of(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def f(*args, **kwargs):
-    return builder(S.of(), *args, **kwargs)</code></pre>
+<pre><code class="python">def g(*args, **kwargs):
+    ns = NodeSerializer()
+    nf = getattr(ns, n)
+    return nf(*args, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.S.fold"><code class="name flex">
@@ -1869,8 +2328,10 @@ def of(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def f(*args, **kwargs):
-    return builder(S.of(), *args, **kwargs)</code></pre>
+<pre><code class="python">def g(*args, **kwargs):
+    ns = NodeSerializer()
+    nf = getattr(ns, n)
+    return nf(*args, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.S.head"><code class="name flex">
@@ -1882,8 +2343,10 @@ def of(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def f(*args, **kwargs):
-    return builder(S.of(), *args, **kwargs)</code></pre>
+<pre><code class="python">def g(*args, **kwargs):
+    ns = NodeSerializer()
+    nf = getattr(ns, n)
+    return nf(*args, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.S.last"><code class="name flex">
@@ -1895,8 +2358,10 @@ def of(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def f(*args, **kwargs):
-    return builder(S.of(), *args, **kwargs)</code></pre>
+<pre><code class="python">def g(*args, **kwargs):
+    ns = NodeSerializer()
+    nf = getattr(ns, n)
+    return nf(*args, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.S.merge"><code class="name flex">
@@ -1908,8 +2373,10 @@ def of(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def f(*args, **kwargs):
-    return builder(S.of(), *args, **kwargs)</code></pre>
+<pre><code class="python">def g(*args, **kwargs):
+    ns = NodeSerializer()
+    nf = getattr(ns, n)
+    return nf(*args, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.S.name"><code class="name flex">
@@ -1921,8 +2388,10 @@ def of(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def f(*args, **kwargs):
-    return builder(S.of(), *args, **kwargs)</code></pre>
+<pre><code class="python">def g(*args, **kwargs):
+    ns = NodeSerializer()
+    nf = getattr(ns, n)
+    return nf(*args, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.S.select"><code class="name flex">
@@ -1934,8 +2403,10 @@ def of(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def f(*args, **kwargs):
-    return builder(S.of(), *args, **kwargs)</code></pre>
+<pre><code class="python">def g(*args, **kwargs):
+    ns = NodeSerializer()
+    nf = getattr(ns, n)
+    return nf(*args, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.S.sub"><code class="name flex">
@@ -1947,28 +2418,32 @@ def of(
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def f(*args, **kwargs):
-    return builder(S.of(), *args, **kwargs)</code></pre>
+<pre><code class="python">def g(*args, **kwargs):
+    ns = NodeSerializer()
+    nf = getattr(ns, n)
+    return nf(*args, **kwargs)</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
 <dt id="pyracmon.graph.serialize.SerializationContext"><code class="flex name class">
 <span>class <span class="ident">SerializationContext</span></span>
-<span>(</span><span>settings: Dict[str, <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a>], finder: Callable[[type], List[Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], Any]]], node_params: Optional[Dict[str, Dict[str, Any]]] = None)</span>
+<span>(</span><span>settings: dict[str, <a title="pyracmon.graph.serialize.NodeSerializer" href="#pyracmon.graph.serialize.NodeSerializer">NodeSerializer</a>], finder: Callable[[type], list[Callable[[ForwardRef('<a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a>')], Any]]], node_params: Optional[dict[str, dict[str, typing.Any]]] = None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>This class implements actual serialization flow using <code>NodeContainer</code> s.</p>
-<p><code>node_params</code> enables <em>serializer</em> to get values dynamically determined
-because they are obtained by this context which can be obtained at the first argument of <em>serializer</em> function.</p>
-<p>Following code shows the example using the parameters in <em>serializer</em> .</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; cxt = SerializationContext(
-&gt;&gt;&gt;     dict(
-&gt;&gt;&gt;         a = S.each(lambda c,n,b,v: v*c[&quot;a&quot;].value),
-&gt;&gt;&gt;     ),
-&gt;&gt;&gt;     finder,
-&gt;&gt;&gt;     dict(a={&quot;value&quot;: 10})
-&gt;&gt;&gt; )
+<div class="desc"><p>This class implements actual serialization flow applied to a graph.</p>
+<p><code>node_params</code> is a <code>dict</code> whose values will be passed to <em>serializer</em> via <code>params</code> attribute of <code><a title="pyracmon.graph.serialize.NodeContext" href="#pyracmon.graph.serialize.NodeContext">NodeContext</a></code> .
+The property name of the node is used to get values (also a <code>dict</code> ) from the <code>dict</code>
+and the <code>params</code> exposes them as its attributes of the same names as their keys.</p>
+<p>Arbitrary values can be passed in <code>node_params</code> which is a <code>dict</code> </p>
+<p>Following code shows the example passing a parameter to a <em>serializer</em> .</p>
+<pre><code class="language-python">cxt = SerializationContext(
+    dict(
+        a = S.each(lambda cxt: cxt.value*c.params.value),
+    ),
+    finder,
+    dict(a={&quot;value&quot;: 10})
+)
 </code></pre>
 <h2 id="args">Args</h2>
 <dl>
@@ -1977,7 +2452,7 @@ because they are obtained by this context which can be obtained at the first arg
 <dt><strong><code>finder</code></strong></dt>
 <dd>A function to find base <em>serializer</em> s by a <code>type</code> .</dd>
 <dt><strong><code>node_params</code></strong></dt>
-<dd>Parameters bound to node name. This context works as this <code>dict</code> on index access.</dd>
+<dd>Arbitrary parameters passed to <em>serializer</em>s.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -1985,36 +2460,41 @@ because they are obtained by this context which can be obtained at the first arg
 </summary>
 <pre><code class="python">class SerializationContext:
     &#34;&#34;&#34;
-    This class implements actual serialization flow using `NodeContainer` s.
+    This class implements actual serialization flow applied to a graph.
 
-    `node_params` enables *serializer* to get values dynamically determined
-    because they are obtained by this context which can be obtained at the first argument of *serializer* function.
+    `node_params` is a `dict` whose values will be passed to *serializer* via `params` attribute of `NodeContext` .
+    The property name of the node is used to get values (also a `dict` ) from the `dict`
+    and the `params` exposes them as its attributes of the same names as their keys.
 
-    Following code shows the example using the parameters in *serializer* .
+    Arbitrary values can be passed in `node_params` which is a `dict` 
 
-    &gt;&gt;&gt; cxt = SerializationContext(
-    &gt;&gt;&gt;     dict(
-    &gt;&gt;&gt;         a = S.each(lambda c,n,b,v: v*c[&#34;a&#34;].value),
-    &gt;&gt;&gt;     ),
-    &gt;&gt;&gt;     finder,
-    &gt;&gt;&gt;     dict(a={&#34;value&#34;: 10})
-    &gt;&gt;&gt; )
+    Following code shows the example passing a parameter to a *serializer* .
+
+    ```python
+    cxt = SerializationContext(
+        dict(
+            a = S.each(lambda cxt: cxt.value*c.params.value),
+        ),
+        finder,
+        dict(a={&#34;value&#34;: 10})
+    )
+    ```
 
     Args:
         settings: Mapping of node name to `NodeSerializer` .
         finder: A function to find base *serializer* s by a `type` .
-        node_params: Parameters bound to node name. This context works as this `dict` on index access.
+        node_params: Arbitrary parameters passed to *serializer*s.
     &#34;&#34;&#34;
     def __init__(
         self,
-        settings: Dict[str, NodeSerializer],
-        finder: Callable[[type], List[Serializer]],
-        node_params: Optional[Dict[str, Dict[str, Any]]] = None,
+        settings: dict[str, NodeSerializer],
+        finder: Callable[[type], list[Serializer]],
+        node_params: Optional[dict[str, dict[str, Any]]] = None,
     ):
-        self.serializer_map = {n:self._to_serializer(s) for n, s in settings.items()}
-        self.finder = finder
-        self.node_params = node_params or {}
-        self.context_factories = {}
+        self.settings: dict[str, NodeSerializer] = settings
+        self.finder: Callable[[type], list[Serializer]] = finder
+        self._node_params: dict[str, dict[str, Any]] = node_params or {}
+        self._context_factories: dict[str, NodeContextFactory] = {}
 
     def __getitem__(self, node: Union[Node, str]) -&gt; Any:
         &#34;&#34;&#34;
@@ -2026,7 +2506,7 @@ because they are obtained by this context which can be obtained at the first arg
             An object exposing parameters for the node as attributes.
         &#34;&#34;&#34;
         name = node.name if isinstance(node, Node) else node
-        params = self.node_params.get(name, {})
+        params = self._node_params.get(name, {})
 
         class Accessor:
             def __getattr__(self, key):
@@ -2034,13 +2514,7 @@ because they are obtained by this context which can be obtained at the first arg
 
         return Accessor()
 
-    def _to_serializer(self, s):
-        if isinstance(s, NodeSerializer):
-            return s
-        else:
-            return S.of(*s)
-
-    def execute(self, graph: GraphView) -&gt; Dict[str, Any]:
+    def execute(self, graph: GraphView) -&gt; dict[str, Any]:
         &#34;&#34;&#34;
         Serializes a graph.
 
@@ -2050,13 +2524,11 @@ because they are obtained by this context which can be obtained at the first arg
             Serialization result.
         &#34;&#34;&#34;
         result = {}
-
-        for n, c in filter(lambda nc: nc[1]().prop.parent is None, graph):
-            self.serialize_to(c().name, c, result)
-
+        for c in graph().roots:
+            self.serialize_to(c.name, c, result)
         return result
 
-    def serialize_to(self, name: str, container: Union[NodeContainer, Node.Children], parent: Dict[str, Any]):
+    def serialize_to(self, name: str, container: Union[NodeContainer, Node.Children], parent: dict[str, Any]) -&gt; None:
         &#34;&#34;&#34;
         Serialize nodes and appends them into the dictionary.
 
@@ -2065,51 +2537,67 @@ because they are obtained by this context which can be obtained at the first arg
             container: Container of nodes. 
             parent: A parent dictionary to which serialized values will be appended.
         &#34;&#34;&#34;
-        ns = self.serializer_map.get(name, None)
+        ns = self.settings.get(name, None)
 
-        if ns:
-            agg = ns.aggregator(container().nodes)
+        if not ns:
+            # Nodes whose names are not supplied to settings are not serialized.
+            return
 
-            if ns.be_singular:
-                # Alternative value given to aggregation function may be returned instead of node.
-                value = self._serialize_node(agg, ns) if isinstance(agg, Node) else agg
+        # First, aggregate nodes into its subset or a single node.
+        nodes: Union[list[Node], Node, Any] = ns.aggregator(container.nodes)
 
-                if ns.be_merged:
-                    if not isinstance(value, dict):
-                        raise ValueError(f&#34;Serialized value must be dict but {type(value)}.&#34;)
+        if ns.be_singular:
+            if isinstance(nodes, list):
+                raise ValueError(f&#34;Aggregation function is marked to create a single value but returns node list.&#34;)
 
-                    parent.update({ns.namer(k):v for k, v in value.items()})
-                else:
-                    parent[ns.namer(name)] = value
+            # Alternative value given to aggregation function may be returned instead of node.
+            value = self._serialize_node(nodes, ns) if isinstance(nodes, Node) else nodes
+
+            if ns.be_merged:
+                if value is None:
+                    # When empty, no key-value pair is added to parent.
+                    return
+                elif not isinstance(value, dict):
+                    raise ValueError(f&#34;Serialized value must be dict but {type(value)}.&#34;)
+
+                parent.update({ns.namer(k):v for k, v in value.items()})
             else:
-                if ns.be_merged:
-                    raise ValueError(f&#34;Merging to parent dict requires folding.&#34;)
+                parent[ns.namer(name)] = value
+        else:
+            if not isinstance(nodes, list):
+                raise ValueError(f&#34;Aggregation function is marked to return node list but returns a single value.&#34;)
+            if ns.be_merged:
+                raise ValueError(f&#34;Merging to parent dict requires folding.&#34;)
 
-                parent[ns.namer(name)] = [self._serialize_node(n, ns) for n in agg]
+            parent[ns.namer(name)] = [self._serialize_node(n, ns) for n in nodes]
 
-    def _serialize_node(self, node, node_serializer):
-        if not node.prop.name in self.context_factories:
-            self.context_factories[node.prop.name] = NodeContextFactory(
+    def _find_serializer(self, prop: GraphTemplate.Property) -&gt; list[Serializer]:
+        return self.finder(prop.kind) if isinstance(prop.kind, type) else []
+
+    def _serialize_node(self, node: Node, node_serializer: NodeSerializer):
+        if not node.prop.name in self._context_factories:
+            self._context_factories[node.prop.name] = NodeContextFactory(
                 self,
-                self.finder(node.prop.kind),
-                self.node_params.get(node.prop.name, {}),
+                self._find_serializer(node.prop),
+                self._node_params.get(node.prop.name, {}),
             )
 
-        factory = self.context_factories[node.prop.name]
+        factory = self._context_factories[node.prop.name]
 
         with factory.begin(node, node_serializer._serializers) as cxt:
             value = cxt.serialize()
 
+            # Child nodes are serialized only when the parent node is serialized into a dict.
             if isinstance(value, dict):
                 for n, ch in node.children.items():
-                    self.serialize_to(n, ch.view, value)
+                    self.serialize_to(n, ch, value)
 
             return value</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
 <dt id="pyracmon.graph.serialize.SerializationContext.execute"><code class="name flex">
-<span>def <span class="ident">execute</span></span>(<span>self, graph: <a title="pyracmon.graph.graph.GraphView" href="graph.html#pyracmon.graph.graph.GraphView">GraphView</a>) ‑> Dict[str, Any]</span>
+<span>def <span class="ident">execute</span></span>(<span>self, graph: <a title="pyracmon.graph.graph.GraphView" href="graph.html#pyracmon.graph.graph.GraphView">GraphView</a>) ‑> dict[str, typing.Any]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Serializes a graph.</p>
@@ -2124,7 +2612,7 @@ because they are obtained by this context which can be obtained at the first arg
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def execute(self, graph: GraphView) -&gt; Dict[str, Any]:
+<pre><code class="python">def execute(self, graph: GraphView) -&gt; dict[str, Any]:
     &#34;&#34;&#34;
     Serializes a graph.
 
@@ -2134,15 +2622,13 @@ because they are obtained by this context which can be obtained at the first arg
         Serialization result.
     &#34;&#34;&#34;
     result = {}
-
-    for n, c in filter(lambda nc: nc[1]().prop.parent is None, graph):
-        self.serialize_to(c().name, c, result)
-
+    for c in graph().roots:
+        self.serialize_to(c.name, c, result)
     return result</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.graph.serialize.SerializationContext.serialize_to"><code class="name flex">
-<span>def <span class="ident">serialize_to</span></span>(<span>self, name: str, container: Union[<a title="pyracmon.graph.graph.NodeContainer" href="graph.html#pyracmon.graph.graph.NodeContainer">NodeContainer</a>, <a title="pyracmon.graph.graph.Node.Children" href="graph.html#pyracmon.graph.graph.Node.Children">Node.Children</a>], parent: Dict[str, Any])</span>
+<span>def <span class="ident">serialize_to</span></span>(<span>self, name: str, container: Union[<a title="pyracmon.graph.graph.NodeContainer" href="graph.html#pyracmon.graph.graph.NodeContainer">NodeContainer</a>, <a title="pyracmon.graph.graph.Node.Children" href="graph.html#pyracmon.graph.graph.Node.Children">Node.Children</a>], parent: dict[str, typing.Any]) ‑> None</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Serialize nodes and appends them into the dictionary.</p>
@@ -2159,7 +2645,7 @@ because they are obtained by this context which can be obtained at the first arg
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def serialize_to(self, name: str, container: Union[NodeContainer, Node.Children], parent: Dict[str, Any]):
+<pre><code class="python">def serialize_to(self, name: str, container: Union[NodeContainer, Node.Children], parent: dict[str, Any]) -&gt; None:
     &#34;&#34;&#34;
     Serialize nodes and appends them into the dictionary.
 
@@ -2168,30 +2654,95 @@ because they are obtained by this context which can be obtained at the first arg
         container: Container of nodes. 
         parent: A parent dictionary to which serialized values will be appended.
     &#34;&#34;&#34;
-    ns = self.serializer_map.get(name, None)
+    ns = self.settings.get(name, None)
 
-    if ns:
-        agg = ns.aggregator(container().nodes)
+    if not ns:
+        # Nodes whose names are not supplied to settings are not serialized.
+        return
 
-        if ns.be_singular:
-            # Alternative value given to aggregation function may be returned instead of node.
-            value = self._serialize_node(agg, ns) if isinstance(agg, Node) else agg
+    # First, aggregate nodes into its subset or a single node.
+    nodes: Union[list[Node], Node, Any] = ns.aggregator(container.nodes)
 
-            if ns.be_merged:
-                if not isinstance(value, dict):
-                    raise ValueError(f&#34;Serialized value must be dict but {type(value)}.&#34;)
+    if ns.be_singular:
+        if isinstance(nodes, list):
+            raise ValueError(f&#34;Aggregation function is marked to create a single value but returns node list.&#34;)
 
-                parent.update({ns.namer(k):v for k, v in value.items()})
-            else:
-                parent[ns.namer(name)] = value
+        # Alternative value given to aggregation function may be returned instead of node.
+        value = self._serialize_node(nodes, ns) if isinstance(nodes, Node) else nodes
+
+        if ns.be_merged:
+            if value is None:
+                # When empty, no key-value pair is added to parent.
+                return
+            elif not isinstance(value, dict):
+                raise ValueError(f&#34;Serialized value must be dict but {type(value)}.&#34;)
+
+            parent.update({ns.namer(k):v for k, v in value.items()})
         else:
-            if ns.be_merged:
-                raise ValueError(f&#34;Merging to parent dict requires folding.&#34;)
+            parent[ns.namer(name)] = value
+    else:
+        if not isinstance(nodes, list):
+            raise ValueError(f&#34;Aggregation function is marked to return node list but returns a single value.&#34;)
+        if ns.be_merged:
+            raise ValueError(f&#34;Merging to parent dict requires folding.&#34;)
 
-            parent[ns.namer(name)] = [self._serialize_node(n, ns) for n in agg]</code></pre>
+        parent[ns.namer(name)] = [self._serialize_node(n, ns) for n in nodes]</code></pre>
 </details>
 </dd>
 </dl>
+</dd>
+<dt id="pyracmon.graph.serialize.SerializerMeta"><code class="flex name class">
+<span>class <span class="ident">SerializerMeta</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for protocol classes.</p>
+<p>Protocol classes are defined as::</p>
+<pre><code>class Proto(Protocol):
+    def meth(self) -&gt; int:
+        ...
+</code></pre>
+<p>Such classes are primarily used with static type checkers that recognize
+structural subtyping (static duck-typing), for example::</p>
+<pre><code>class C:
+    def meth(self) -&gt; int:
+        return 0
+
+def func(x: Proto) -&gt; int:
+    return x.meth()
+
+func(C())  # Passes static type check
+</code></pre>
+<p>See PEP 544 for details. Protocol classes decorated with
+@typing.runtime_checkable act as simple-minded runtime protocols that check
+only the presence of given attributes, ignoring their type signatures.
+Protocol classes can be generic, they are defined as::</p>
+<pre><code>class GenProto(Protocol[T]):
+    def meth(self) -&gt; T:
+        ...
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SerializerMeta(NodeSerializing, type): # type: ignore
+    @classmethod
+    def __prepare__(cls, __name: str, __bases: tuple[type, ...], **kwds: Any) -&gt; Mapping[str, object]:
+        def wrap(n, f):
+            def g(*args, **kwargs):
+                ns = NodeSerializer()
+                nf = getattr(ns, n)
+                return nf(*args, **kwargs)
+            return g
+        return {n: wrap(n, f) for n, f in getmembers(NodeSerializing, isfunction) if not n.startswith(&#34;__&#34;)}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pyracmon.graph.serialize.NodeSerializing" href="#pyracmon.graph.serialize.NodeSerializing">NodeSerializing</a></li>
+<li>typing.Protocol</li>
+<li>typing.Generic</li>
+<li>builtins.type</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -2207,6 +2758,11 @@ because they are obtained by this context which can be obtained at the first arg
 <li><code><a title="pyracmon.graph" href="index.html">pyracmon.graph</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pyracmon.graph.serialize.chain_serializers" href="#pyracmon.graph.serialize.chain_serializers">chain_serializers</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
@@ -2214,6 +2770,7 @@ because they are obtained by this context which can be obtained at the first arg
 <ul class="">
 <li><code><a title="pyracmon.graph.serialize.NodeContext.context" href="#pyracmon.graph.serialize.NodeContext.context">context</a></code></li>
 <li><code><a title="pyracmon.graph.serialize.NodeContext.node" href="#pyracmon.graph.serialize.NodeContext.node">node</a></code></li>
+<li><code><a title="pyracmon.graph.serialize.NodeContext.params" href="#pyracmon.graph.serialize.NodeContext.params">params</a></code></li>
 <li><code><a title="pyracmon.graph.serialize.NodeContext.serialize" href="#pyracmon.graph.serialize.NodeContext.serialize">serialize</a></code></li>
 <li><code><a title="pyracmon.graph.serialize.NodeContext.value" href="#pyracmon.graph.serialize.NodeContext.value">value</a></code></li>
 </ul>
@@ -2221,7 +2778,6 @@ because they are obtained by this context which can be obtained at the first arg
 <li>
 <h4><code><a title="pyracmon.graph.serialize.NodeContextFactory" href="#pyracmon.graph.serialize.NodeContextFactory">NodeContextFactory</a></code></h4>
 <ul class="">
-<li><code><a title="pyracmon.graph.serialize.NodeContextFactory.base_serializers" href="#pyracmon.graph.serialize.NodeContextFactory.base_serializers">base_serializers</a></code></li>
 <li><code><a title="pyracmon.graph.serialize.NodeContextFactory.begin" href="#pyracmon.graph.serialize.NodeContextFactory.begin">begin</a></code></li>
 </ul>
 </li>
@@ -2250,11 +2806,26 @@ because they are obtained by this context which can be obtained at the first arg
 </ul>
 </li>
 <li>
+<h4><code><a title="pyracmon.graph.serialize.NodeSerializing" href="#pyracmon.graph.serialize.NodeSerializing">NodeSerializing</a></code></h4>
+<ul class="two-column">
+<li><code><a title="pyracmon.graph.serialize.NodeSerializing.alter" href="#pyracmon.graph.serialize.NodeSerializing.alter">alter</a></code></li>
+<li><code><a title="pyracmon.graph.serialize.NodeSerializing.at" href="#pyracmon.graph.serialize.NodeSerializing.at">at</a></code></li>
+<li><code><a title="pyracmon.graph.serialize.NodeSerializing.doc" href="#pyracmon.graph.serialize.NodeSerializing.doc">doc</a></code></li>
+<li><code><a title="pyracmon.graph.serialize.NodeSerializing.each" href="#pyracmon.graph.serialize.NodeSerializing.each">each</a></code></li>
+<li><code><a title="pyracmon.graph.serialize.NodeSerializing.fold" href="#pyracmon.graph.serialize.NodeSerializing.fold">fold</a></code></li>
+<li><code><a title="pyracmon.graph.serialize.NodeSerializing.head" href="#pyracmon.graph.serialize.NodeSerializing.head">head</a></code></li>
+<li><code><a title="pyracmon.graph.serialize.NodeSerializing.last" href="#pyracmon.graph.serialize.NodeSerializing.last">last</a></code></li>
+<li><code><a title="pyracmon.graph.serialize.NodeSerializing.merge" href="#pyracmon.graph.serialize.NodeSerializing.merge">merge</a></code></li>
+<li><code><a title="pyracmon.graph.serialize.NodeSerializing.name" href="#pyracmon.graph.serialize.NodeSerializing.name">name</a></code></li>
+<li><code><a title="pyracmon.graph.serialize.NodeSerializing.select" href="#pyracmon.graph.serialize.NodeSerializing.select">select</a></code></li>
+<li><code><a title="pyracmon.graph.serialize.NodeSerializing.sub" href="#pyracmon.graph.serialize.NodeSerializing.sub">sub</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="pyracmon.graph.serialize.S" href="#pyracmon.graph.serialize.S">S</a></code></h4>
 <ul class="two-column">
 <li><code><a title="pyracmon.graph.serialize.S.alter" href="#pyracmon.graph.serialize.S.alter">alter</a></code></li>
 <li><code><a title="pyracmon.graph.serialize.S.at" href="#pyracmon.graph.serialize.S.at">at</a></code></li>
-<li><code><a title="pyracmon.graph.serialize.S.builder" href="#pyracmon.graph.serialize.S.builder">builder</a></code></li>
 <li><code><a title="pyracmon.graph.serialize.S.doc" href="#pyracmon.graph.serialize.S.doc">doc</a></code></li>
 <li><code><a title="pyracmon.graph.serialize.S.each" href="#pyracmon.graph.serialize.S.each">each</a></code></li>
 <li><code><a title="pyracmon.graph.serialize.S.fold" href="#pyracmon.graph.serialize.S.fold">fold</a></code></li>
@@ -2273,6 +2844,9 @@ because they are obtained by this context which can be obtained at the first arg
 <li><code><a title="pyracmon.graph.serialize.SerializationContext.execute" href="#pyracmon.graph.serialize.SerializationContext.execute">execute</a></code></li>
 <li><code><a title="pyracmon.graph.serialize.SerializationContext.serialize_to" href="#pyracmon.graph.serialize.SerializationContext.serialize_to">serialize_to</a></code></li>
 </ul>
+</li>
+<li>
+<h4><code><a title="pyracmon.graph.serialize.SerializerMeta" href="#pyracmon.graph.serialize.SerializerMeta">SerializerMeta</a></code></h4>
 </li>
 </ul>
 </li>

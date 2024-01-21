@@ -35,16 +35,18 @@ from decimal import Decimal
 from datetime import date, datetime, time, timedelta
 from uuid import UUID
 from itertools import groupby
-from typing import *
+from typing import Optional
+from pyracmon.connection import Connection
 from pyracmon.model import Table, Column, ForeignKey, Relations
-from pyracmon.dialect.shared import MultiInsertMixin
-from pyracmon.query import Q, where, holders
+from pyracmon.dialect.shared import MultiInsertMixin, TruncateMixin
+from pyracmon.query import Q, where
+from pyracmon.clause import holders
 
 
 SequencePattern = re.compile(r&#34;nextval\(\&#39;([a-zA-Z0-9_]+)\&#39;(\:\:regclass)?\)&#34;)
 
 
-def read_schema(db, excludes: List[str] = None, includes: List[str] = None) -&gt; List[Table]:
+def read_schema(db: Connection, excludes: Optional[list[str]] = None, includes: Optional[list[str]] = None) -&gt; list[Table]:
     &#34;&#34;&#34;
     Collect tables in current database.
 
@@ -96,7 +98,7 @@ def read_schema(db, excludes: List[str] = None, includes: List[str] = None) -&gt
         cs = (constraint or &#34;&#34;).split(&#39;,&#39;)
         seq = m.group(1) if m else None
         null = nullable == &#39;YES&#39;
-        ptype = map_types(t, udt) if t != &#39;ARRAY&#39; else [map_types(et, eudt)]
+        ptype = map_types(t, udt) if t != &#39;ARRAY&#39; else list[map_types(et, eudt)]
         info = (t, udt) if t != &#39;ARRAY&#39; else (et, eudt)
         return Column(n, ptype, info, &#39;PRIMARY KEY&#39; in cs, Relations() if &#39;FOREIGN KEY&#39; in cs else None, seq, null)
 
@@ -156,7 +158,7 @@ def read_schema(db, excludes: List[str] = None, includes: List[str] = None) -&gt
         &#34;&#34;&#34;, *params)
 
     def mv_column_of(n, not_null, udt, eudt, pos):
-        ptype = map_types(_map_alternates(udt), udt) if eudt is None else [map_types(_map_alternates(eudt), eudt)]
+        ptype = map_types(_map_alternates(udt), udt) if eudt is None else list[map_types(_map_alternates(eudt), eudt)]
         info = (_map_alternates(udt), udt) if eudt is None else (_map_alternates(eudt), eudt)
         return Column(n, ptype, info, False, None, None, not not_null)
 
@@ -186,12 +188,11 @@ def read_schema(db, excludes: List[str] = None, includes: List[str] = None) -&gt
 
     for t in tables:
         cc = db.stmt().execute(f&#34;SELECT col_description($_, 0)&#34;, *[table_oids[t.name]])
-        t.comment = cc.fetchone()[0] or &#34;&#34;
+        t.comment = cc.fetchone()[0] or &#34;&#34; # type: ignore
 
         for i, col in enumerate(t.columns):
-            m = db.helper.marker()
             cc = db.stmt().execute(f&#34;SELECT col_description($_, $_)&#34;, *[table_oids[t.name], column_positions[t.name][col.name]])
-            col.comment = cc.fetchone()[0] or &#34;&#34;
+            col.comment = cc.fetchone()[0] or &#34;&#34; # type: ignore
 
         cc.close()
 
@@ -256,12 +257,12 @@ def _map_alternates(n):
         return n
 
 
-class PostgreSQLMixin(MultiInsertMixin):
+class PostgreSQLMixin(MultiInsertMixin, TruncateMixin):
     &#34;&#34;&#34;
     Model mixin whose methods are available in PostgreSQL.
     &#34;&#34;&#34;
     @classmethod
-    def last_sequences(cls, db, num):
+    def last_sequences(cls, db: Connection, num: int) -&gt; list[tuple[Column, int]]:
         cols = [c for c in cls.columns if c.incremental]
 
         if len(cols) &gt; 0:
@@ -269,14 +270,18 @@ class PostgreSQLMixin(MultiInsertMixin):
             d = db.cursor()
             for c in cols:
                 d.execute(f&#34;SELECT currval(&#39;{c.incremental}&#39;)&#34;)
-                sequences.append((c, d.fetchone()[0]))
+                sequences.append((c, d.fetchone()[0])) # type: ignore
             d.close()
             return sequences
         else:
             return []
 
     @classmethod
-    def truncate(cls, db):
+    def support_returning(cls, db: Connection) -&gt; bool:
+        return True
+
+    @classmethod
+    def truncate(cls, db: Connection):
         db.cursor().execute(f&#34;TRUNCATE {cls.name} RESTART IDENTITY CASCADE&#34;)
 
 
@@ -291,7 +296,7 @@ mixins = [PostgreSQLMixin]</code></pre>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="pyracmon.dialect.postgresql.read_schema"><code class="name flex">
-<span>def <span class="ident">read_schema</span></span>(<span>db, excludes: List[str] = None, includes: List[str] = None) ‑> List[<a title="pyracmon.model.Table" href="../model.html#pyracmon.model.Table">Table</a>]</span>
+<span>def <span class="ident">read_schema</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>, excludes: Optional[list[str]] = None, includes: Optional[list[str]] = None) ‑> list[<a title="pyracmon.model.Table" href="../model.html#pyracmon.model.Table">Table</a>]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Collect tables in current database.</p>
@@ -308,7 +313,7 @@ mixins = [PostgreSQLMixin]</code></pre>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def read_schema(db, excludes: List[str] = None, includes: List[str] = None) -&gt; List[Table]:
+<pre><code class="python">def read_schema(db: Connection, excludes: Optional[list[str]] = None, includes: Optional[list[str]] = None) -&gt; list[Table]:
     &#34;&#34;&#34;
     Collect tables in current database.
 
@@ -360,7 +365,7 @@ mixins = [PostgreSQLMixin]</code></pre>
         cs = (constraint or &#34;&#34;).split(&#39;,&#39;)
         seq = m.group(1) if m else None
         null = nullable == &#39;YES&#39;
-        ptype = map_types(t, udt) if t != &#39;ARRAY&#39; else [map_types(et, eudt)]
+        ptype = map_types(t, udt) if t != &#39;ARRAY&#39; else list[map_types(et, eudt)]
         info = (t, udt) if t != &#39;ARRAY&#39; else (et, eudt)
         return Column(n, ptype, info, &#39;PRIMARY KEY&#39; in cs, Relations() if &#39;FOREIGN KEY&#39; in cs else None, seq, null)
 
@@ -420,7 +425,7 @@ mixins = [PostgreSQLMixin]</code></pre>
         &#34;&#34;&#34;, *params)
 
     def mv_column_of(n, not_null, udt, eudt, pos):
-        ptype = map_types(_map_alternates(udt), udt) if eudt is None else [map_types(_map_alternates(eudt), eudt)]
+        ptype = map_types(_map_alternates(udt), udt) if eudt is None else list[map_types(_map_alternates(eudt), eudt)]
         info = (_map_alternates(udt), udt) if eudt is None else (_map_alternates(eudt), eudt)
         return Column(n, ptype, info, False, None, None, not not_null)
 
@@ -450,12 +455,11 @@ mixins = [PostgreSQLMixin]</code></pre>
 
     for t in tables:
         cc = db.stmt().execute(f&#34;SELECT col_description($_, 0)&#34;, *[table_oids[t.name]])
-        t.comment = cc.fetchone()[0] or &#34;&#34;
+        t.comment = cc.fetchone()[0] or &#34;&#34; # type: ignore
 
         for i, col in enumerate(t.columns):
-            m = db.helper.marker()
             cc = db.stmt().execute(f&#34;SELECT col_description($_, $_)&#34;, *[table_oids[t.name], column_positions[t.name][col.name]])
-            col.comment = cc.fetchone()[0] or &#34;&#34;
+            col.comment = cc.fetchone()[0] or &#34;&#34; # type: ignore
 
         cc.close()
 
@@ -478,12 +482,12 @@ mixins = [PostgreSQLMixin]</code></pre>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PostgreSQLMixin(MultiInsertMixin):
+<pre><code class="python">class PostgreSQLMixin(MultiInsertMixin, TruncateMixin):
     &#34;&#34;&#34;
     Model mixin whose methods are available in PostgreSQL.
     &#34;&#34;&#34;
     @classmethod
-    def last_sequences(cls, db, num):
+    def last_sequences(cls, db: Connection, num: int) -&gt; list[tuple[Column, int]]:
         cols = [c for c in cls.columns if c.incremental]
 
         if len(cols) &gt; 0:
@@ -491,24 +495,30 @@ mixins = [PostgreSQLMixin]</code></pre>
             d = db.cursor()
             for c in cols:
                 d.execute(f&#34;SELECT currval(&#39;{c.incremental}&#39;)&#34;)
-                sequences.append((c, d.fetchone()[0]))
+                sequences.append((c, d.fetchone()[0])) # type: ignore
             d.close()
             return sequences
         else:
             return []
 
     @classmethod
-    def truncate(cls, db):
+    def support_returning(cls, db: Connection) -&gt; bool:
+        return True
+
+    @classmethod
+    def truncate(cls, db: Connection):
         db.cursor().execute(f&#34;TRUNCATE {cls.name} RESTART IDENTITY CASCADE&#34;)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="pyracmon.dialect.shared.MultiInsertMixin" href="shared.html#pyracmon.dialect.shared.MultiInsertMixin">MultiInsertMixin</a></li>
+<li><a title="pyracmon.mixin.CRUDInternalMeta" href="../mixin.html#pyracmon.mixin.CRUDInternalMeta">CRUDInternalMeta</a></li>
+<li><a title="pyracmon.dialect.shared.TruncateMixin" href="shared.html#pyracmon.dialect.shared.TruncateMixin">TruncateMixin</a></li>
 </ul>
 <h3>Static methods</h3>
 <dl>
 <dt id="pyracmon.dialect.postgresql.PostgreSQLMixin.last_sequences"><code class="name flex">
-<span>def <span class="ident">last_sequences</span></span>(<span>db, num)</span>
+<span>def <span class="ident">last_sequences</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>, num: int) ‑> list[tuple[<a title="pyracmon.model.Column" href="../model.html#pyracmon.model.Column">Column</a>, int]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -517,7 +527,7 @@ mixins = [PostgreSQLMixin]</code></pre>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@classmethod
-def last_sequences(cls, db, num):
+def last_sequences(cls, db: Connection, num: int) -&gt; list[tuple[Column, int]]:
     cols = [c for c in cls.columns if c.incremental]
 
     if len(cols) &gt; 0:
@@ -525,15 +535,15 @@ def last_sequences(cls, db, num):
         d = db.cursor()
         for c in cols:
             d.execute(f&#34;SELECT currval(&#39;{c.incremental}&#39;)&#34;)
-            sequences.append((c, d.fetchone()[0]))
+            sequences.append((c, d.fetchone()[0])) # type: ignore
         d.close()
         return sequences
     else:
         return []</code></pre>
 </details>
 </dd>
-<dt id="pyracmon.dialect.postgresql.PostgreSQLMixin.truncate"><code class="name flex">
-<span>def <span class="ident">truncate</span></span>(<span>db)</span>
+<dt id="pyracmon.dialect.postgresql.PostgreSQLMixin.support_returning"><code class="name flex">
+<span>def <span class="ident">support_returning</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>) ‑> bool</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -542,7 +552,21 @@ def last_sequences(cls, db, num):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@classmethod
-def truncate(cls, db):
+def support_returning(cls, db: Connection) -&gt; bool:
+    return True</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.dialect.postgresql.PostgreSQLMixin.truncate"><code class="name flex">
+<span>def <span class="ident">truncate</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def truncate(cls, db: Connection):
     db.cursor().execute(f&#34;TRUNCATE {cls.name} RESTART IDENTITY CASCADE&#34;)</code></pre>
 </details>
 </dd>
@@ -581,6 +605,7 @@ def truncate(cls, db):
 <h4><code><a title="pyracmon.dialect.postgresql.PostgreSQLMixin" href="#pyracmon.dialect.postgresql.PostgreSQLMixin">PostgreSQLMixin</a></code></h4>
 <ul class="">
 <li><code><a title="pyracmon.dialect.postgresql.PostgreSQLMixin.last_sequences" href="#pyracmon.dialect.postgresql.PostgreSQLMixin.last_sequences">last_sequences</a></code></li>
+<li><code><a title="pyracmon.dialect.postgresql.PostgreSQLMixin.support_returning" href="#pyracmon.dialect.postgresql.PostgreSQLMixin.support_returning">support_returning</a></code></li>
 <li><code><a title="pyracmon.dialect.postgresql.PostgreSQLMixin.truncate" href="#pyracmon.dialect.postgresql.PostgreSQLMixin.truncate">truncate</a></code></li>
 </ul>
 </li>

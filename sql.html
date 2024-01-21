@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>pyracmon.sql API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="This module provides the type for query generation from a template string containing unified marker." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,12 +22,16 @@
 <h1 class="title">Module <code>pyracmon.sql</code></h1>
 </header>
 <section id="section-intro">
+<p>This module provides the type for query generation from a template string containing unified marker.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from string import digits, Template
-from typing import *
+<pre><code class="python">&#34;&#34;&#34;
+This module provides the type for query generation from a template string containing unified marker.
+&#34;&#34;&#34;
+from string import digits, Template
+from typing import Any, Union
 from .marker import Marker
 
 
@@ -49,13 +53,13 @@ class Sql:
             else:
                 return self.marker(key)
 
-    def __init__(self, marker: Marker, template: str):
+    def __init__(self, marker: Marker, template: str) -&gt; None:
         #: Marker used in the template
         self.marker = marker
         #: SQL template.
         self.template = template
 
-    def render(self, *args: Any, **kwargs: Any) -&gt; Tuple[str, List[Any]]:
+    def render(self, *args: Any, **kwargs: Any) -&gt; tuple[str, Union[list[Any], dict[str, Any]]]:
         &#34;&#34;&#34;
         Renders SQL and converts parameters into the form available for current database driver.
 
@@ -71,7 +75,7 @@ class Sql:
 
         sub = Sql.Substitute(self.marker)
 
-        return Template(self.template).substitute(sub), self.marker.params(*args, **kwargs)</code></pre>
+        return Template(self.template).substitute(sub), self.marker.params(*args, **kwargs) # type: ignore</code></pre>
 </details>
 </section>
 <section>
@@ -112,13 +116,13 @@ class Sql:
             else:
                 return self.marker(key)
 
-    def __init__(self, marker: Marker, template: str):
+    def __init__(self, marker: Marker, template: str) -&gt; None:
         #: Marker used in the template
         self.marker = marker
         #: SQL template.
         self.template = template
 
-    def render(self, *args: Any, **kwargs: Any) -&gt; Tuple[str, List[Any]]:
+    def render(self, *args: Any, **kwargs: Any) -&gt; tuple[str, Union[list[Any], dict[str, Any]]]:
         &#34;&#34;&#34;
         Renders SQL and converts parameters into the form available for current database driver.
 
@@ -134,7 +138,7 @@ class Sql:
 
         sub = Sql.Substitute(self.marker)
 
-        return Template(self.template).substitute(sub), self.marker.params(*args, **kwargs)</code></pre>
+        return Template(self.template).substitute(sub), self.marker.params(*args, **kwargs) # type: ignore</code></pre>
 </details>
 <h3>Class variables</h3>
 <dl>
@@ -157,7 +161,7 @@ class Sql:
 <h3>Methods</h3>
 <dl>
 <dt id="pyracmon.sql.Sql.render"><code class="name flex">
-<span>def <span class="ident">render</span></span>(<span>self, *args: Any, **kwargs: Any) ‑> Tuple[str, List[Any]]</span>
+<span>def <span class="ident">render</span></span>(<span>self, *args: Any, **kwargs: Any) ‑> tuple[str, typing.Union[list[typing.Any], dict[str, typing.Any]]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Renders SQL and converts parameters into the form available for current database driver.</p>
@@ -175,7 +179,7 @@ class Sql:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def render(self, *args: Any, **kwargs: Any) -&gt; Tuple[str, List[Any]]:
+<pre><code class="python">def render(self, *args: Any, **kwargs: Any) -&gt; tuple[str, Union[list[Any], dict[str, Any]]]:
     &#34;&#34;&#34;
     Renders SQL and converts parameters into the form available for current database driver.
 
@@ -191,7 +195,7 @@ class Sql:
 
     sub = Sql.Substitute(self.marker)
 
-    return Template(self.template).substitute(sub), self.marker.params(*args, **kwargs)</code></pre>
+    return Template(self.template).substitute(sub), self.marker.params(*args, **kwargs) # type: ignore</code></pre>
 </details>
 </dd>
 </dl>

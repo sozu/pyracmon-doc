@@ -30,14 +30,17 @@
 <pre><code class="python">&#34;&#34;&#34;
 This module exports model mixin types having model methods available in some RDBMS.
 &#34;&#34;&#34;
-from typing import *
+from collections.abc import Sequence
+from typing import Union, Any
+from typing_extensions import Self
 from ..connection import Connection
-from ..query import values
-from ..model import *
+from ..clause import values
+from ..model import model_values, check_columns
+from ..mixin import CRUDInternalMeta
 from ..util import key_to_index, Qualifier
 
 
-class MultiInsertMixin:
+class MultiInsertMixin(CRUDInternalMeta):
     &#34;&#34;&#34;
     This class provides methods to execute queries which is not standard SQL but common to some RDBMS.
     &#34;&#34;&#34;
@@ -45,8 +48,8 @@ class MultiInsertMixin:
     def inserts(
         cls,
         db: Connection,
-        rows: List[Union[&#39;Model&#39;, Dict[str, Any]]],
-        qualifier: Qualifier = {},
+        rows: Sequence[Union[Self, dict[str, Any]]],
+        qualifier: dict[str, Qualifier] = {},
         rows_per_insert: int = 1000,
     ) -&gt; int:
         &#34;&#34;&#34;
@@ -69,19 +72,19 @@ class MultiInsertMixin:
             check_columns(cls, v)
 
         cols = list(dict_rows[0].keys())
-        qualifier = key_to_index(qualifier, cols)
+        ordered_qs = key_to_index(qualifier, cols)
 
         offset = 0
         remainders = dict_rows
 
-        sql_full = f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), rows_per_insert, qualifier)}&#34;
+        sql_full = f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), rows_per_insert, ordered_qs)}&#34;
 
         def insert(targets, index):
             num = len(targets)
             vals = sum([list(t.values()) for t in targets], [])
 
             sql = sql_full if num == rows_per_insert else \
-                f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), num, qualifier)}&#34;
+                f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), num, ordered_qs)}&#34;
 
             db.stmt().execute(sql, *vals)
 
@@ -98,7 +101,13 @@ class MultiInsertMixin:
         if len(remainders) &gt; 0:
             insert(remainders, offset)
 
-        return len(rows)</code></pre>
+        return len(rows)
+
+
+class TruncateMixin:
+    @classmethod
+    def truncate(cls, db: Connection):
+        raise NotImplementedError()</code></pre>
 </details>
 </section>
 <section>
@@ -119,7 +128,7 @@ class MultiInsertMixin:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class MultiInsertMixin:
+<pre><code class="python">class MultiInsertMixin(CRUDInternalMeta):
     &#34;&#34;&#34;
     This class provides methods to execute queries which is not standard SQL but common to some RDBMS.
     &#34;&#34;&#34;
@@ -127,8 +136,8 @@ class MultiInsertMixin:
     def inserts(
         cls,
         db: Connection,
-        rows: List[Union[&#39;Model&#39;, Dict[str, Any]]],
-        qualifier: Qualifier = {},
+        rows: Sequence[Union[Self, dict[str, Any]]],
+        qualifier: dict[str, Qualifier] = {},
         rows_per_insert: int = 1000,
     ) -&gt; int:
         &#34;&#34;&#34;
@@ -151,19 +160,19 @@ class MultiInsertMixin:
             check_columns(cls, v)
 
         cols = list(dict_rows[0].keys())
-        qualifier = key_to_index(qualifier, cols)
+        ordered_qs = key_to_index(qualifier, cols)
 
         offset = 0
         remainders = dict_rows
 
-        sql_full = f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), rows_per_insert, qualifier)}&#34;
+        sql_full = f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), rows_per_insert, ordered_qs)}&#34;
 
         def insert(targets, index):
             num = len(targets)
             vals = sum([list(t.values()) for t in targets], [])
 
             sql = sql_full if num == rows_per_insert else \
-                f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), num, qualifier)}&#34;
+                f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), num, ordered_qs)}&#34;
 
             db.stmt().execute(sql, *vals)
 
@@ -182,6 +191,10 @@ class MultiInsertMixin:
 
         return len(rows)</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pyracmon.mixin.CRUDInternalMeta" href="../mixin.html#pyracmon.mixin.CRUDInternalMeta">CRUDInternalMeta</a></li>
+</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="pyracmon.dialect.mysql.MySQLMixin" href="mysql.html#pyracmon.dialect.mysql.MySQLMixin">MySQLMixin</a></li>
@@ -190,7 +203,7 @@ class MultiInsertMixin:
 <h3>Static methods</h3>
 <dl>
 <dt id="pyracmon.dialect.shared.MultiInsertMixin.inserts"><code class="name flex">
-<span>def <span class="ident">inserts</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>, rows: List[Union[ForwardRef('Model'), Dict[str, Any]]], qualifier: Dict[str, Callable[[str], str]] = {}, rows_per_insert: int = 1000) ‑> int</span>
+<span>def <span class="ident">inserts</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>, rows: collections.abc.Sequence[typing.Union[typing_extensions.Self, dict[str, typing.Any]]], qualifier: dict[str, collections.abc.Callable[[str], str]] = {}, rows_per_insert: int = 1000) ‑> int</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Insert multiple records.</p>
@@ -215,8 +228,8 @@ class MultiInsertMixin:
 def inserts(
     cls,
     db: Connection,
-    rows: List[Union[&#39;Model&#39;, Dict[str, Any]]],
-    qualifier: Qualifier = {},
+    rows: Sequence[Union[Self, dict[str, Any]]],
+    qualifier: dict[str, Qualifier] = {},
     rows_per_insert: int = 1000,
 ) -&gt; int:
     &#34;&#34;&#34;
@@ -239,19 +252,19 @@ def inserts(
         check_columns(cls, v)
 
     cols = list(dict_rows[0].keys())
-    qualifier = key_to_index(qualifier, cols)
+    ordered_qs = key_to_index(qualifier, cols)
 
     offset = 0
     remainders = dict_rows
 
-    sql_full = f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), rows_per_insert, qualifier)}&#34;
+    sql_full = f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), rows_per_insert, ordered_qs)}&#34;
 
     def insert(targets, index):
         num = len(targets)
         vals = sum([list(t.values()) for t in targets], [])
 
         sql = sql_full if num == rows_per_insert else \
-            f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), num, qualifier)}&#34;
+            f&#34;INSERT INTO {cls.name} ({&#39;, &#39;.join(cols)}) VALUES {values(len(cols), num, ordered_qs)}&#34;
 
         db.stmt().execute(sql, *vals)
 
@@ -269,6 +282,43 @@ def inserts(
         insert(remainders, offset)
 
     return len(rows)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="pyracmon.dialect.shared.TruncateMixin"><code class="flex name class">
+<span>class <span class="ident">TruncateMixin</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TruncateMixin:
+    @classmethod
+    def truncate(cls, db: Connection):
+        raise NotImplementedError()</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="pyracmon.dialect.mysql.MySQLMixin" href="mysql.html#pyracmon.dialect.mysql.MySQLMixin">MySQLMixin</a></li>
+<li><a title="pyracmon.dialect.postgresql.PostgreSQLMixin" href="postgresql.html#pyracmon.dialect.postgresql.PostgreSQLMixin">PostgreSQLMixin</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="pyracmon.dialect.shared.TruncateMixin.truncate"><code class="name flex">
+<span>def <span class="ident">truncate</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def truncate(cls, db: Connection):
+    raise NotImplementedError()</code></pre>
 </details>
 </dd>
 </dl>
@@ -293,6 +343,12 @@ def inserts(
 <h4><code><a title="pyracmon.dialect.shared.MultiInsertMixin" href="#pyracmon.dialect.shared.MultiInsertMixin">MultiInsertMixin</a></code></h4>
 <ul class="">
 <li><code><a title="pyracmon.dialect.shared.MultiInsertMixin.inserts" href="#pyracmon.dialect.shared.MultiInsertMixin.inserts">inserts</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pyracmon.dialect.shared.TruncateMixin" href="#pyracmon.dialect.shared.TruncateMixin">TruncateMixin</a></code></h4>
+<ul class="">
+<li><code><a title="pyracmon.dialect.shared.TruncateMixin.truncate" href="#pyracmon.dialect.shared.TruncateMixin.truncate">truncate</a></code></li>
 </ul>
 </li>
 </ul>

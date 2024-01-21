@@ -27,17 +27,17 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from datetime import datetime, date, time, timedelta
-from .model import TestingMixin
-from .util import testing_config, truncate, Matcher, near, let, one_of
+from .model import TestingMixin, truncate
+from .util import default_test_config
 
 
 __all__ = [
     &#34;TestingMixin&#34;,
-    &#34;testing_config&#34;,
+    &#34;default_test_config&#34;,
     &#34;truncate&#34;,
-    &#34;near&#34;,
-    &#34;let&#34;,
-    &#34;one_of&#34;,
+    #&#34;near&#34;,
+    #&#34;let&#34;,
+    #&#34;one_of&#34;,
 ]</code></pre>
 </details>
 </section>
@@ -59,75 +59,21 @@ __all__ = [
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="pyracmon.testing.near"><code class="name flex">
-<span>def <span class="ident">near</span></span>(<span>expected: Any, negative: Optional[Any] = None, positive: Optional[Any] = None, **kwargs: Any) ‑> <a title="pyracmon.testing.util.Matcher" href="util.html#pyracmon.testing.util.Matcher">Matcher</a></span>
+<dt id="pyracmon.testing.default_test_config"><code class="name flex">
+<span>def <span class="ident">default_test_config</span></span>(<span>) ‑> <a title="pyracmon.config.PyracmonConfiguration" href="../config.html#pyracmon.config.PyracmonConfiguration">PyracmonConfiguration</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Creates a matcher to check actual value is in a range.</p>
-<p>Comparison between the value and given range depends on its type.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>expected</code></strong></dt>
-<dd>Expected value.</dd>
-<dt><strong><code>negative</code></strong></dt>
-<dd>Margin of negative direction.</dd>
-<dt><strong><code>positive</code></strong></dt>
-<dd>Margin of positive direction.</dd>
-<dt><strong><code>kwargs</code></strong></dt>
-<dd>Keyword arguments to create marginal values.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>Created matcher.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def near(expected: Any, negative: Optional[Any] = None, positive: Optional[Any] = None, **kwargs: Any) -&gt; Matcher:
-    &#34;&#34;&#34;
-    Creates a matcher to check actual value is in a range.
-
-    Comparison between the value and given range depends on its type.
-
-    Args:
-        expected: Expected value.
-        negative: Margin of negative direction.
-        positive: Margin of positive direction.
-        kwargs: Keyword arguments to create marginal values.
-    Returns:
-        Created matcher.
-    &#34;&#34;&#34;
-    if isinstance(expected, datetime):
-        if all(k not in kwargs for k in (&#39;weeks&#39;, &#39;days&#39;, &#39;hours&#39;, &#39;minutes&#39;, &#39;seconds&#39;, &#39;milliseconds&#39;, &#39;microseconds&#39;)):
-            kwargs.update(**testing_config().timedelta_unit)
-    return Near(expected, negative, positive, **kwargs)</code></pre>
-</details>
-</dd>
-<dt id="pyracmon.testing.testing_config"><code class="name flex">
-<span>def <span class="ident">testing_config</span></span>(<span>cfg: <a title="pyracmon.config.PyracmonConfiguration" href="../config.html#pyracmon.config.PyracmonConfiguration">PyracmonConfiguration</a> = &lt;pyracmon.config.DerivingConfiguration object&gt;) ‑> <a title="pyracmon.config.PyracmonConfiguration" href="../config.html#pyracmon.config.PyracmonConfiguration">PyracmonConfiguration</a></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Returns a configuration used for testing.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>cfg</code></strong></dt>
-<dd>Don't use this argument. This exists to locate global instance in private.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def testing_config(cfg: PyracmonConfiguration = default_config().derive()) -&gt; PyracmonConfiguration:
-    &#34;&#34;&#34;
-    Returns a configuration used for testing.
-
-    Args:
-        cfg: Don&#39;t use this argument. This exists to locate global instance in private.
-    &#34;&#34;&#34;
-    return cfg</code></pre>
+<pre><code class="python">def default_test_config() -&gt; PyracmonConfiguration:
+    return config.get()</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.testing.truncate"><code class="name flex">
-<span>def <span class="ident">truncate</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>, *models: List[ForwardRef('Model')])</span>
+<span>def <span class="ident">truncate</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>, *models: type[<a title="pyracmon.dialect.shared.TruncateMixin" href="../dialect/shared.html#pyracmon.dialect.shared.TruncateMixin">TruncateMixin</a>])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Truncate tables in order.</p>
@@ -142,7 +88,7 @@ __all__ = [
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def truncate(db: Connection, *models: List[&#39;Model&#39;]):
+<pre><code class="python">def truncate(db: Connection, *models: type[TruncateMixin]):
     &#34;&#34;&#34;
     Truncate tables in order.
 
@@ -171,12 +117,12 @@ __all__ = [
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TestingMixin:
+<pre><code class="python">class TestingMixin(TestingModel):
     &#34;&#34;&#34;
     Mixin class for model types providing methods designed for testing.
     &#34;&#34;&#34;
     @classmethod
-    def by(cls, index: int) -&gt; type:
+    def by(cls, index: int) -&gt; Self:
         &#34;&#34;&#34;
         Set current fixture index.
 
@@ -186,16 +132,70 @@ __all__ = [
             This type.
         &#34;&#34;&#34;
         TestingState.set_index(cls, index)
-        return cls
+        return cls # type: ignore
 
+    @overload
     @classmethod
     def fixture(
         cls,
-        db: Connection,
-        variable: Optional[Union[int, Dict[str, Any], Model, List[Dict[str, Any]], List[Model]]] = None,
+        db: Optional[Connection],
+        variable: None = None,
         index: Optional[int] = None,
         cfg: Optional[PyracmonConfiguration] = None,
-    ) -&gt; Union[Model, List[Model]]:
+    ) -&gt; list[Self]: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: int,
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; list[Self]: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: Self,
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; Self: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: dict[str, Any],
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; Self: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: list[Self],
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; list[Self]: ...
+    @overload
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: list[dict[str, Any]],
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; list[Self]: ...
+    @classmethod
+    def fixture(
+        cls,
+        db: Optional[Connection],
+        variable: Optional[Union[int, dict[str, Any], Self, list[dict[str, Any]], list[Self]]] = None,
+        index: Optional[int] = None,
+        cfg: Optional[PyracmonConfiguration] = None,
+    ) -&gt; Union[Self, list[Self]]:
         &#34;&#34;&#34;
         Inserts record(s) with auto-generated column values.
 
@@ -256,10 +256,14 @@ __all__ = [
                     return False
         return True</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="pyracmon.testing.model.TestingModel" href="model.html#pyracmon.testing.model.TestingModel">TestingModel</a></li>
+</ul>
 <h3>Static methods</h3>
 <dl>
 <dt id="pyracmon.testing.TestingMixin.by"><code class="name flex">
-<span>def <span class="ident">by</span></span>(<span>index: int) ‑> type</span>
+<span>def <span class="ident">by</span></span>(<span>index: int) ‑> typing_extensions.Self</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Set current fixture index.</p>
@@ -275,7 +279,7 @@ __all__ = [
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@classmethod
-def by(cls, index: int) -&gt; type:
+def by(cls, index: int) -&gt; Self:
     &#34;&#34;&#34;
     Set current fixture index.
 
@@ -285,11 +289,11 @@ def by(cls, index: int) -&gt; type:
         This type.
     &#34;&#34;&#34;
     TestingState.set_index(cls, index)
-    return cls</code></pre>
+    return cls # type: ignore</code></pre>
 </details>
 </dd>
 <dt id="pyracmon.testing.TestingMixin.fixture"><code class="name flex">
-<span>def <span class="ident">fixture</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>, variable: Union[int, Dict[str, Any], <a title="pyracmon.model.Model" href="../model.html#pyracmon.model.Model">Model</a>, List[Dict[str, Any]], List[<a title="pyracmon.model.Model" href="../model.html#pyracmon.model.Model">Model</a>], None] = None, index: Optional[int] = None, cfg: Optional[<a title="pyracmon.config.PyracmonConfiguration" href="../config.html#pyracmon.config.PyracmonConfiguration">PyracmonConfiguration</a>] = None) ‑> Union[<a title="pyracmon.model.Model" href="../model.html#pyracmon.model.Model">Model</a>, List[<a title="pyracmon.model.Model" href="../model.html#pyracmon.model.Model">Model</a>]]</span>
+<span>def <span class="ident">fixture</span></span>(<span>db: Optional[<a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>], variable: Union[int, dict[str, Any], typing_extensions.Self, list[dict[str, Any]], list[typing_extensions.Self], ForwardRef(None)] = None, index: Optional[int] = None, cfg: Optional[<a title="pyracmon.config.PyracmonConfiguration" href="../config.html#pyracmon.config.PyracmonConfiguration">PyracmonConfiguration</a>] = None) ‑> Union[typing_extensions.Self, list[typing_extensions.Self]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Inserts record(s) with auto-generated column values.</p>
@@ -315,11 +319,11 @@ This argument is prepared only for internal use and can be changed or removed in
 <pre><code class="python">@classmethod
 def fixture(
     cls,
-    db: Connection,
-    variable: Optional[Union[int, Dict[str, Any], Model, List[Dict[str, Any]], List[Model]]] = None,
+    db: Optional[Connection],
+    variable: Optional[Union[int, dict[str, Any], Self, list[dict[str, Any]], list[Self]]] = None,
     index: Optional[int] = None,
     cfg: Optional[PyracmonConfiguration] = None,
-) -&gt; Union[Model, List[Model]]:
+) -&gt; Union[Self, list[Self]]:
     &#34;&#34;&#34;
     Inserts record(s) with auto-generated column values.
 
@@ -407,88 +411,6 @@ Matches or not.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="pyracmon.testing.let"><code class="flex name class">
-<span>class <span class="ident">let</span></span>
-<span>(</span><span>pred: Callable[[Any], bool])</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Creates a matcher which applies the predicate function to actual value and checks its returning value is <code>True</code> .</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>pred</code></strong></dt>
-<dd>A predicate function.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>Created matcher.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class let(Matcher):
-    def __init__(self, pred: Callable[[Any], bool]) -&gt; Matcher:
-        &#34;&#34;&#34;
-        Creates a matcher which applies the predicate function to actual value and checks its returning value is ``True`` .
-
-        Args:
-            pred: A predicate function.
-        Returns:
-            Created matcher.
-        &#34;&#34;&#34;
-        super().__init__()
-        self.pred = pred
-
-    def _match(self, actual):
-        return self.pred(actual)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="pyracmon.testing.util.Matcher" href="util.html#pyracmon.testing.util.Matcher">Matcher</a></li>
-</ul>
-</dd>
-<dt id="pyracmon.testing.one_of"><code class="flex name class">
-<span>class <span class="ident">one_of</span></span>
-<span>(</span><span>*candidates)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Creates a matcher which checks whether the actual value matches one of candidate values.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>candidates</code></strong></dt>
-<dd>Candidate values.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>Created matcher.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class one_of(Matcher):
-    def __init__(self, *candidates) -&gt; Matcher:
-        &#34;&#34;&#34;
-        Creates a matcher which checks whether the actual value matches one of candidate values.
-
-        Args:
-            candidates: Candidate values.
-        Returns:
-            Created matcher.
-        &#34;&#34;&#34;
-        super().__init__()
-        self.candidates = candidates
-
-    def _match(self, actual):
-        for c in self.candidates:
-            if isinstance(c, Matcher):
-                if c.match(actual):
-                    return True
-            elif c == actual:
-                return True
-        return False</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="pyracmon.testing.util.Matcher" href="util.html#pyracmon.testing.util.Matcher">Matcher</a></li>
-</ul>
-</dd>
 </dl>
 </section>
 </article>
@@ -511,8 +433,7 @@ Matches or not.</p></div>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="pyracmon.testing.near" href="#pyracmon.testing.near">near</a></code></li>
-<li><code><a title="pyracmon.testing.testing_config" href="#pyracmon.testing.testing_config">testing_config</a></code></li>
+<li><code><a title="pyracmon.testing.default_test_config" href="#pyracmon.testing.default_test_config">default_test_config</a></code></li>
 <li><code><a title="pyracmon.testing.truncate" href="#pyracmon.testing.truncate">truncate</a></code></li>
 </ul>
 </li>
@@ -525,12 +446,6 @@ Matches or not.</p></div>
 <li><code><a title="pyracmon.testing.TestingMixin.fixture" href="#pyracmon.testing.TestingMixin.fixture">fixture</a></code></li>
 <li><code><a title="pyracmon.testing.TestingMixin.match" href="#pyracmon.testing.TestingMixin.match">match</a></code></li>
 </ul>
-</li>
-<li>
-<h4><code><a title="pyracmon.testing.let" href="#pyracmon.testing.let">let</a></code></h4>
-</li>
-<li>
-<h4><code><a title="pyracmon.testing.one_of" href="#pyracmon.testing.one_of">one_of</a></code></h4>
 </li>
 </ul>
 </li>

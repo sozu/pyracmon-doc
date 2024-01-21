@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>pyracmon.util API documentation</title>
-<meta name="description" content="Utility types and functions for internal use." />
+<title>pyracmon.query_graph API documentation</title>
+<meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,108 +19,126 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>pyracmon.util</code></h1>
+<h1 class="title">Module <code>pyracmon.query_graph</code></h1>
 </header>
 <section id="section-intro">
-<p>Utility types and functions for internal use.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">&#34;&#34;&#34;
-Utility types and functions for internal use.
-&#34;&#34;&#34;
-from collections.abc import Mapping, Sequence, Callable
-from typing import Any, Union, TypeVar
-try:
-    from typing import TypeAlias
-except:
-    from typing_extensions import TypeAlias
+<pre><code class="python">from collections.abc import Callable, Iterable
+from typing import Any, Union
+from pyracmon.dbapi import Cursor
+from pyracmon.select import Selection, Consumable, RowValues, read_row
+from pyracmon.graph import Graph
 
 
-T = TypeVar(&#39;T&#39;)
-
-
-#----------------------------------------------------------------
-# Utility Types
-#----------------------------------------------------------------
-Qualifier: TypeAlias = Callable[[str], str]
-
-PKS = Union[Any, dict[str, Any]]
-&#34;&#34;&#34;Primary key(s).&#34;&#34;&#34;
-
-
-#----------------------------------------------------------------
-# Utility Functions
-#----------------------------------------------------------------
-def key_to_index(values: Mapping[str, T], ordered_keys: Sequence[str]) -&gt; dict[int, T]:
+def append_rows(cursor: Cursor, exp: Iterable[Union[Consumable, Any]], graph: Graph, /, **assign: Union[Selection, Any]) -&gt; Graph:
     &#34;&#34;&#34;
-    Replace keys of a `dict` with its index in ordered list.
+    Adds all rows in cursor into the graph.
+
+    Values in `assign` are `Selection` or any kind of objects.
+    If `Selection` is passed, the corresponding value in row is selected.
+    In this case, the `Selection` must be contained in `exp` , otherwise `ValueError` is raised.
+
+    ```python
+    exp = ...
+    c = db.stmt().execute(...)
+    graph = add_all(c, exp, new_graph(SomeGraph), a=exp.a, b=exp.b, c=0)
+    ```
 
     Args:
-        values: A dictionary.
-        ordered_keys: Ordered keys.
+        cursor: Cursor obtained by query.
+        exp: Expressions used in the query.
+        graph: Graph to append rows.
+        assign: Mapping from graph property name to `Selection` or arbitrary value.
     Returns:
-        New dictionary where keys are replaced.
+        The same graph as passed one. 
     &#34;&#34;&#34;
-    def index(k):
-        if isinstance(k, int):
-            return k
+    def get(k: str) -&gt; Any:
+        v = assign[k]
+        if isinstance(v, Consumable):
+            return getattr(r, v.name)
         else:
-            return ordered_keys.index(k)
+            return v
 
-    return {index(k):v for k, v in values.items()}</code></pre>
+    for row in cursor.fetchall():
+        r = read_row(row, *exp)
+        graph.append(**{k:get(k) for k in assign.keys()})
+
+    return graph</code></pre>
 </details>
 </section>
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-variables">Global variables</h2>
-<dl>
-<dt id="pyracmon.util.PKS"><code class="name">var <span class="ident">PKS</span></code></dt>
-<dd>
-<div class="desc"><p>Primary key(s).</p></div>
-</dd>
-</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="pyracmon.util.key_to_index"><code class="name flex">
-<span>def <span class="ident">key_to_index</span></span>(<span>values: collections.abc.Mapping[str, ~T], ordered_keys: collections.abc.Sequence[str]) ‑> dict[int, ~T]</span>
+<dt id="pyracmon.query_graph.append_rows"><code class="name flex">
+<span>def <span class="ident">append_rows</span></span>(<span>cursor: <a title="pyracmon.dbapi.Cursor" href="dbapi.html#pyracmon.dbapi.Cursor">Cursor</a>, exp: collections.abc.Iterable[typing.Union[<a title="pyracmon.select.Consumable" href="select.html#pyracmon.select.Consumable">Consumable</a>, typing.Any]], graph: <a title="pyracmon.graph.graph.Graph" href="graph/graph.html#pyracmon.graph.graph.Graph">Graph</a>, /, **assign: Union[<a title="pyracmon.select.Selection" href="select.html#pyracmon.select.Selection">Selection</a>, Any]) ‑> <a title="pyracmon.graph.graph.Graph" href="graph/graph.html#pyracmon.graph.graph.Graph">Graph</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Replace keys of a <code>dict</code> with its index in ordered list.</p>
+<div class="desc"><p>Adds all rows in cursor into the graph.</p>
+<p>Values in <code>assign</code> are <code>Selection</code> or any kind of objects.
+If <code>Selection</code> is passed, the corresponding value in row is selected.
+In this case, the <code>Selection</code> must be contained in <code>exp</code> , otherwise <code>ValueError</code> is raised.</p>
+<pre><code class="language-python">exp = ...
+c = db.stmt().execute(...)
+graph = add_all(c, exp, new_graph(SomeGraph), a=exp.a, b=exp.b, c=0)
+</code></pre>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>values</code></strong></dt>
-<dd>A dictionary.</dd>
-<dt><strong><code>ordered_keys</code></strong></dt>
-<dd>Ordered keys.</dd>
+<dt><strong><code>cursor</code></strong></dt>
+<dd>Cursor obtained by query.</dd>
+<dt><strong><code>exp</code></strong></dt>
+<dd>Expressions used in the query.</dd>
+<dt><strong><code>graph</code></strong></dt>
+<dd>Graph to append rows.</dd>
+<dt><strong><code>assign</code></strong></dt>
+<dd>Mapping from graph property name to <code>Selection</code> or arbitrary value.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
-<p>New dictionary where keys are replaced.</p></div>
+<p>The same graph as passed one.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def key_to_index(values: Mapping[str, T], ordered_keys: Sequence[str]) -&gt; dict[int, T]:
+<pre><code class="python">def append_rows(cursor: Cursor, exp: Iterable[Union[Consumable, Any]], graph: Graph, /, **assign: Union[Selection, Any]) -&gt; Graph:
     &#34;&#34;&#34;
-    Replace keys of a `dict` with its index in ordered list.
+    Adds all rows in cursor into the graph.
+
+    Values in `assign` are `Selection` or any kind of objects.
+    If `Selection` is passed, the corresponding value in row is selected.
+    In this case, the `Selection` must be contained in `exp` , otherwise `ValueError` is raised.
+
+    ```python
+    exp = ...
+    c = db.stmt().execute(...)
+    graph = add_all(c, exp, new_graph(SomeGraph), a=exp.a, b=exp.b, c=0)
+    ```
 
     Args:
-        values: A dictionary.
-        ordered_keys: Ordered keys.
+        cursor: Cursor obtained by query.
+        exp: Expressions used in the query.
+        graph: Graph to append rows.
+        assign: Mapping from graph property name to `Selection` or arbitrary value.
     Returns:
-        New dictionary where keys are replaced.
+        The same graph as passed one. 
     &#34;&#34;&#34;
-    def index(k):
-        if isinstance(k, int):
-            return k
+    def get(k: str) -&gt; Any:
+        v = assign[k]
+        if isinstance(v, Consumable):
+            return getattr(r, v.name)
         else:
-            return ordered_keys.index(k)
+            return v
 
-    return {index(k):v for k, v in values.items()}</code></pre>
+    for row in cursor.fetchall():
+        r = read_row(row, *exp)
+        graph.append(**{k:get(k) for k in assign.keys()})
+
+    return graph</code></pre>
 </details>
 </dd>
 </dl>
@@ -139,14 +157,9 @@ def key_to_index(values: Mapping[str, T], ordered_keys: Sequence[str]) -&gt; dic
 <li><code><a title="pyracmon" href="index.html">pyracmon</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-variables">Global variables</a></h3>
-<ul class="">
-<li><code><a title="pyracmon.util.PKS" href="#pyracmon.util.PKS">PKS</a></code></li>
-</ul>
-</li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="pyracmon.util.key_to_index" href="#pyracmon.util.key_to_index">key_to_index</a></code></li>
+<li><code><a title="pyracmon.query_graph.append_rows" href="#pyracmon.query_graph.append_rows">append_rows</a></code></li>
 </ul>
 </li>
 </ul>

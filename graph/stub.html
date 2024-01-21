@@ -4,8 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>pyracmon.util API documentation</title>
-<meta name="description" content="Utility types and functions for internal use." />
+<title>pyracmon.graph.stub API documentation</title>
+<meta name="description" content="from collections.abc import Iterator
+from typing import Any, Optional, Generic, TypeVar, ForwardRef, TYPE_CHECKING, cast
+from typing_extensions import …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,111 +21,155 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>pyracmon.util</code></h1>
+<h1 class="title">Module <code>pyracmon.graph.stub</code></h1>
 </header>
 <section id="section-intro">
-<p>Utility types and functions for internal use.</p>
+<p>from collections.abc import Iterator
+from typing import Any, Optional, Generic, TypeVar, ForwardRef, TYPE_CHECKING, cast
+from typing_extensions import TypeAlias</p>
+<p>from pyracmon.graph.graph import NodeView
+from .graph import GraphView, ContainerView, Graph, NodeContainer
+from .template import GraphTemplate</p>
+<p>T = TypeVar('T')
+GT = TypeVar('GT', bound=GraphTemplate)</p>
+<p>class GraphTemplateView(Generic[GT], GraphView):
+def <strong>call</strong>(self) -&gt; Graph: &hellip;
+def <strong>iter</strong>(self) -&gt; Iterator[tuple[str, ContainerView[NodeContainer]]]: &hellip;
+def <strong>getattr</strong>(self, name: str) -&gt; ContainerView: &hellip;</p>
+<p>class TypedProperty(Generic[T]):
+pass</p>
+<p>TP = TypeVar('TP', bound=TypedProperty)</p>
+<h1 id="class-typednodeviewgenerict-nodeview">class TypedNodeView(Generic[T], NodeView):</h1>
+<p>class TypedNodeView(Generic[T]):
+def <strong>call</strong>(self, alt: Optional[T] = None) -&gt; T:
+&hellip;
+def <strong>getattr</strong>(self, key: str) -&gt; 'TypedContainerView':
+&hellip;
+def <strong>iter</strong>(self) -&gt; Iterator[tuple[str, 'TypedContainerView']]:
+&hellip;</p>
+<h1 id="class-typedcontainerviewgenerict-containerview">class TypedContainerView(Generic[T], ContainerView):</h1>
+<p>class TypedContainerView(Generic[T]):
+def <strong>call</strong>(self) -&gt; NodeContainer: &hellip;
+def <strong>bool</strong>(self) -&gt; bool: &hellip;
+def <strong>iter</strong>(self) -&gt; Iterator[TypedNodeView[T]]: &hellip;
+def <strong>len</strong>(self) -&gt; int: &hellip;
+def <strong>getitem</strong>(self, key: int) -&gt; TypedNodeView[T]: &hellip;</p>
+<p>V = TypeVar('V', bound=GraphTemplateView)</p>
+<p>class TypedGraphTemplate(Generic[V], GraphTemplate):
+pass</p>
+<h1 id="-stub">&ndash; stub</h1>
+<p>class MyTemplate(GraphTemplateView):
+class <strong>a_node(TypedNodeView[int]):
+b: TypedContainerView[str]
+class __a_container(TypedContainerView[int]):
+b: TypedContainerView[str]
+def __iter</strong>(self) -&gt; Iterator['MyTemplate.<strong>a_node']: &hellip;
+def __getattr</strong>(self, <strong>name: str) -&gt; TypedContainerView: &hellip;
+def __getitem</strong>(self, key: int) -&gt; 'MyTemplate.__a_node': &hellip;</p>
+<pre><code>a: __a_container
+b: TypedContainerView[str]
+</code></pre>
+<h1 id="-">&ndash;</h1>
+<p>class TypedGraph(Generic[V], Graph):
+if TYPE_CHECKING:
+@property
+def view(self) -&gt; V:
+&hellip;</p>
+<p>graph: TypedGraph[MyTemplate] = TypedGraph()
+v = graph.view
+aa = v.a<a href="">0</a>
+bb = v.a.b<a href="">0</a></p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">&#34;&#34;&#34;
-Utility types and functions for internal use.
-&#34;&#34;&#34;
-from collections.abc import Mapping, Sequence, Callable
-from typing import Any, Union, TypeVar
-try:
-    from typing import TypeAlias
-except:
-    from typing_extensions import TypeAlias
+from collections.abc import Iterator
+from typing import Any, Optional, Generic, TypeVar, ForwardRef, TYPE_CHECKING, cast
+from typing_extensions import TypeAlias
+
+from pyracmon.graph.graph import NodeView
+from .graph import GraphView, ContainerView, Graph, NodeContainer
+from .template import GraphTemplate
 
 
 T = TypeVar(&#39;T&#39;)
+GT = TypeVar(&#39;GT&#39;, bound=GraphTemplate)
 
 
-#----------------------------------------------------------------
-# Utility Types
-#----------------------------------------------------------------
-Qualifier: TypeAlias = Callable[[str], str]
-
-PKS = Union[Any, dict[str, Any]]
-&#34;&#34;&#34;Primary key(s).&#34;&#34;&#34;
+class GraphTemplateView(Generic[GT], GraphView):
+    def __call__(self) -&gt; Graph: ...
+    def __iter__(self) -&gt; Iterator[tuple[str, ContainerView[NodeContainer]]]: ...
+    def __getattr__(self, name: str) -&gt; ContainerView: ...
 
 
-#----------------------------------------------------------------
-# Utility Functions
-#----------------------------------------------------------------
-def key_to_index(values: Mapping[str, T], ordered_keys: Sequence[str]) -&gt; dict[int, T]:
-    &#34;&#34;&#34;
-    Replace keys of a `dict` with its index in ordered list.
+class TypedProperty(Generic[T]):
+    pass
 
-    Args:
-        values: A dictionary.
-        ordered_keys: Ordered keys.
-    Returns:
-        New dictionary where keys are replaced.
-    &#34;&#34;&#34;
-    def index(k):
-        if isinstance(k, int):
-            return k
-        else:
-            return ordered_keys.index(k)
 
-    return {index(k):v for k, v in values.items()}</code></pre>
+TP = TypeVar(&#39;TP&#39;, bound=TypedProperty)
+
+
+#class TypedNodeView(Generic[T], NodeView):
+class TypedNodeView(Generic[T]):
+    def __call__(self, alt: Optional[T] = None) -&gt; T:
+        ...
+    def __getattr__(self, key: str) -&gt; &#39;TypedContainerView&#39;:
+        ...
+    def __iter__(self) -&gt; Iterator[tuple[str, &#39;TypedContainerView&#39;]]:
+        ...
+
+
+#class TypedContainerView(Generic[T], ContainerView):
+class TypedContainerView(Generic[T]):
+    def __call__(self) -&gt; NodeContainer: ...
+    def __bool__(self) -&gt; bool: ...
+    def __iter__(self) -&gt; Iterator[TypedNodeView[T]]: ...
+    def __len__(self) -&gt; int: ...
+    def __getitem__(self, key: int) -&gt; TypedNodeView[T]: ...
+
+
+V = TypeVar(&#39;V&#39;, bound=GraphTemplateView)
+
+
+class TypedGraphTemplate(Generic[V], GraphTemplate):
+    pass
+
+
+#-- stub
+class MyTemplate(GraphTemplateView):
+    class __a_node(TypedNodeView[int]):
+        b: TypedContainerView[str]
+    class __a_container(TypedContainerView[int]):
+        b: TypedContainerView[str]
+        def __iter__(self) -&gt; Iterator[&#39;MyTemplate.__a_node&#39;]: ...
+        def __getattr__(self, __name: str) -&gt; TypedContainerView: ...
+        def __getitem__(self, key: int) -&gt; &#39;MyTemplate.__a_node&#39;: ...
+
+    a: __a_container
+    b: TypedContainerView[str]
+#--
+
+
+class TypedGraph(Generic[V], Graph):
+    if TYPE_CHECKING:
+        @property
+        def view(self) -&gt; V:
+            ...
+
+
+graph: TypedGraph[MyTemplate] = TypedGraph()
+v = graph.view
+aa = v.a[0]()
+bb = v.a.b[0]()
+&#34;&#34;&#34;</code></pre>
 </details>
 </section>
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-variables">Global variables</h2>
-<dl>
-<dt id="pyracmon.util.PKS"><code class="name">var <span class="ident">PKS</span></code></dt>
-<dd>
-<div class="desc"><p>Primary key(s).</p></div>
-</dd>
-</dl>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="pyracmon.util.key_to_index"><code class="name flex">
-<span>def <span class="ident">key_to_index</span></span>(<span>values: collections.abc.Mapping[str, ~T], ordered_keys: collections.abc.Sequence[str]) ‑> dict[int, ~T]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Replace keys of a <code>dict</code> with its index in ordered list.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>values</code></strong></dt>
-<dd>A dictionary.</dd>
-<dt><strong><code>ordered_keys</code></strong></dt>
-<dd>Ordered keys.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>New dictionary where keys are replaced.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def key_to_index(values: Mapping[str, T], ordered_keys: Sequence[str]) -&gt; dict[int, T]:
-    &#34;&#34;&#34;
-    Replace keys of a `dict` with its index in ordered list.
-
-    Args:
-        values: A dictionary.
-        ordered_keys: Ordered keys.
-    Returns:
-        New dictionary where keys are replaced.
-    &#34;&#34;&#34;
-    def index(k):
-        if isinstance(k, int):
-            return k
-        else:
-            return ordered_keys.index(k)
-
-    return {index(k):v for k, v in values.items()}</code></pre>
-</details>
-</dd>
-</dl>
 </section>
 <section>
 </section>
@@ -131,22 +177,17 @@ def key_to_index(values: Mapping[str, T], ordered_keys: Sequence[str]) -&gt; dic
 <nav id="sidebar">
 <h1>Index</h1>
 <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#class-typednodeviewgenerict-nodeview">class TypedNodeView(Generic[T], NodeView):</a></li>
+<li><a href="#class-typedcontainerviewgenerict-containerview">class TypedContainerView(Generic[T], ContainerView):</a></li>
+<li><a href="#-stub">&ndash; stub</a></li>
+<li><a href="#-">&ndash;</a></li>
+</ul>
 </div>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="pyracmon" href="index.html">pyracmon</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-variables">Global variables</a></h3>
-<ul class="">
-<li><code><a title="pyracmon.util.PKS" href="#pyracmon.util.PKS">PKS</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="pyracmon.util.key_to_index" href="#pyracmon.util.key_to_index">key_to_index</a></code></li>
+<li><code><a title="pyracmon.graph" href="index.html">pyracmon.graph</a></code></li>
 </ul>
 </li>
 </ul>

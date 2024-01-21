@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>pyracmon.context API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="This module provides the context type which controls query execution as configured." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,23 +22,45 @@
 <h1 class="title">Module <code>pyracmon.context</code></h1>
 </header>
 <section id="section-intro">
+<p>This module provides the context type which controls query execution as configured.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import logging
-from typing import *
+<pre><code class="python">&#34;&#34;&#34;
+This module provides the context type which controls query execution as configured.
+&#34;&#34;&#34;
+from collections.abc import Sequence
+import logging
+from typing import Any, Union, Optional, Literal, overload
+try:
+    from typing import TypeAlias
+except:
+    from typing_extensions import TypeAlias
 from .config import default_config
+from . import dbapi
+
+
+PARAMS: TypeAlias = Union[list[Any], dict[str, Any]]
+&#34;&#34;&#34;Type alias of parameters of query.
+
+Which type in `list` or `dict` is used depends on the type of the marker.
+&#34;&#34;&#34;
 
 
 class ConnectionContext:
     &#34;&#34;&#34;
     This class represents a context of query execution.
 
-    You don&#39;t need to care this object in most cases except for when you want to change the configuration at a query execution.
+    By default, the context based on global configuration is used.
+    You should declare your own context class and set it to `Connection.use` if you want to change the behavior.
+
+    Custom context is also useful to change cursor state before and after query execution.  Overwrite `execute` method to do it.
     &#34;&#34;&#34;
-    def __init__(self, identifier=None, **configurations):
+    def __init__(self, identifier: Optional[str] = None, **configurations):
+        #: Identifier of this context. `None` by default.
         self.identifier = identifier
+        #: Configuration used in this context.
         self.config = default_config().derive(**configurations)
 
     def _message(self, message):
@@ -48,6 +70,8 @@ class ConnectionContext:
         &#34;&#34;&#34;
         Change configurations of this context.
 
+        Changes by this method never affect global configuration even if the context is based on it.
+
         Args:
             configurations: Configurations. See `pyracmon.config` to know available keys.
         Returns:
@@ -56,15 +80,9 @@ class ConnectionContext:
         self.config.set(**configurations)
         return self
 
-    def execute(self, cursor: &#39;Cursor&#39;, sql: str, params: List[Any]) -&gt; &#39;Cursor&#39;:
+    def execute(self, cursor: dbapi.Cursor, sql: str, params: PARAMS) -&gt; dbapi.Cursor:
         &#34;&#34;&#34;
         Executes a query on a cursor.
-
-        Query logging is also done in this method according to the configuration.
-
-        This method is invoked from `ConnectionContext.execute` internally.
-        When you intend to change behaviors of query executions,
-        inherit this class, overwrite this method and set factory method for the class by `Connection.use` .
 
         Args:
             cursor: Cursor object.
@@ -73,6 +91,34 @@ class ConnectionContext:
         Returns:
             Given cursor object. Internal state may be changed by the execution of the query.
         &#34;&#34;&#34;
+        return self._execute(cursor, sql, params, False)
+
+    def executemany(self, cursor: dbapi.Cursor, sql: str, seq_of_params: Sequence[PARAMS]) -&gt; dbapi.Cursor:
+        &#34;&#34;&#34;
+        Repeats query on a cursor for sequencee of parameters.
+
+        This method works similar to `execute` but invoke `executemany` instead.
+
+        Args:
+            cursor: Cursor object.
+            sql: Query string.
+            seq_of_args: A sequence of parameters of the query.
+        Returns:
+            Given cursor object. Internal state may be changed by the execution of the query.
+        &#34;&#34;&#34;
+        return self._execute(cursor, sql, seq_of_params, True)
+
+    @overload
+    def _execute(self, cursor: dbapi.Cursor, sql: str, params: PARAMS, is_many: Literal[False] = False) -&gt; dbapi.Cursor: ...
+    @overload
+    def _execute(self, cursor: dbapi.Cursor, sql: str, params: Sequence[PARAMS], is_many: Literal[True] = True) -&gt; dbapi.Cursor: ...
+    def _execute(
+        self,
+        cursor: dbapi.Cursor,
+        sql: str,
+        params,
+        is_many: bool = False,
+    ) -&gt; dbapi.Cursor:
         logger = _logger(self.config)
 
         if logger:
@@ -81,9 +127,16 @@ class ConnectionContext:
             logger.log(self.config.log_level, self._message(sql_log))
 
             if self.config.parameter_log:
-                logger.log(self.config.log_level, self._message(f&#34;Parameters: {params}&#34;))
+                if is_many:
+                    for ps in params:
+                        logger.log(self.config.log_level, self._message(f&#34;Parameters: {ps}&#34;))
+                else:
+                    logger.log(self.config.log_level, self._message(f&#34;Parameters: {params}&#34;))
 
-        cursor.execute(sql, params)
+        if is_many:
+            cursor.executemany(sql, params)
+        else:
+            cursor.execute(sql, params)
 
         return cursor
 
@@ -100,6 +153,14 @@ def _logger(config):
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-variables">Global variables</h2>
+<dl>
+<dt id="pyracmon.context.PARAMS"><code class="name">var <span class="ident">PARAMS</span> : TypeAlias</code></dt>
+<dd>
+<div class="desc"><p>Type alias of parameters of query.</p>
+<p>Which type in <code>list</code> or <code>dict</code> is used depends on the type of the marker.</p></div>
+</dd>
+</dl>
 </section>
 <section>
 </section>
@@ -108,11 +169,14 @@ def _logger(config):
 <dl>
 <dt id="pyracmon.context.ConnectionContext"><code class="flex name class">
 <span>class <span class="ident">ConnectionContext</span></span>
-<span>(</span><span>identifier=None, **configurations)</span>
+<span>(</span><span>identifier: Optional[str] = None, **configurations)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>This class represents a context of query execution.</p>
-<p>You don't need to care this object in most cases except for when you want to change the configuration at a query execution.</p></div>
+<p>By default, the context based on global configuration is used.
+You should declare your own context class and set it to <code>Connection.use</code> if you want to change the behavior.</p>
+<p>Custom context is also useful to change cursor state before and after query execution.
+Overwrite <code>execute</code> method to do it.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -121,10 +185,15 @@ def _logger(config):
     &#34;&#34;&#34;
     This class represents a context of query execution.
 
-    You don&#39;t need to care this object in most cases except for when you want to change the configuration at a query execution.
+    By default, the context based on global configuration is used.
+    You should declare your own context class and set it to `Connection.use` if you want to change the behavior.
+
+    Custom context is also useful to change cursor state before and after query execution.  Overwrite `execute` method to do it.
     &#34;&#34;&#34;
-    def __init__(self, identifier=None, **configurations):
+    def __init__(self, identifier: Optional[str] = None, **configurations):
+        #: Identifier of this context. `None` by default.
         self.identifier = identifier
+        #: Configuration used in this context.
         self.config = default_config().derive(**configurations)
 
     def _message(self, message):
@@ -134,6 +203,8 @@ def _logger(config):
         &#34;&#34;&#34;
         Change configurations of this context.
 
+        Changes by this method never affect global configuration even if the context is based on it.
+
         Args:
             configurations: Configurations. See `pyracmon.config` to know available keys.
         Returns:
@@ -142,15 +213,9 @@ def _logger(config):
         self.config.set(**configurations)
         return self
 
-    def execute(self, cursor: &#39;Cursor&#39;, sql: str, params: List[Any]) -&gt; &#39;Cursor&#39;:
+    def execute(self, cursor: dbapi.Cursor, sql: str, params: PARAMS) -&gt; dbapi.Cursor:
         &#34;&#34;&#34;
         Executes a query on a cursor.
-
-        Query logging is also done in this method according to the configuration.
-
-        This method is invoked from `ConnectionContext.execute` internally.
-        When you intend to change behaviors of query executions,
-        inherit this class, overwrite this method and set factory method for the class by `Connection.use` .
 
         Args:
             cursor: Cursor object.
@@ -159,6 +224,34 @@ def _logger(config):
         Returns:
             Given cursor object. Internal state may be changed by the execution of the query.
         &#34;&#34;&#34;
+        return self._execute(cursor, sql, params, False)
+
+    def executemany(self, cursor: dbapi.Cursor, sql: str, seq_of_params: Sequence[PARAMS]) -&gt; dbapi.Cursor:
+        &#34;&#34;&#34;
+        Repeats query on a cursor for sequencee of parameters.
+
+        This method works similar to `execute` but invoke `executemany` instead.
+
+        Args:
+            cursor: Cursor object.
+            sql: Query string.
+            seq_of_args: A sequence of parameters of the query.
+        Returns:
+            Given cursor object. Internal state may be changed by the execution of the query.
+        &#34;&#34;&#34;
+        return self._execute(cursor, sql, seq_of_params, True)
+
+    @overload
+    def _execute(self, cursor: dbapi.Cursor, sql: str, params: PARAMS, is_many: Literal[False] = False) -&gt; dbapi.Cursor: ...
+    @overload
+    def _execute(self, cursor: dbapi.Cursor, sql: str, params: Sequence[PARAMS], is_many: Literal[True] = True) -&gt; dbapi.Cursor: ...
+    def _execute(
+        self,
+        cursor: dbapi.Cursor,
+        sql: str,
+        params,
+        is_many: bool = False,
+    ) -&gt; dbapi.Cursor:
         logger = _logger(self.config)
 
         if logger:
@@ -167,12 +260,30 @@ def _logger(config):
             logger.log(self.config.log_level, self._message(sql_log))
 
             if self.config.parameter_log:
-                logger.log(self.config.log_level, self._message(f&#34;Parameters: {params}&#34;))
+                if is_many:
+                    for ps in params:
+                        logger.log(self.config.log_level, self._message(f&#34;Parameters: {ps}&#34;))
+                else:
+                    logger.log(self.config.log_level, self._message(f&#34;Parameters: {params}&#34;))
 
-        cursor.execute(sql, params)
+        if is_many:
+            cursor.executemany(sql, params)
+        else:
+            cursor.execute(sql, params)
 
         return cursor</code></pre>
 </details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="pyracmon.context.ConnectionContext.config"><code class="name">var <span class="ident">config</span></code></dt>
+<dd>
+<div class="desc"><p>Configuration used in this context.</p></div>
+</dd>
+<dt id="pyracmon.context.ConnectionContext.identifier"><code class="name">var <span class="ident">identifier</span></code></dt>
+<dd>
+<div class="desc"><p>Identifier of this context. <code>None</code> by default.</p></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="pyracmon.context.ConnectionContext.configure"><code class="name flex">
@@ -180,6 +291,7 @@ def _logger(config):
 </code></dt>
 <dd>
 <div class="desc"><p>Change configurations of this context.</p>
+<p>Changes by this method never affect global configuration even if the context is based on it.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>configurations</code></strong></dt>
@@ -195,6 +307,8 @@ def _logger(config):
     &#34;&#34;&#34;
     Change configurations of this context.
 
+    Changes by this method never affect global configuration even if the context is based on it.
+
     Args:
         configurations: Configurations. See `pyracmon.config` to know available keys.
     Returns:
@@ -205,14 +319,10 @@ def _logger(config):
 </details>
 </dd>
 <dt id="pyracmon.context.ConnectionContext.execute"><code class="name flex">
-<span>def <span class="ident">execute</span></span>(<span>self, cursor: Cursor, sql: str, params: List[Any]) ‑> Cursor</span>
+<span>def <span class="ident">execute</span></span>(<span>self, cursor: <a title="pyracmon.dbapi.Cursor" href="dbapi.html#pyracmon.dbapi.Cursor">Cursor</a>, sql: str, params: Union[list[Any], dict[str, Any]]) ‑> <a title="pyracmon.dbapi.Cursor" href="dbapi.html#pyracmon.dbapi.Cursor">Cursor</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Executes a query on a cursor.</p>
-<p>Query logging is also done in this method according to the configuration.</p>
-<p>This method is invoked from <code><a title="pyracmon.context.ConnectionContext.execute" href="#pyracmon.context.ConnectionContext.execute">ConnectionContext.execute()</a></code> internally.
-When you intend to change behaviors of query executions,
-inherit this class, overwrite this method and set factory method for the class by <code>Connection.use</code> .</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>cursor</code></strong></dt>
@@ -228,15 +338,9 @@ inherit this class, overwrite this method and set factory method for the class b
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def execute(self, cursor: &#39;Cursor&#39;, sql: str, params: List[Any]) -&gt; &#39;Cursor&#39;:
+<pre><code class="python">def execute(self, cursor: dbapi.Cursor, sql: str, params: PARAMS) -&gt; dbapi.Cursor:
     &#34;&#34;&#34;
     Executes a query on a cursor.
-
-    Query logging is also done in this method according to the configuration.
-
-    This method is invoked from `ConnectionContext.execute` internally.
-    When you intend to change behaviors of query executions,
-    inherit this class, overwrite this method and set factory method for the class by `Connection.use` .
 
     Args:
         cursor: Cursor object.
@@ -245,19 +349,44 @@ inherit this class, overwrite this method and set factory method for the class b
     Returns:
         Given cursor object. Internal state may be changed by the execution of the query.
     &#34;&#34;&#34;
-    logger = _logger(self.config)
+    return self._execute(cursor, sql, params, False)</code></pre>
+</details>
+</dd>
+<dt id="pyracmon.context.ConnectionContext.executemany"><code class="name flex">
+<span>def <span class="ident">executemany</span></span>(<span>self, cursor: <a title="pyracmon.dbapi.Cursor" href="dbapi.html#pyracmon.dbapi.Cursor">Cursor</a>, sql: str, seq_of_params: collections.abc.Sequence[typing.Union[list[typing.Any], dict[str, typing.Any]]]) ‑> <a title="pyracmon.dbapi.Cursor" href="dbapi.html#pyracmon.dbapi.Cursor">Cursor</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Repeats query on a cursor for sequencee of parameters.</p>
+<p>This method works similar to <code>execute</code> but invoke <code>executemany</code> instead.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>cursor</code></strong></dt>
+<dd>Cursor object.</dd>
+<dt><strong><code>sql</code></strong></dt>
+<dd>Query string.</dd>
+<dt><strong><code>seq_of_args</code></strong></dt>
+<dd>A sequence of parameters of the query.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Given cursor object. Internal state may be changed by the execution of the query.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def executemany(self, cursor: dbapi.Cursor, sql: str, seq_of_params: Sequence[PARAMS]) -&gt; dbapi.Cursor:
+    &#34;&#34;&#34;
+    Repeats query on a cursor for sequencee of parameters.
 
-    if logger:
-        sql_log = sql if len(sql) &lt;= self.config.sql_log_length else f&#34;{sql[0:self.config.sql_log_length]}...&#34;
+    This method works similar to `execute` but invoke `executemany` instead.
 
-        logger.log(self.config.log_level, self._message(sql_log))
-
-        if self.config.parameter_log:
-            logger.log(self.config.log_level, self._message(f&#34;Parameters: {params}&#34;))
-
-    cursor.execute(sql, params)
-
-    return cursor</code></pre>
+    Args:
+        cursor: Cursor object.
+        sql: Query string.
+        seq_of_args: A sequence of parameters of the query.
+    Returns:
+        Given cursor object. Internal state may be changed by the execution of the query.
+    &#34;&#34;&#34;
+    return self._execute(cursor, sql, seq_of_params, True)</code></pre>
 </details>
 </dd>
 </dl>
@@ -276,13 +405,21 @@ inherit this class, overwrite this method and set factory method for the class b
 <li><code><a title="pyracmon" href="index.html">pyracmon</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-variables">Global variables</a></h3>
+<ul class="">
+<li><code><a title="pyracmon.context.PARAMS" href="#pyracmon.context.PARAMS">PARAMS</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
 <h4><code><a title="pyracmon.context.ConnectionContext" href="#pyracmon.context.ConnectionContext">ConnectionContext</a></code></h4>
 <ul class="">
+<li><code><a title="pyracmon.context.ConnectionContext.config" href="#pyracmon.context.ConnectionContext.config">config</a></code></li>
 <li><code><a title="pyracmon.context.ConnectionContext.configure" href="#pyracmon.context.ConnectionContext.configure">configure</a></code></li>
 <li><code><a title="pyracmon.context.ConnectionContext.execute" href="#pyracmon.context.ConnectionContext.execute">execute</a></code></li>
+<li><code><a title="pyracmon.context.ConnectionContext.executemany" href="#pyracmon.context.ConnectionContext.executemany">executemany</a></code></li>
+<li><code><a title="pyracmon.context.ConnectionContext.identifier" href="#pyracmon.context.ConnectionContext.identifier">identifier</a></code></li>
 </ul>
 </li>
 </ul>

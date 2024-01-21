@@ -26,36 +26,18 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from datetime import datetime, date, time, timedelta
-from typing import *
-
-from pyracmon.connection import Connection
-from ..config import PyracmonConfiguration, default_config
-
-
-def testing_config(cfg: PyracmonConfiguration = default_config().derive()) -&gt; PyracmonConfiguration:
-    &#34;&#34;&#34;
-    Returns a configuration used for testing.
-
-    Args:
-        cfg: Don&#39;t use this argument. This exists to locate global instance in private.
-    &#34;&#34;&#34;
-    return cfg
+<pre><code class="python">from collections.abc import Callable
+from contextvars import ContextVar
+from datetime import datetime, date, time, timedelta
+from typing import Any, Optional
+from ..config import PyracmonConfiguration, default_config, contextualConfiguration
 
 
-def truncate(db: Connection, *models: List[&#39;Model&#39;]):
-    &#34;&#34;&#34;
-    Truncate tables in order.
+config: ContextVar[PyracmonConfiguration] = ContextVar(&#39;config&#39;, default=contextualConfiguration(lambda: config, default_config()))
 
-    Args:
-        db: DB connection.
-        tables: Models of tables to truncate.
-    &#34;&#34;&#34;
-    if len(models) == 0:
-        raise ValueError(f&#34;No tables are specified. Did you forget to pass DB connection at the first argument?&#34;)
 
-    for m in models:
-        m.truncate(db)
+def default_test_config() -&gt; PyracmonConfiguration:
+    return config.get()
 
 
 class Matcher:
@@ -140,12 +122,12 @@ def near(expected: Any, negative: Optional[Any] = None, positive: Optional[Any] 
     &#34;&#34;&#34;
     if isinstance(expected, datetime):
         if all(k not in kwargs for k in (&#39;weeks&#39;, &#39;days&#39;, &#39;hours&#39;, &#39;minutes&#39;, &#39;seconds&#39;, &#39;milliseconds&#39;, &#39;microseconds&#39;)):
-            kwargs.update(**testing_config().timedelta_unit)
+            kwargs.update(**default_test_config().timedelta_unit)
     return Near(expected, negative, positive, **kwargs)
 
 
 class let(Matcher):
-    def __init__(self, pred: Callable[[Any], bool]) -&gt; Matcher:
+    def __init__(self, pred: Callable[[Any], bool]) -&gt; None:
         &#34;&#34;&#34;
         Creates a matcher which applies the predicate function to actual value and checks its returning value is ``True`` .
 
@@ -162,7 +144,7 @@ class let(Matcher):
 
 
 class one_of(Matcher):
-    def __init__(self, *candidates) -&gt; Matcher:
+    def __init__(self, *candidates) -&gt; None:
         &#34;&#34;&#34;
         Creates a matcher which checks whether the actual value matches one of candidate values.
 
@@ -191,6 +173,19 @@ class one_of(Matcher):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="pyracmon.testing.util.default_test_config"><code class="name flex">
+<span>def <span class="ident">default_test_config</span></span>(<span>) ‑> <a title="pyracmon.config.PyracmonConfiguration" href="../config.html#pyracmon.config.PyracmonConfiguration">PyracmonConfiguration</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def default_test_config() -&gt; PyracmonConfiguration:
+    return config.get()</code></pre>
+</details>
+</dd>
 <dt id="pyracmon.testing.util.near"><code class="name flex">
 <span>def <span class="ident">near</span></span>(<span>expected: Any, negative: Optional[Any] = None, positive: Optional[Any] = None, **kwargs: Any) ‑> <a title="pyracmon.testing.util.Matcher" href="#pyracmon.testing.util.Matcher">Matcher</a></span>
 </code></dt>
@@ -230,63 +225,8 @@ class one_of(Matcher):
     &#34;&#34;&#34;
     if isinstance(expected, datetime):
         if all(k not in kwargs for k in (&#39;weeks&#39;, &#39;days&#39;, &#39;hours&#39;, &#39;minutes&#39;, &#39;seconds&#39;, &#39;milliseconds&#39;, &#39;microseconds&#39;)):
-            kwargs.update(**testing_config().timedelta_unit)
+            kwargs.update(**default_test_config().timedelta_unit)
     return Near(expected, negative, positive, **kwargs)</code></pre>
-</details>
-</dd>
-<dt id="pyracmon.testing.util.testing_config"><code class="name flex">
-<span>def <span class="ident">testing_config</span></span>(<span>cfg: <a title="pyracmon.config.PyracmonConfiguration" href="../config.html#pyracmon.config.PyracmonConfiguration">PyracmonConfiguration</a> = &lt;pyracmon.config.DerivingConfiguration object&gt;) ‑> <a title="pyracmon.config.PyracmonConfiguration" href="../config.html#pyracmon.config.PyracmonConfiguration">PyracmonConfiguration</a></span>
-</code></dt>
-<dd>
-<div class="desc"><p>Returns a configuration used for testing.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>cfg</code></strong></dt>
-<dd>Don't use this argument. This exists to locate global instance in private.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def testing_config(cfg: PyracmonConfiguration = default_config().derive()) -&gt; PyracmonConfiguration:
-    &#34;&#34;&#34;
-    Returns a configuration used for testing.
-
-    Args:
-        cfg: Don&#39;t use this argument. This exists to locate global instance in private.
-    &#34;&#34;&#34;
-    return cfg</code></pre>
-</details>
-</dd>
-<dt id="pyracmon.testing.util.truncate"><code class="name flex">
-<span>def <span class="ident">truncate</span></span>(<span>db: <a title="pyracmon.connection.Connection" href="../connection.html#pyracmon.connection.Connection">Connection</a>, *models: List[ForwardRef('Model')])</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Truncate tables in order.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>db</code></strong></dt>
-<dd>DB connection.</dd>
-<dt><strong><code>tables</code></strong></dt>
-<dd>Models of tables to truncate.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def truncate(db: Connection, *models: List[&#39;Model&#39;]):
-    &#34;&#34;&#34;
-    Truncate tables in order.
-
-    Args:
-        db: DB connection.
-        tables: Models of tables to truncate.
-    &#34;&#34;&#34;
-    if len(models) == 0:
-        raise ValueError(f&#34;No tables are specified. Did you forget to pass DB connection at the first argument?&#34;)
-
-    for m in models:
-        m.truncate(db)</code></pre>
 </details>
 </dd>
 </dl>
@@ -422,7 +362,7 @@ class one_of(Matcher):
 </dd>
 <dt id="pyracmon.testing.util.let"><code class="flex name class">
 <span>class <span class="ident">let</span></span>
-<span>(</span><span>pred: Callable[[Any], bool])</span>
+<span>(</span><span>pred: collections.abc.Callable[[typing.Any], bool])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates a matcher which applies the predicate function to actual value and checks its returning value is <code>True</code> .</p>
@@ -438,7 +378,7 @@ class one_of(Matcher):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class let(Matcher):
-    def __init__(self, pred: Callable[[Any], bool]) -&gt; Matcher:
+    def __init__(self, pred: Callable[[Any], bool]) -&gt; None:
         &#34;&#34;&#34;
         Creates a matcher which applies the predicate function to actual value and checks its returning value is ``True`` .
 
@@ -476,7 +416,7 @@ class one_of(Matcher):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class one_of(Matcher):
-    def __init__(self, *candidates) -&gt; Matcher:
+    def __init__(self, *candidates) -&gt; None:
         &#34;&#34;&#34;
         Creates a matcher which checks whether the actual value matches one of candidate values.
 
@@ -518,9 +458,8 @@ class one_of(Matcher):
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="pyracmon.testing.util.default_test_config" href="#pyracmon.testing.util.default_test_config">default_test_config</a></code></li>
 <li><code><a title="pyracmon.testing.util.near" href="#pyracmon.testing.util.near">near</a></code></li>
-<li><code><a title="pyracmon.testing.util.testing_config" href="#pyracmon.testing.util.testing_config">testing_config</a></code></li>
-<li><code><a title="pyracmon.testing.util.truncate" href="#pyracmon.testing.util.truncate">truncate</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
